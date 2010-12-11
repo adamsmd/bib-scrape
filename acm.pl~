@@ -1,0 +1,15 @@
+use LWP::Simple;
+
+my $url = $ARGS[1];
+print "url: <$url>\n";
+$page = get($url);
+m[<meta name="citation_doi" content="10.1145/78973.78977"]m;
+
+my ($par, $id) = $page =~ m[<meta name="citation_abstract_html_url" content="http://portal.acm.org/citation.cfm?id=(\d+)\.(\d+)">]m;
+
+#<meta name="citation_doi" content="10.1145/78973.78977">
+
+
+#('exportformats.cfm?id=78977&expformat=bibtex','theformats');
+
+#http://portal.acm.org/downformats.cfm?id=78977&parent_id=78973&expformat=bibtex
