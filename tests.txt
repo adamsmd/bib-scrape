@@ -1,0 +1,28 @@
+http://dx.doi.org/10.1007/BF01975011
+http://dx.doi.org/10.1016/S0167-2789(00)00094-4
+http://portal.acm.org/citation.cfm?id=908021&CFID=112731887&CFTOKEN=92268833&preflayout=tabs
+http://dx.doi.org/10.1145/1863543.1863551
+http://www.springerlink.com/content/nhw5736n75028853/export-citation/
+http://portal.acm.org/citation.cfm?id=1863543.1863551
+http://dx.doi.org/10.1017/S0956796801004129
+http://dx.doi.org/10.1016/j.ipl.2010.02.014
+http://www.computer.org/portal/web/csdl/doi/10.1109/SITIS.2008.31
+http://www.jstor.org/stable/2034627?origin=crossref&
+
+
+ doi = {10.1017/S0956796801004129},
+  doi = {10.1007/11737414_3},
+
+  issn = {0169-2968 (Print) 1875-8681 (Online)},
+@Article{differentiating-data-structures,
+  author =       {Michael Abbott and Thorsten Altenkirch and Conor McBride and Neil Ghani},
+  title =        {$\partial$ for Data: Differentiating Data Structures},
+  journal =      {Fundamenta Informaticae},
+  year =         {2005},
+  volume =    {65},
+  number =    {1--2},
+  pages =     {1--28},
+  month =     {February--March},
+  publisher = {IOS Press},
+  address = {Amsterdam, The Netherlands},
+}

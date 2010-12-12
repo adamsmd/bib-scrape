@@ -45,7 +45,6 @@ $ris =~ s/\r//g;
 $bib =~ s/"(.*?)"/{$1}/sg;
 
 # Normalize doi field (remove any "http://hostname/" or "DOI: "at the front)
-# fix doi
 $bib =~ s[doi = {http://[^/]+/][doi = {];
 $bib =~ s[doi = {DOI: *] [doi = {]i;
 

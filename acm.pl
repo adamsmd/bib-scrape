@@ -5,6 +5,13 @@ use strict;
 
 use LWP::Simple;
 
+[page = $ARGV[0]
+ pid = ...
+ id = ...]
+[bib = http://$pid
+ ...]
+[abstr = ...]
+
 my ($url) = $ARGV[0];
 my ($page) = get($url); # Get the page
 
