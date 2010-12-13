@@ -23,6 +23,8 @@ for my $url (@ARGV) {
 
     $entry = new Text::BibTeX::Entry($bib_text);
     die "error in input" unless $entry->parse_ok;
+    for my $key (keys %fields)
+    { delete $fields{$key} unless defined($fields{$key}); }
     $entry->set(%fields);
 
     # Doi field: remove "http://hostname/" or "DOI: "
@@ -35,6 +37,7 @@ for my $url (@ARGV) {
     # de-unicode
     # adjust key
     # normalize authors?
+    # get PDF
 
     print $entry->print_s();
 }
@@ -59,6 +62,12 @@ sub meta {
     return $p->header('X-Meta-' . $name);
 }
 
+sub ris_fields {
+    return
+        map { my ($x) = m[\Q$_[0]\E *- *([^\r\n]*)]; $x; }
+        grep(m[^\Q$_[0]\E *-], split("\n", $_[1]));
+}
+
 ################
 
 sub parse {
@@ -68,22 +77,16 @@ sub parse {
     if (domain('acm.org')) {
 
         # Fix abbriviations in journal field
-        my ($journal) = meta('citation_journal_title');
-        $fields->{'journal'} = $journal if $journal;
+        $fields->{'journal'} = meta('citation_journal_title');
 
         # Get the abstract
-        my ($abstr_url) = $mech->content() =~ m[(tab_abstract.*?)\'];
-#        my ($pid, $id) = meta('citation_abstract_html_url')
-#          =~ m[http://portal\.acm\.org/citation\.cfm\?id=(\d+)\.(\d+)];
-#        $mech->get("http://portal.acm.org/tab_abstract.cfm" .
-#                   "?id=$id&usebody=tabbody");
-        $mech->get($abstr_url);
-        my ($abstract) = $mech->content() =~
-            m[<div style="display:inline">(?:<par>)?(.+?)(?:</par>)?</div>];
         # TODO: Paragraphs? There is no marker but often we get ".<Uperchar>".
         #   But sometimes we get <p></p>
         #  TODO: HTML encoding?
-        $fields->{'abstract'} = $abstract if $abstract;
+        my ($abstr_url) = $mech->content() =~ m[(tab_abstract.*?)\'];
+        $mech->get($abstr_url);
+        ($fields->{'abstract'}) = $mech->content() =~
+            m[<div style="display:inline">(?:<par>)?(.+?)(?:</par>)?</div>];
         $mech->back();
 
         my ($url) = $mech->find_link(text=>'BibTeX')->url()
@@ -92,7 +95,6 @@ sub parse {
         $mech->follow_link(text => 'download');
         return $mech->content();
 
-# TODO: get PDF
 # TODO: handle multiple entries
 
 # BUG (ACM's fault): download bibtex link is broken at
@@ -102,23 +104,34 @@ sub parse {
     } elsif (domain('sciencedirect.com')) {
         $mech->follow_link(class => 'icon_exportarticlesci_dir');
         $mech->submit_form(with_fields => {'citation-type' => 'RIS'});
-        my ($author) = join(" and ",
-                            map {my ($x) = /^AU *- *([^\r\n]*)/; $x;}
-                            grep(/^AU/, split("\n", $mech->content())));
-        $fields->{'author'} = $author;
+        $fields->{'author'} = join(" and ", ris_fields('AU', $mech->content()));
         $mech->back();
         $mech->submit_form(with_fields => {'citation-type' => 'BIBTEX'});
         return $mech->content();
 
 ### SpringerLink
     } elsif (domain('springerlink.com')) {
+
+# TODO: remove 'note'
+# TODO: handle books
+
         $mech->follow_link(url_regex => qr/export-citation/);
         $mech->submit_form(
-            with_fields => {
-                'ctl00$ContentPrimary$ctl00$ctl00$Export' => 'AbstractRadioButton',
-                'ctl00$ContentPrimary$ctl00$ctl00$Format' => 'RisRadioButton',
-                'ctl00$ContentPrimary$ctl00$ctl00$CitationManagerDropDownList' => 'BibTex'},
-        button => 'ctl00$ContentPrimary$ctl00$ctl00$ExportCitationButton');
+          with_fields => {
+            'ctl00$ContentPrimary$ctl00$ctl00$Export' => 'AbstractRadioButton',
+            'ctl00$ContentPrimary$ctl00$ctl00$Format' => 'RisRadioButton',
+            'ctl00$ContentPrimary$ctl00$ctl00$CitationManagerDropDownList' => 'EndNote'},
+            button => 'ctl00$ContentPrimary$ctl00$ctl00$ExportCitationButton');
+        ($fields->{'doi'}) = ris_fields('DO', $mech->content());
+        ($fields->{'isbn'}) = ris_fields('SN', $mech->content());
+        $mech->back();
+
+        $mech->submit_form(
+          with_fields => {
+            'ctl00$ContentPrimary$ctl00$ctl00$Export' => 'AbstractRadioButton',
+            'ctl00$ContentPrimary$ctl00$ctl00$Format' => 'RisRadioButton',
+            'ctl00$ContentPrimary$ctl00$ctl00$CitationManagerDropDownList' => 'BibTex'},
+            button => 'ctl00$ContentPrimary$ctl00$ctl00$ExportCitationButton');
         return $mech->content();
 
 ### Cambridge University Press

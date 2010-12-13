@@ -9,6 +9,9 @@ http://dx.doi.org/10.1016/j.ipl.2010.02.014
 http://www.computer.org/portal/web/csdl/doi/10.1109/SITIS.2008.31
 http://www.jstor.org/stable/2034627?origin=crossref&
 http://portal.acm.org/citation.cfm?id=159531&CFID=112554091&CFTOKEN=96971667&preflayout=flat
+http://www.springerlink.com/content/l4m0g48020261740/about/
+http://www.springerlink.com/content/m746t0/#section=281461&page=1
+http://portal.acm.org/citation.cfm?id=1190247
 
  doi = {10.1017/S0956796801004129},
   doi = {10.1007/11737414_3},
