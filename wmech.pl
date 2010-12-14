@@ -7,6 +7,10 @@ $|++;
 use WWW::Mechanize;
 use Text::BibTeX;
 use HTML::HeadParser;
+use TeX::Encode;
+use Encode;
+
+#print %TeX::Encode::LATEX_Escapes;
 
 my $mech;
 my $entry;
@@ -21,25 +25,45 @@ for my $url (@ARGV) {
     my %fields;
     my $bib_text = parse($mech, \%fields);
 
+#    $entry = new Text::BibTeX::Entry(latex_encode(decode('utf8', $bib_text)));
     $entry = new Text::BibTeX::Entry($bib_text);
-    die "error in input" unless $entry->parse_ok;
-    for my $key (keys %fields)
-    { delete $fields{$key} unless defined($fields{$key}); }
-    $entry->set(%fields);
+    die "Can't parse BibTeX" unless $entry->parse_ok;
+    for my $key (keys %fields) {
+        $entry->set($key, $fields{$key}) if defined $fields{$key};
+    }
 
     # Doi field: remove "http://hostname/" or "DOI: "
     update('doi', sub { s[http://[^/]+/][]i; s[DOI: *][]i; });
     # Page numbers: "-" -> "--" and no "pp." or "p."
     update('pages', sub { s[(\d+) *- *(\d+)][$1--$2]; });
     update('pages', sub { s[pp?\. *][]; });
-    # Number: "-" -> "--"
-    # abstract
-    # de-unicode
+    # Number/issue/etc.: "-" -> "--"
     # adjust key
-    # normalize authors?
     # get PDF
+    # abstract
+        # TODO: Paragraphs? There is no marker but often we get ".<Uperchar>".
+        #   But sometimes we get <p></p>
+        #  TODO: HTML encoding?
+
+    # Eliminate Unicode
+    for my $field ($entry->fieldlist()) {
+        $entry->set($field, latex_encode(decode('utf8', $entry->get($field))));
+    }
 
     print $entry->print_s();
+}
+
+################
+
+# Copied from TeX::Encode and modified to use braces appropriate for BibTeX.
+sub latex_encode
+{
+        use utf8;
+        my ($str) = @_;
+        $str =~ s/([$TeX::Encode::LATEX_Reserved])/\\$1/sog;
+        $str =~ s/([<>])/\$$1\$/sog;
+        $str =~ s/([^\x00-\x80])/\{$TeX::Encode::LATEX_Escapes{$1}\}/sg;
+        return $str;
 }
 
 ################
@@ -68,6 +92,8 @@ sub ris_fields {
         grep(m[^\Q$_[0]\E *-], split("\n", $_[1]));
 }
 
+sub ris_name { s[(.*),(.*),(.*)][$1,$3,$2]; $_; }
+
 ################
 
 sub parse {
@@ -76,19 +102,17 @@ sub parse {
 ### ACM
     if (domain('acm.org')) {
 
-        # Fix abbriviations in journal field
+        # Un-abbreviated journal title
         $fields->{'journal'} = meta('citation_journal_title');
 
-        # Get the abstract
-        # TODO: Paragraphs? There is no marker but often we get ".<Uperchar>".
-        #   But sometimes we get <p></p>
-        #  TODO: HTML encoding?
+        # Abstract
         my ($abstr_url) = $mech->content() =~ m[(tab_abstract.*?)\'];
         $mech->get($abstr_url);
         ($fields->{'abstract'}) = $mech->content() =~
-            m[<div style="display:inline">(?:<par>)?(.+?)(?:</par>)?</div>];
+            m[<div style="display:inline">(?:<par>|<p>)?(.+?)(?:</par>|</p>)?</div>];
         $mech->back();
 
+        # BibTeX
         my ($url) = $mech->find_link(text=>'BibTeX')->url()
             =~ m[navigate\('(.*?)'];
         $mech->get($url);
@@ -104,7 +128,8 @@ sub parse {
     } elsif (domain('sciencedirect.com')) {
         $mech->follow_link(class => 'icon_exportarticlesci_dir');
         $mech->submit_form(with_fields => {'citation-type' => 'RIS'});
-        $fields->{'author'} = join(" and ", ris_fields('AU', $mech->content()));
+        $fields->{'author'} =
+            join(" and ", map(ris_name, ris_fields('AU', $mech->content())));
         $mech->back();
         $mech->submit_form(with_fields => {'citation-type' => 'BIBTEX'});
         return $mech->content();
@@ -123,7 +148,9 @@ sub parse {
             'ctl00$ContentPrimary$ctl00$ctl00$CitationManagerDropDownList' => 'EndNote'},
             button => 'ctl00$ContentPrimary$ctl00$ctl00$ExportCitationButton');
         ($fields->{'doi'}) = ris_fields('DO', $mech->content());
-        ($fields->{'isbn'}) = ris_fields('SN', $mech->content());
+        my ($sn) = ris_fields('SN', $mech->content());
+        $fields->{'issn'} = $sn if $sn =~ /\b\d{4}-\d{4}\b/;
+        $fields->{'isbn'} = $sn if $sn =~ /\b(\d[- ]*){10,13}\b/;
         $mech->back();
 
         $mech->submit_form(
@@ -166,6 +193,4 @@ sub parse {
     } else {
         die "Unknown URI: " . $mech->uri();
     }
-
-
 }
