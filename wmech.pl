@@ -150,7 +150,7 @@ sub parse {
         ($fields->{'doi'}) = ris_fields('DO', $mech->content());
         my ($sn) = ris_fields('SN', $mech->content());
         $fields->{'issn'} = $sn if $sn =~ /\b\d{4}-\d{4}\b/;
-        $fields->{'isbn'} = $sn if $sn =~ /\b(\d[- ]*){10,13}\b/;
+        $fields->{'isbn'} = $sn if $sn =~ /\b((\d|X)[- ]*){10,13}\b/;
         $mech->back();
 
         $mech->submit_form(
