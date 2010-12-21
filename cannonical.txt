@@ -1,0 +1,89 @@
+doi and url should *not* be escaped if using the url package
+All fields should be bare values (except perhaps 'note'):
+  e.g. doi should not have 'doi:' or 'http://dx.doi.org/' at the front
+       (one publisher even has 'doi: DOI:' at the front!
+  e.g. abstract should not have the word "ABSTRACT" at the front
+  e.g. pages should not have "p." or "pp." in it.
+use url for urls not howpublished \url{...}
+doi, isbn, issn should be present if available
+names (e.g. author, editor) should be formatted "von last, first, jr"
+  This is the only unambiguous format for latex
+  Note RIS is "last, jr, first"
+url and note should be present only if it adds information
+  Most publishers break this rule by linking to
+  the publishers publication page.  It is
+  understandable that they link there, but the
+  URL doesn't actually add anything to the citation.
+capitals:
+  - Use proper capitalization (e.g. titlecase for titles).
+    Even if your current bibliography style downcases titles,
+    other styles may not.
+  - Use {} to protect only characters that should
+    not be upcased or downcased.  Thus "{H}askell"
+    not "{Haskell}" since the latter would brake
+    styles that upcase the text.
+no blank or zero fields
+ranges are x--x
+special chars are {\"o} not \"{o} (See the BibTeX FAQ)
+journal is unabriviated
+edition
+quotes are proper form
+Use a comma after the last field.  It is legal
+  and makes copy-paste easier.
+Continuously paginated journals
+Non-sentensial periods
+
+
+\usepackage{url} to get doi and url right in BibTeX
+\usepackage{comment}
+\usepackage{alstpage} \thepage of \pageref{LastPage}\us
+epackage{fancyhdr}
+\usepackage{flushend} instead of \usepackage{balance}
+
+
+%include lhs2TeX.fmt
+
+%subst keyword a = "{\itshape " a "}"
+%subst conid a   = a
+\def\subalign{\rule{1pt}{0pt}}
+
+%format . = "."
+%format <- = "{\char24}"
+%format -> = "{\char25}"
+%format _c = "{c}"
+%format _ctxt = "{ctxt}"
+%format _s = "{s}"
+%format _f = "{f}"
+%format _t1 = "{t$_{\text{1}}$\subalign}"
+%format _t2 = "{t$_{\text{2}}$\subalign}"
+%format _t3 = "{t$_{\text{3}}$\subalign}"
+%format move1 = "{move$_{\text{1}}$\subalign}"
+%format move2 = "{move$_{\text{2}}$\subalign}"
+
+%options ghci
+%if False
+...
+%endif
+
+\begin{comment}
+\eval{let itype arg = return ("let it = (" ++arg++")\n:type it")}
+\end{comment}
+\begin{comment}
+\eval{:def itype itype}
+\end{comment}
+
+lhs2TeX --tt $DOC.lhs >$DOC.tex && \
+cp $DOC.tex $DOC.pre-tex && \
+#perl -pe 's/\\tt .*?\\char58{}\\char58{}/\\tt /g if not /it~\\char58{}\\char58{}/;' <$DOC.pre-tex >$DOC.tex && \
+latex $DOC && \
+bibtex $DOC && \
+latex $DOC && \
+latex $DOC && \
+dvips $DOC && \
+ps2pdf14 -dPDFSETTINGS=/prepress $DOC.ps
+
+
+ghc -E $DOC.lhs -o $DOC.hspp && \
+sed -e ':s ;/^$/N;s/^\n$//;ts' $DOC.hspp | tail -n +4 > $DOC.hs
+
+(install PGF)
