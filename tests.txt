@@ -1,17 +1,17 @@
 http://dx.doi.org/10.1016/S0167-2789(00)00094-4
 http://portal.acm.org/citation.cfm?id=908021&CFID=112731887&CFTOKEN=92268833&preflayout=tabs
-http://dx.doi.org/10.1145/1863543.1863551
- #broken?
-http://portal.acm.org/citation.cfm?id=1863543.1863551
+  #^dissertation
 http://dx.doi.org/10.1017/S0956796801004129
 http://dx.doi.org/10.1016/j.ipl.2010.02.014
 http://www.computer.org/portal/web/csdl/doi/10.1109/SITIS.2008.31
 http://www.jstor.org/stable/2034627?origin=crossref&
 http://portal.acm.org/citation.cfm?id=159531&CFID=112554091&CFTOKEN=96971667&preflayout=flat
+ #^non ACM publication
 http://www.springerlink.com/content/m746t0/#section=281461&page=1 #broken?
 http://portal.acm.org/citation.cfm?id=1190247
+ #^abstract needs de-HTML
 http://portal.acm.org/citation.cfm?id=1227145
-  #^title is wrong
+  #^title is wrong (and not ACM publication)
 http://www.springerlink.com/content/q11t01v06h6446p2/
   #^ non-continuously numbered journal
 

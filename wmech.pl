@@ -53,9 +53,12 @@ for my $url (@ARGV) {
     # titles: superscript (r6rs, r5rs), &part;
     # author as editors?
 
+    my $doi = $entry->get('doi');
     $entry->delete('url')
-        if $entry->get('url') eq "http://dx.doi.org/" . $entry->get('doi');
-    $entry->delete('note') if $entry->get('note') eq $entry->get('doi');
+        if $entry->get('url') =~ m[http://(dx.doi.org|doi.acm.org)/$doi];
+    $entry->delete('note') if
+        $entry->exists('note') and $entry->exists('doi') and
+        $entry->get('note') eq $entry->get('doi');
     if ($entry->exists('issue') and not $entry->exists('number')) {
         $entry->set('number', $entry->get('issue'));
         $entry->delete('issue');
