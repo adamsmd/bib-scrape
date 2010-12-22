@@ -46,8 +46,8 @@ epackage{fancyhdr}
 %subst keyword a = "{\itshape " a "}"
 %subst conid a   = a
 \def\subalign{\rule{1pt}{0pt}}
-
-%format . = "."
+%
+format . = "."
 %format <- = "{\char24}"
 %format -> = "{\char25}"
 %format _c = "{c}"

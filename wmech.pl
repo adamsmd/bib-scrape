@@ -31,29 +31,30 @@ my @months = (
 
 my %months = (
     $months[1]->[1] => $months[1],
-    'January' => $months[1],
+    'january' => $months[1],
     $months[2]->[1] => $months[2],
-    'February' => $months[2],
+    'february' => $months[2],
     $months[3]->[1] => $months[3],
-    'March' => $months[3],
+    'march' => $months[3],
     $months[4]->[1] => $months[4],
-    'April' => $months[4],
+    'april' => $months[4],
     $months[5]->[1] => $months[5],
-    'May' => $months[5],
+    'may' => $months[5],
     $months[6]->[1] => $months[6],
-    'June' => $months[6],
+    'june' => $months[6],
     $months[7]->[1] => $months[7],
-    'July' => $months[7],
+    'july' => $months[7],
     $months[8]->[1] => $months[8],
-    'August' => $months[8],
+    'august' => $months[8],
     $months[9]->[1] => $months[9],
-    'September' => $months[9],
+    'september' => $months[9],
+    'sept' => $months[9],
     $months[10]->[1] => $months[10],
-    'October' => $months[10],
+    'october' => $months[10],
     $months[11]->[1] => $months[11],
-    'November' => $months[11],
+    'november' => $months[11],
     $months[12]->[1] => $months[12],
-    'December' => $months[12]);
+    'december' => $months[12]);
 
 for my $url (@ARGV) {
     $mech = WWW::Mechanize->new(autocheck => 1);
@@ -67,6 +68,7 @@ for my $url (@ARGV) {
     $bib_text =~ s/^\x{FEFF}//; # Remove Byte Order Mark
 
     $entry = new Text::BibTeX::Entry;
+#    print $bib_text, "\n";
     $entry->parse_s ($bib_text, 0); # 1 for preserve values
 #    $entry = new Text::BibTeX::Entry($bib_text); # macros: pass "$bib_text, 1"
     die "Can't parse BibTeX" unless $entry->parse_ok;
@@ -96,13 +98,15 @@ for my $url (@ARGV) {
 
     my $doi = $entry->get('doi');
     $entry->delete('url')
-        if $entry->get('url') =~ m[^http://(dx.doi.org|doi.acm.org)/$doi$]
-        or $entry->get('url') =~ m[^http://www.sciencedirect.com/science/article];
+        if $entry->exists('url') and $entry->exists('doi')
+        and ($entry->get('url') =~ m[^http://(dx.doi.org|doi.acm.org)/$doi$]
+             or $entry->get('url') =~ m[^http://www.sciencedirect.com/science/article]);
     $entry->delete('note') if
         $entry->exists('note') and $entry->exists('doi') and
         ($entry->get('note') eq $entry->get('doi') or
          $entry->get('note') eq "");
     if ($entry->exists('issue') and not $entry->exists('number')) {
+        # Broken SpringerLink BibTeX
         $entry->set('number', $entry->get('issue'));
         $entry->delete('issue');
     }
@@ -118,9 +122,11 @@ for my $url (@ARGV) {
             unless $field eq 'doi' or $field eq 'url'
     }
 
+    # TODO: breaks on: "Apr." -> apr # {.}
     update('month', # Must be after field encoding
            sub { $_ = new Text::BibTeX::Value(
-                     map { $months{$_} or [Text::BibTeX::BTAST_STRING, $_] }
+                     map { $months{lc $_}
+                           or [Text::BibTeX::BTAST_STRING, $_] }
                      split qr[\b]) });
 
     print $entry->print_s();
@@ -167,7 +173,9 @@ sub ris_fields {
 sub ris_name { s[(.*),(.*),(.*)][$1,$3,$2]; $_; }
 
 sub ris_month {
-    my ($year, $month) = (split m[/|-], $_[0]);
+    my ($ris) = @_;
+    my ($date) = (ris_fields('PY', $ris), ris_fields('Y1', $ris));
+    my ($year, $month) = split m[/|-], $date;
     $month and $months[$month]->[1];
 }
 
@@ -209,8 +217,8 @@ sub parse {
         $mech->submit_form(with_fields => {'citation-type' => 'RIS'});
         $fields->{'author'} =
             join(" and ", map(ris_name, ris_fields('AU', $mech->content())));
+        $fields->{'month'} = ris_month($mech->content());
 # TODO: editor
-# TODO: blank note?!
         $mech->back();
         $mech->submit_form(with_fields => {'format' => 'cite-abs',
                                            'citation-type' => 'BIBTEX'});
@@ -218,11 +226,7 @@ sub parse {
 
 ### SpringerLink
     } elsif (domain('springerlink.com')) {
-
-# TODO: remove 'note'
 # TODO: handle books
-# TODO: uses 'issue' but should use 'number'?
-
         $mech->follow_link(url_regex => qr[/export-citation/])
             unless $mech->uri() =~ m[/export-citation/];
         $mech->submit_form(
@@ -233,9 +237,7 @@ sub parse {
                 => 'EndNote'},
             button => 'ctl00$ContentPrimary$ctl00$ctl00$ExportCitationButton');
         ($fields->{'doi'}) = ris_fields('DO', $mech->content());
-        my ($date) = (ris_fields('PY', $mech->content()),
-                      ris_fields('Y1', $mech->content()));
-        $fields->{'month'} = ris_month($date);
+        $fields->{'month'} = ris_month($mech->content());
         my ($sn) = ris_fields('SN', $mech->content());
         $fields->{'issn'} = $sn if $sn =~ m[\b\d{4}-\d{4}\b];
         $fields->{'isbn'} = $sn if $sn =~ m[\b((\d|X)[- ]*){10,13}\b];
