@@ -6,12 +6,54 @@ $|++;
 
 use WWW::Mechanize;
 use Text::BibTeX;
+use Text::BibTeX::Value;
 use HTML::HeadParser;
 use TeX::Encode;
 use Encode;
 
 my $mech;
 my $entry;
+
+my @months = (
+    undef,
+    [Text::BibTeX::BTAST_MACRO, 'jan'],
+    [Text::BibTeX::BTAST_MACRO, 'feb'],
+    [Text::BibTeX::BTAST_MACRO, 'mar'],
+    [Text::BibTeX::BTAST_MACRO, 'apr'],
+    [Text::BibTeX::BTAST_MACRO, 'may'],
+    [Text::BibTeX::BTAST_MACRO, 'jun'],
+    [Text::BibTeX::BTAST_MACRO, 'jul'],
+    [Text::BibTeX::BTAST_MACRO, 'aug'],
+    [Text::BibTeX::BTAST_MACRO, 'sep'],
+    [Text::BibTeX::BTAST_MACRO, 'oct'],
+    [Text::BibTeX::BTAST_MACRO, 'nov'],
+    [Text::BibTeX::BTAST_MACRO, 'dec']);
+
+my %months = (
+    $months[1]->[1] => $months[1],
+    'January' => $months[1],
+    $months[2]->[1] => $months[2],
+    'February' => $months[2],
+    $months[3]->[1] => $months[3],
+    'March' => $months[3],
+    $months[4]->[1] => $months[4],
+    'April' => $months[4],
+    $months[5]->[1] => $months[5],
+    'May' => $months[5],
+    $months[6]->[1] => $months[6],
+    'June' => $months[6],
+    $months[7]->[1] => $months[7],
+    'July' => $months[7],
+    $months[8]->[1] => $months[8],
+    'August' => $months[8],
+    $months[9]->[1] => $months[9],
+    'September' => $months[9],
+    $months[10]->[1] => $months[10],
+    'October' => $months[10],
+    $months[11]->[1] => $months[11],
+    'November' => $months[11],
+    $months[12]->[1] => $months[12],
+    'December' => $months[12]);
 
 for my $url (@ARGV) {
     $mech = WWW::Mechanize->new(autocheck => 1);
@@ -22,8 +64,7 @@ for my $url (@ARGV) {
 
     my %fields;
     my $bib_text = decode('utf8', parse($mech, \%fields));
-#    my $bib_text = parse($mech, \%fields);
-    $bib_text =~ s/^\x{FEFF}//;
+    $bib_text =~ s/^\x{FEFF}//; # Remove Byte Order Mark
 
     $entry = new Text::BibTeX::Entry;
     $entry->parse_s ($bib_text, 0); # 1 for preserve values
@@ -55,10 +96,12 @@ for my $url (@ARGV) {
 
     my $doi = $entry->get('doi');
     $entry->delete('url')
-        if $entry->get('url') =~ m[http://(dx.doi.org|doi.acm.org)/$doi];
+        if $entry->get('url') =~ m[^http://(dx.doi.org|doi.acm.org)/$doi$]
+        or $entry->get('url') =~ m[^http://www.sciencedirect.com/science/article];
     $entry->delete('note') if
         $entry->exists('note') and $entry->exists('doi') and
-        $entry->get('note') eq $entry->get('doi');
+        ($entry->get('note') eq $entry->get('doi') or
+         $entry->get('note') eq "");
     if ($entry->exists('issue') and not $entry->exists('number')) {
         $entry->set('number', $entry->get('issue'));
         $entry->delete('issue');
@@ -74,6 +117,11 @@ for my $url (@ARGV) {
             # But not for doi and url fields (assuming \usepackage{url})
             unless $field eq 'doi' or $field eq 'url'
     }
+
+    update('month', # Must be after field encoding
+           sub { $_ = new Text::BibTeX::Value(
+                     map { $months{$_} or [Text::BibTeX::BTAST_STRING, $_] }
+                     split qr[\b]) });
 
     print $entry->print_s();
 }
@@ -118,6 +166,11 @@ sub ris_fields {
 
 sub ris_name { s[(.*),(.*),(.*)][$1,$3,$2]; $_; }
 
+sub ris_month {
+    my ($year, $month) = (split m[/|-], $_[0]);
+    $month and $months[$month]->[1];
+}
+
 ################
 
 sub parse {
@@ -159,7 +212,8 @@ sub parse {
 # TODO: editor
 # TODO: blank note?!
         $mech->back();
-        $mech->submit_form(with_fields => {'citation-type' => 'BIBTEX'});
+        $mech->submit_form(with_fields => {'format' => 'cite-abs',
+                                           'citation-type' => 'BIBTEX'});
         return $mech->content();
 
 ### SpringerLink
@@ -179,9 +233,12 @@ sub parse {
                 => 'EndNote'},
             button => 'ctl00$ContentPrimary$ctl00$ctl00$ExportCitationButton');
         ($fields->{'doi'}) = ris_fields('DO', $mech->content());
+        my ($date) = (ris_fields('PY', $mech->content()),
+                      ris_fields('Y1', $mech->content()));
+        $fields->{'month'} = ris_month($date);
         my ($sn) = ris_fields('SN', $mech->content());
-        $fields->{'issn'} = $sn if $sn =~ /\b\d{4}-\d{4}\b/;
-        $fields->{'isbn'} = $sn if $sn =~ /\b((\d|X)[- ]*){10,13}\b/;
+        $fields->{'issn'} = $sn if $sn =~ m[\b\d{4}-\d{4}\b];
+        $fields->{'isbn'} = $sn if $sn =~ m[\b((\d|X)[- ]*){10,13}\b];
         $mech->back();
 
         $mech->submit_form(
