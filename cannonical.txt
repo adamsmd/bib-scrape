@@ -10,7 +10,7 @@ names (e.g. author, editor) should be formatted "von last, first, jr"
   This is the only unambiguous format for latex
   Note RIS is "last, jr, first"
 url and note should be present only if it adds information
-  Most publishers break this rule by linking to
+  Msot publishers break this rule by linking to
   the publishers publication page.  It is
   understandable that they link there, but the
   URL doesn't actually add anything to the citation.
@@ -87,3 +87,9 @@ ghc -E $DOC.lhs -o $DOC.hspp && \
 sed -e ':s ;/^$/N;s/^\n$//;ts' $DOC.hspp | tail -n +4 > $DOC.hs
 
 (install PGF)
+
+
+overfull-line bars
+itemize: \parskip, $-$
+
+Does bibtex replace "K. Dybvig" with "K.~Dybvig"?

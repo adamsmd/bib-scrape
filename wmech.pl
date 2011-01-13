@@ -96,20 +96,17 @@ for my $url (@ARGV) {
     # titles: superscript (r6rs, r5rs), &part;
     # author as editors?
 
-    my $doi = $entry->get('doi');
-    $entry->delete('url')
-        if $entry->exists('url') and $entry->exists('doi')
-        and ($entry->get('url') =~ m[^http://(dx.doi.org|doi.acm.org)/$doi$]
-             or $entry->get('url') =~ m[^http://www.sciencedirect.com/science/article]);
-    $entry->delete('note') if
-        $entry->exists('note') and $entry->exists('doi') and
-        ($entry->get('note') eq $entry->get('doi') or
-         $entry->get('note') eq "");
-    if ($entry->exists('issue') and not $entry->exists('number')) {
-        # Broken SpringerLink BibTeX
-        $entry->set('number', $entry->get('issue'));
-        $entry->delete('issue');
-    }
+    update('url', sub {
+        $_ = undef if m[^(http://dx.doi.org/
+                         |http://doi.acm.org/
+                         |http://www.sciencedirect.com/science/article/)]x; } );
+    update('note', sub { $_ = undef if $_ eq "" });
+    update('note', sub { $_ = undef if $_ eq ($entry->get('doi') or "") });
+    update('issue', sub { # Broken SpringerLink BibTeX
+        unless ($entry->exists('number')) {
+            $entry->set('number', $_);
+            $_ = undef;
+        }});
 
     # \textquotedblleft -> ``
     # \textquoteleft -> `
@@ -154,7 +151,8 @@ sub update {
     if ($entry->exists($field)) {
         $_ = $entry->get($field);
         &$fun();
-        $entry->set($field, $_);
+        if (defined $_) { $entry->set($field, $_); }
+        else { $entry->delete($field); }
     }
 }
 
