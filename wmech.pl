@@ -188,35 +188,10 @@ sub meta_tag {
     return $p->header('X-Meta-' . $name);
 }
 
-sub ris_fields {
-    return map { my ($x) = m[\Q$_[0]\E *- *([^\r\n]*)]; $x; }
-           grep(m[^\Q$_[0]\E *-], split("\n", $_[1]));
-}
-
-sub ris_month {
-    my ($year, $month) = ris_date(@_);
-    $month and $months[$month]->[1];
-}
-
-sub ris_date {
-    my ($date) = (ris_fields('PY', @_), ris_fields('Y1', @_));
-    split m[/|-], $date;
-}
-
-sub ris_author { join(" and ", map { s[(.*),(.*),(.*)][$1,$3,$2];
-                                     m[[^, ]] ? $_ : (); }
-                               ris_fields('AU', @_)) }
-
-sub ris_type {
-    my ($ty) = ris_fields('TY', @_);
-    exists $ris_types{$ty} ?
-        $ris_types{$ty} :
-        (print STDERR "Unknown RIS TY: $ty. Using misc.\n" and 'misc')
-}
-
-
-sub parse_ris2 {
+sub parse_ris {
     my ($text) = @_;
+    ($text = decode('utf8', $text)) =~ s/^\x{FEFF}//; # Remove Byte Order Mark
+
     my $ris = {}; # {key, [string]}
     my $last_key = "";
     my @lines = (split("\n", $text));
@@ -232,15 +207,15 @@ sub parse_ris2 {
     $ris;
 }
 
-sub ris_author2 { join(" and ", map { s[(.*),(.*),(.*)][$1,$3,$2];
-                                      m[[^, ]] ? $_ : (); } @_); }
+sub ris_author { join(" and ", map { s[(.*),(.*),(.*)][$1,$3,$2];
+                                     m[[^, ]] ? $_ : (); } @_); }
 
 sub ris_to_bib {
     my ($ris) = @_;
     my $fields = {};
 
-    $fields->{'author'} = ris_author2(@{$ris->{'A1'} || $ris->{'AU'} || []});
-    $fields->{'editor'} = ris_author2(@{$ris->{'A2'} || $ris->{'ED'} || []});
+    $fields->{'author'} = ris_author(@{$ris->{'A1'} || $ris->{'AU'} || []});
+    $fields->{'editor'} = ris_author(@{$ris->{'A2'} || $ris->{'ED'} || []});
     $fields->{'keywords'} = join " ; ", @{$ris->{'KW'}} if $ris->{'KW'};
     $fields->{'url'} = join " ; ", @{$ris->{'UR'}} if $ris->{'UR'};
 
@@ -265,8 +240,8 @@ sub ris_to_bib {
     $fields->{'month'} = $months[$month]->[1] if $month;
     $fields->{'day'} = $day;
     #Y2: date secondary
-    ($ris->{'N1'} || $ris->{'AB'} || $ris->{'N2'}) =~ $doi;
-    $fields->{'abstract'} = $2;
+    ($ris->{'N1'} || $ris->{'AB'} || $ris->{'N2'} || "") =~ $doi;
+    $fields->{'abstract'} = $2 if length($2);
     #RP: reprint status (too complex for what we need)
     $fields->{'journal'} = ($ris->{'JF'} || $ris->{'JO'} || $ris->{'JA'} ||
                             $ris->{'J1'} || $ris->{'J2'});
@@ -341,6 +316,7 @@ sub parse_acm {
         $mech->back();
         $i++;
     }
+    # Avoid spurious "journal" when proceedings are published in SIGPLAN Not.
     delete $fields->{'journal'} unless $cont =~ m[journal =]i;
     return $cont;
 
@@ -357,8 +333,9 @@ sub parse_science_direct {
 
     $mech->follow_link(class => 'icon_exportarticlesci_dir');
     $mech->submit_form(with_fields => {'citation-type' => 'RIS'});
-    $fields->{'author'} = ris_author($mech->content());
-    $fields->{'month'} = ris_month($mech->content());
+    my $f = ris_to_bib(parse_ris($mech->content()));
+    $fields->{'author'} = $f->{'author'};
+    $fields->{'month'} = $f->{'month'};
 # TODO: editor
     $mech->back();
     $mech->submit_form(with_fields => {'format' => 'cite-abs',
@@ -378,11 +355,9 @@ sub parse_springerlink {
             'ctl00$ContentPrimary$ctl00$ctl00$CitationManagerDropDownList'
                 => 'EndNote'},
         button => 'ctl00$ContentPrimary$ctl00$ctl00$ExportCitationButton');
-    ($fields->{'doi'}) = ris_fields('DO', $mech->content());
-    $fields->{'month'} = ris_month($mech->content());
-    my ($sn) = ris_fields('SN', $mech->content());
-    $fields->{'issn'} = $sn if $sn =~ m[\b\d{4}-\d{4}\b];
-    $fields->{'isbn'} = $sn if $sn =~ m[\b((\d|X)[- ]*){10,13}\b];
+    my $f = ris_to_bib(parse_ris($mech->content()));
+    for ('doi', 'month', 'issn', 'isbn') { $fields->{$_} = $f->{$_} }
+    
     $mech->back();
 
     $mech->submit_form(
@@ -442,27 +417,16 @@ sub parse_ios_press {
 
     $mech->follow_link(text => 'RIS');
 
-    my $content = $mech->content();
-    $content =~ s/^\x{FEFF}//; # Remove Byte Order Mark
-    my $f = ris_to_bib(parse_ris2(encode('utf8', $content)));
+    (my $content = $mech->content()) =~ s/^\x{FEFF}//; # Remove Byte Order Mark
+    my $f = ris_to_bib(parse_ris(encode('utf8', $content)));
 
     # TODO: missing items?
-    for ('journal', 'title', 'volume', 'number', 'abstract', 'pages', 'author', 'year', 'month', 'doi') {
+    for ('journal', 'title', 'volume', 'number', 'abstract', 'pages',
+         'author', 'year', 'month', 'doi') {
         $fields->{$_} = $f->{$_};
     }
-    #$fields->{'journal'} = $f->{'journal'};
-    #$fields->{'title'} = $f->{'title'};
-    #$fields->{'title'} = encode('utf8', $fields->{'title'});
-    #($fields->{'number'}) = ris_fields('VL', $mech->content());
-    #($fields->{'issue'}) = ris_fields('IS', $mech->content());
-    #($fields->{'abstract'}) = ris_fields('N2', $mech->content());
-    #($fields->{'pages'}) = join "-", (ris_fields('SP', $mech->content()),
-    #                                  ris_fields('EP', $mech->content()));
-    #$fields->{'author'} = ris_author($mech->content());
-    #($fields->{'year'}) = ris_date($mech->content());
-    #$fields->{'month'} = ris_month($mech->content());
-    #($fields->{'doi'}) = ris_fields('M3', $mech->content());
 
-    $mech->content();
-    return '@' . ris_type($mech->content()) . '{X,}';
+    $fields->{'title'} = encode('utf8', $fields->{'title'});
+
+    return "\@$f->{'*type*'} {X,}";
 }
