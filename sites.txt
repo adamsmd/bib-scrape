@@ -1,6 +1,5 @@
 SpringerLink
 
-
 http://ieeexplore.ieee.org/xpl/freeabs_all.jsp?arnumber=4567935&abstractAccess=no&userType=
 
 http://scitation.aip.org/getabs/servlet/GetabsServlet?prog=normal&id=SMJCAT000017000006001253000001&idtype=cvips&gifs=yes&ref=no
@@ -38,6 +37,7 @@ HighWire (multiple URLS?)
 
 IOS Press
 http://iospress.metapress.com/content/2140471q61628j24/
+http://iospress.metapress.com/content/jj599ww44r90maa0/
 
 MathSciNet
 http://www.ams.org/mathscinet/search/publdoc.html?=r=2&pg1=ISSI&s1=238619&r=1&l=20
