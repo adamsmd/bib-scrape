@@ -1,4 +1,5 @@
 http://dx.doi.org/10.1145/1863543.1863551
+
 @inproceedings{Mazurak:2010:LCC:1863543.1863551,
   author = {Mazurak, Karl and Zdancewic, Steve},
   title = {Lolliproc: to concurrency from classical linear logic via curry-howard and control},

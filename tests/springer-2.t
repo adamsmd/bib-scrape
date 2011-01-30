@@ -1,4 +1,5 @@
 http://www.springerlink.com/content/nhw5736n75028853/export-citation/
+Test starting from the export tab
 @article{springerlink:10.1007/BF01975011,
   author = {Rawson, Kenneth S. and Rawson, Anne M.},
   affiliation = {Aus dem Max-Planck-Institut f{\"u}r Meeresbiologie Wilhelmshaven},

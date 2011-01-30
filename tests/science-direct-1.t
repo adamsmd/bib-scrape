@@ -1,4 +1,5 @@
 http://dx.doi.org/10.1016/S0167-2789(00)00094-4
+
 @article{Strogatz20001,
   title = {From Kuramoto to Crawford: exploring the onset of synchronization in populations of coupled oscillators},
   journal = {Physica D: Nonlinear Phenomena},

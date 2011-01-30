@@ -190,7 +190,7 @@ sub meta_tag {
 
 sub parse_ris {
     my ($text) = @_;
-    ($text = decode('utf8', $text)) =~ s/^\x{FEFF}//; # Remove Byte Order Mark
+    $text =~ s/^\x{FEFF}//; # Remove Byte Order Mark
 
     my $ris = {}; # {key, [string]}
     my $last_key = "";
@@ -252,8 +252,8 @@ sub ris_to_bib {
         $ris->{'SP'}; # start page may contain end page
     #CY: city
     $fields->{'publisher'} = $ris->{'PB'};
-    $fields->{'issn'} = $ris->{'SN'} if
-        $ris->{'SN'} && $ris->{'SN'} =~ m[\b\d{4}-\d{4}\b];
+    $fields->{'issn'} = $1 if
+        $ris->{'SN'} && $ris->{'SN'} =~ m[\b(\d{4}-\d{4})\b];
     $fields->{'isbn'} = $ris->{'SN'} if
         $ris->{'SN'} && $ris->{'SN'} =~ m[\b((\d|X)[- ]*){10,13}\b];
     #AD: address
@@ -355,8 +355,8 @@ sub parse_springerlink {
             'ctl00$ContentPrimary$ctl00$ctl00$CitationManagerDropDownList'
                 => 'EndNote'},
         button => 'ctl00$ContentPrimary$ctl00$ctl00$ExportCitationButton');
-    my $f = ris_to_bib(parse_ris($mech->content()));
-    for ('doi', 'month', 'issn', 'isbn') { $fields->{$_} = $f->{$_} }
+    my $f = ris_to_bib(parse_ris(decode('utf8', $mech->content())));
+    for ('doi', 'month', 'issn', 'isbn') { $fields->{$_} = $f->{$_} if $f->{$_}}
     
     $mech->back();
 
@@ -416,10 +416,7 @@ sub parse_ios_press {
         $mech->content() =~ m[>ISBN</td><td.*?>(.*?)</td>]i;
 
     $mech->follow_link(text => 'RIS');
-
-    (my $content = $mech->content()) =~ s/^\x{FEFF}//; # Remove Byte Order Mark
-    my $f = ris_to_bib(parse_ris(encode('utf8', $content)));
-
+    my $f = ris_to_bib(parse_ris($mech->content()));
     # TODO: missing items?
     for ('journal', 'title', 'volume', 'number', 'abstract', 'pages',
          'author', 'year', 'month', 'doi') {
