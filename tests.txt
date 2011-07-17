@@ -1,7 +1,5 @@
 http://portal.acm.org/citation.cfm?id=908021&CFID=112731887&CFTOKEN=92268833&preflayout=tabs
  #^dissertation
-http://www.computer.org/portal/web/csdl/doi/10.1109/SITIS.2008.31
-http://www.jstor.org/stable/2034627?origin=crossref&
 http://portal.acm.org/citation.cfm?id=159531&CFID=112554091&CFTOKEN=96971667&preflayout=flat
  #^non ACM publication
 http://www.springerlink.com/content/m746t0/#section=281461&page=1
@@ -12,10 +10,6 @@ http://portal.acm.org/citation.cfm?id=1227145
  #^title is wrong (and not ACM publication)
 http://portal.acm.org/citation.cfm?id=1411204.1411243&coll=DL&dl=ACM&CFID=112554091&CFTOKEN=96971667
  #^unknown token \i
-http://www.computer.org/portal/web/csdl/doi/10.1109/LICS.1997.614960
- #^volume is 0
-http://www.jstor.org/stable/2975544
- #^uninitialized variable
 http://www.springerlink.com/content/m8x0246j74044t6l/
  #^missing "Kent" of R. Kent Dybvig
  #^empty ISBN

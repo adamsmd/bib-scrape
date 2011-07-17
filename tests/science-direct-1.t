@@ -14,7 +14,8 @@ http://dx.doi.org/10.1016/S0167-2789(00)00094-4
   keywords = {Plasma physics},
   keywords = {Plasma physics},
   keywords = {Plasma physics},
-  abstract = {The Kuramoto model describes a large population of coupled limit-cycle oscillators whose natural frequencies are drawn from some prescribed distribution. If the coupling strength exceeds a certain threshold, the system exhibits a phase transition: some of the oscillators spontaneously synchronize, while others remain incoherent. The mathematical analysis of this bifurcation has proved both problematic and fascinating. We review 25 years of research on the Kuramoto model, highlighting the false turns as well as the successes, but mainly following the trail leading from Kuramoto's work to Crawford's recent contributions. It is a lovely winding road, with excursions through mathematical biology, statistical physics, kinetic theory, bifurcation theory, and plasma physics.},
-  month = sep
+  month = sep,
+  abstract = {
+The Kuramoto model describes a large population of coupled limit-cycle oscillators whose natural frequencies are drawn from some prescribed distribution. If the coupling strength exceeds a certain threshold, the system exhibits a phase transition: some of the oscillators spontaneously synchronize, while others remain incoherent. The mathematical analysis of this bifurcation has proved both problematic and fascinating. We review 25 years of research on the Kuramoto model, highlighting the false turns as well as the successes, but mainly following the trail leading from Kuramoto's work to Crawford's recent contributions. It is a lovely winding road, with excursions through mathematical biology, statistical physics, kinetic theory, bifurcation theory, and plasma physics.}
 }
 

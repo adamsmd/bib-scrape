@@ -94,15 +94,9 @@ my %ris_types = (
     'REP', 'techreport',
     'UNPB', 'unpublished');
 
-for my $url (@ARGV) {
-    $mech = WWW::Mechanize->new(autocheck => 1);
-    $mech->add_handler("request_send",  sub { shift->dump; return }) if DEBUG;
-    $mech->add_handler("response_done", sub { shift->dump; return }) if DEBUG;
-    $mech->agent_alias('Windows IE 6');
-    $mech->get($url);
-
-    my %fields;
-    my $bib_text = decode('utf8', parse($mech, \%fields));
+sub parse_bibtex {
+    my ($text) = @_;
+    my $bib_text = decode('utf8', $text);
     $bib_text =~ s/^\x{FEFF}//; # Remove Byte Order Mark
 
     $entry = new Text::BibTeX::Entry;
@@ -110,30 +104,38 @@ for my $url (@ARGV) {
     $entry->parse_s($bib_text, 0); # 1 for preserve values
 #    $entry = new Text::BibTeX::Entry($bib_text); # macros: pass "$bib_text, 1"
     die "Can't parse BibTeX" unless $entry->parse_ok;
-    for my $key (keys %fields) {
-        $entry->set($key, $fields{$key}) if defined $fields{$key};
-    }
+    return $entry;
+}
+
+for my $url (@ARGV) {
+    $mech = WWW::Mechanize->new(autocheck => 1);
+    $mech->add_handler("request_send",  sub { shift->dump; return }) if DEBUG;
+    $mech->add_handler("response_done", sub { shift->dump; return }) if DEBUG;
+    $mech->agent_alias('Windows IE 6');
+    $mech->get($url);
+
+    my $entry = parse($mech);
 
     # Doi field: remove "http://hostname/" or "DOI: "
-    update('doi', sub { s[http://[^/]+/][]i; s[DOI:\s*][]ig; });
+    update($entry, 'doi', sub { s[http://[^/]+/][]i; s[DOI:\s*][]ig; });
     # Page numbers: no "pp." or "p."
-    update('pages', sub { s[pp?\.\s*][]ig; });
+    update($entry, 'pages', sub { s[pp?\.\s*][]ig; });
     # TODO: single element range as x not x-x
     # Ranges: convert "-" to "--"
     # TODO: might misfire if "-" doesn't represent a range
     #  Common for tech report numbers
     for my $key ('chapter', 'month', 'number', 'pages', 'volume', 'year') {
-        update($key, sub { s[\s*-+\s*][--]ig; });
+        update($entry, $key, sub { s[\s*-+\s*][--]ig; });
     }
 
     # Don't include pointless URLs to publisher's page
-    update('url', sub {
+    update($entry, 'url', sub {
         $_ = undef if m[^(http://dx.doi.org/
                          |http://doi.acm.org/
                          |http://www.sciencedirect.com/science/article/)]x; } );
-    update('note', sub { $_ = undef if $_ eq "" });
-    update('note', sub { $_ = undef if $_ eq ($entry->get('doi') or "") });
-    update('issue', sub { # Broken SpringerLink BibTeX
+    update($entry, 'note', sub { $_ = undef if $_ eq "" });
+    update($entry, 'note', sub { $_ = undef if $_ eq ($entry->get('doi') or "") });
+    update($entry, 'issue', sub { # Broken SpringerLink BibTeX
         unless ($entry->exists('number')) {
             $entry->set('number', $_);
             $_ = undef;
@@ -154,7 +156,7 @@ for my $url (@ARGV) {
     # month abbriv: jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec
     #  ACM: {April}
     # TODO: breaks on: "Apr." -> apr # {.}
-    update('month', # Must be after field encoding
+    update($entry, 'month', # Must be after field encoding
            sub { $_ = new Text::BibTeX::Value(
                      map { $months{lc $_}
                            or [Text::BibTeX::BTAST_STRING, $_] }
@@ -184,7 +186,7 @@ sub latex_encode
 sub domain { $mech->uri()->authority() =~ m[^(|.*\.)\Q$_[0]\E]i; }
 
 sub update {
-    my ($field, $fun) = @_;
+    my ($entry, $field, $fun) = @_;
     if ($entry->exists($field)) {
         $_ = $entry->get($field);
         &$fun();
@@ -233,7 +235,7 @@ sub ris_to_bib {
 
     for (keys %$ris) { $ris->{$_} = join "", @{$ris->{$_}} }
 
-    my $doi = qr[^(\s*doi:\s*\w+\s+)?(.*)$];
+    my $doi = qr[^(\s*doi:\s*\w+\s+)?(.*)$]s;
 
     # TODO: flattening
     $fields->{'*type*'} = exists $ris_types{$ris->{'TY'}} ?
@@ -302,17 +304,7 @@ sub parse {
 }
 
 sub parse_acm {
-    my ($mech, $fields) = @_;
-
-    # Un-abbreviated journal title
-    $fields->{'journal'} = meta_tag('citation_journal_title');
-
-    # Abstract
-    my ($abstr_url) = $mech->content() =~ m[(tab_abstract.*?)\'];
-    $mech->get($abstr_url);
-    ($fields->{'abstract'}) = $mech->content() =~
-        m[<div style="display:inline">(?:<par>|<p>)?(.+?)(?:</par>|</p>)?</div>];
-    $mech->back();
+    my ($mech) = @_;
 
     # BibTeX
     my ($url) = $mech->find_link(text=>'BibTeX')->url()
@@ -333,9 +325,23 @@ sub parse_acm {
     $cont =~ s[(\@.*) ][$1]; # Prevent keys with spaces.  E.g. http://portal.acm.org/citation.cfm?id=1411243
     $cont =~ s[<i>(.*?)</i>][{\\it $1}]ig; # HTML -> LaTeX Codes
 
-    # Avoid spurious "journal" when proceedings are published in SIGPLAN Not.
-    delete $fields->{'journal'} unless $cont =~ m[journal =]i;
-    return $cont;
+    my $entry = parse_bibtex($cont);
+#    $entry->set($key, $fields{$key}) if defined $fields{$key};
+
+    $mech->back();
+
+    # Un-abbreviated journal title
+    # But avoid spurious "journal" when proceedings are published in SIGPLAN Not.
+    $entry->set('journal', meta_tag('citation_journal_title'))
+        if $entry->exists('journal');
+
+    # Abstract
+    my ($abstr_url) = $mech->content() =~ m[(tab_abstract.*?)\'];
+    $mech->get($abstr_url);
+    $entry->set('abstract', $mech->content() =~
+                m[<div style="display:inline">(?:<par>|<p>)?(.+?)(?:</par>|</p>)?</div>]);
+
+    return $entry;
 
 # TODO: uses issue if document is from springer.
 
@@ -346,25 +352,40 @@ sub parse_acm {
 }
 
 sub parse_science_direct {
-    my ($mech, $fields) = @_;
+    my ($mech) = @_;
 
     $mech->follow_link(text => 'Export citation');
-    $mech->submit_form(with_fields => {'citation-type' => 'RIS'});
-    my $f = ris_to_bib(parse_ris($mech->content()));
-    $fields->{'author'} = $f->{'author'};
-    $fields->{'month'} = $f->{'month'};
-# TODO: editor
-    $mech->back();
-    $mech->submit_form(with_fields => {'format' => 'cite-abs',
+
+    $mech->submit_form(with_fields => {'format' => 'cite',
                                        'citation-type' => 'BIBTEX'});
-    return $mech->content();
+    my $entry = parse_bibtex($mech->content());
+    $mech->back();
+
+    $mech->submit_form(with_fields => {'format' => 'cite-abs', 'citation-type' => 'RIS'});
+    my $f = ris_to_bib(parse_ris($mech->content()));
+    $entry->set('author', $f->{'author'});
+    $entry->set('month', $f->{'month'});
+    $entry->set('abstract', $f->{'abstract'});
+# TODO: editor
+
+    return $entry;
 }
 
 sub parse_springerlink {
-    my ($mech, $fields) = @_;
+    my ($mech) = @_;
 # TODO: handle books
     $mech->follow_link(url_regex => qr[/export-citation/])
         unless $mech->uri() =~ m[/export-citation/];
+
+    $mech->submit_form(
+        with_fields => {
+            'ctl00$ContentPrimary$ctl00$ctl00$Export' => 'AbstractRadioButton',
+            'ctl00$ContentPrimary$ctl00$ctl00$CitationManagerDropDownList'
+                => 'BibTex'},
+        button => 'ctl00$ContentPrimary$ctl00$ctl00$ExportCitationButton');
+    my $entry = parse_bibtex($mech->content());
+    $mech->back();
+
     $mech->submit_form(
         with_fields => {
             'ctl00$ContentPrimary$ctl00$ctl00$Export' => 'AbstractRadioButton',
@@ -373,41 +394,37 @@ sub parse_springerlink {
                 => 'EndNote'},
         button => 'ctl00$ContentPrimary$ctl00$ctl00$ExportCitationButton');
     my $f = ris_to_bib(parse_ris($mech->content()));#decode('utf8', $mech->content())));
-    for ('doi', 'month', 'issn', 'isbn') { $fields->{$_} = $f->{$_} if $f->{$_}}
-    
-    $mech->back();
+    for ('doi', 'month', 'issn', 'isbn') {
+        $entry->set($_, $f->{$_}) if $f->{$_};
+    }
 
-    $mech->submit_form(
-        with_fields => {
-            'ctl00$ContentPrimary$ctl00$ctl00$Export' => 'AbstractRadioButton',
-            #'ctl00$ContentPrimary$ctl00$ctl00$Format' => 'RisRadioButton',
-            'ctl00$ContentPrimary$ctl00$ctl00$CitationManagerDropDownList'
-                => 'BibTex'},
-        button => 'ctl00$ContentPrimary$ctl00$ctl00$ExportCitationButton');
-    return $mech->content();
+    return $entry;
 }
 
 sub parse_cambridge_university_press {
-    my ($mech, $fields) = @_;
+    my ($mech) = @_;
 
     $mech->follow_link(text => 'Export Citation');
     $mech->submit_form(form_name => 'exportCitationForm',
                        fields => {'Download' => 'Download',
                                   'displayAbstract' => 'Yes',
                                   'format' => 'BibTex'});
-    my $cont = $mech->content();
-    $cont =~ s[(abstract\s+=\s+({|")\s+)ABSTRACT][$1];
-    return $cont;
-    # TODO: fix authors and abstract
+    my $entry = parse_bibtex($mech->content());
+    update($entry, 'abstract', sub {s[\s*ABSTRACT\s+][]});
+    return $entry;
+    # TODO: fix authors
 }
 
 sub parse_ieee_computer_society {
-    my ($mech, $fields) = @_;
+    my ($mech) = @_;
     $mech->follow_link(text => 'BibTex');
-    return $mech->content();
+    my $entry = parse_bibtex($mech->content());
+    update($entry, 'volume', sub { $_ = undef if $_ eq "0" });
+    return $entry;
     # TODO: volume is 0?
 }
 
+#TODO: find example and fix
 sub parse_ieeexplore {
     my ($mech, $fields) = @_;
     my ($record) = $mech->content() =~
@@ -438,41 +455,51 @@ sub parse_ieeexplore {
 }
 
 sub parse_jstor {
-    my ($mech, $fields) = @_;
+    my ($mech) = @_;
     # TODO: abstract is ""?
     $mech->follow_link(text => 'Export Citation');
+
+    # Ick, we have to get around the javascript
     $mech->form_with_fields('suffix');
     my $suffix = $mech->value('suffix');
-    $fields->{'doi'} = $suffix;
-    $mech->post('http://www.jstor.org/action/downloadSingleCitation?' .
-                'format=bibtex&include=abs&singleCitation=true',
-                {'suffix' => $suffix});
-    my $text = $mech->content();
-    $text =~ s[\@comment{.*$][]gm; # TODO: A bit of a hack
-    return $text;
+    $mech->post("http://www.jstor.org/action/downloadSingleCitation",
+                {'singleCitation'=>'true', 'suffix'=>$suffix,
+                 'include'=>'abs', 'format'=>'bibtex', 'noDoi'=>'yesDoi'});
+
+    my $cont = $mech->content();
+    $cont =~ s[\@comment{.*$][]gm; # TODO: get around comments
+    $cont =~ s[JSTOR CITATION LIST][]g; # TODO: hack avoid junk chars
+    my $entry = parse_bibtex(encode('utf8', $cont));
+    $entry->set('doi', $suffix);
+    my ($month) = ($entry->get('jstor_formatteddate') =~ m[^(.*)\., \d\d\d\d$]);
+    $entry->set('month', $month) if defined $month;
+    # TODO: remove empty abstract
+    return $entry;
 }
 
 sub parse_ios_press {
-    my ($mech, $fields) = @_;
-    ($fields->{'publisher'}) =
-        $mech->content() =~ m[>Publisher</td><td.*?>(.*?)</td>]i;
-    ($fields->{'issn'}) =
-        $mech->content() =~ m[>ISSN</td><td.*?>(.*?)</td>]i;
-    ($fields->{'issn'}) =~ s[<br/?>][ ];
-    ($fields->{'isbn'}) =
-        $mech->content() =~ m[>ISBN</td><td.*?>(.*?)</td>]i;
+    my ($mech) = @_;
 
     $mech->follow_link(text => 'RIS');
     my $f = ris_to_bib(parse_ris($mech->content()));
+    my $entry = parse_bibtex("\@$f->{'*type*'} {X,}");
     # TODO: missing items?
     for ('journal', 'title', 'volume', 'number', 'abstract', 'pages',
          'author', 'year', 'month', 'doi') {
-        $fields->{$_} = $f->{$_};
+        $entry->set($_, encode('utf8', $f->{$_})) if $f->{$_};
     }
 
-    $fields->{'title'} = encode('utf8', $fields->{'title'});
+    $mech->back();
 
-    return "\@$f->{'*type*'} {X,}";
+    my ($pub) = ($mech->content() =~ m[>Publisher</td><td.*?>(.*?)</td>]i);
+    $entry->set('publisher', $pub) if defined $pub;
+    my ($issn) = ($mech->content() =~ m[>ISSN</td><td.*?>(.*?)</td>]i);
+    $issn =~ s[<br/?>][ ];
+    $entry->set('issn', $issn) if defined $issn;
+    my ($isbn) = ($mech->content() =~ m[>ISBN</td><td.*?>(.*?)</td>]i);
+    $entry->set('isbn', $isbn) if defined $isbn;
+
+    return $entry;
 }
 
 sub parse_wiley {
@@ -480,8 +507,9 @@ sub parse_wiley {
     $mech->follow_link(text => 'Export Citation for this Article');
     $mech->submit_form(with_fields => {'fileFormat' => 'BIBTEX',
                                        'hasAbstract' => 'CITATION_AND_ABSTRACT'});
-    my $cont = $mech->content();
-    $cont =~ s[(abstract\s+=\s+({|")\s*)Abstract][$1];
-    $cont =~ s[ Copyright .. \d\d\d\d John Wiley \& Sons, Ltd\.][];
-    return $cont;
+    my $entry = parse_bibtex($mech->content());
+    update($entry, 'abstract', sub { s[^\s*Abstract\s+][] });
+    update($entry, 'abstract',
+           sub { s[ Copyright .. \d\d\d\d John Wiley \& Sons, Ltd\.$][] });
+    return $entry;
 }
