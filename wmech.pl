@@ -12,6 +12,7 @@ use TeX::Encode;
 use Encode;
 
 # TODO:
+#  comma after last field
 #  adjust key
 #  get PDF
 #  abstract:
@@ -68,6 +69,12 @@ my %months = (
     $months[12]->[1] => $months[12],
     'december' => $months[12]);
 
+for my $i (keys %months) {
+    Text::BibTeX::add_macro_text($i, $months{$i}[1]);
+}
+
+#Text::BibTeX::Bib::month_names
+
 #ABST		Abstract
 #INPR		In Press
 #JFULL		Journal (full)
@@ -119,6 +126,7 @@ for my $url (@ARGV) {
         update($key, sub { s[\s*-+\s*][--]ig; });
     }
 
+    # Don't include pointless URLs to publisher's page
     update('url', sub {
         $_ = undef if m[^(http://dx.doi.org/
                          |http://doi.acm.org/
@@ -134,7 +142,8 @@ for my $url (@ARGV) {
     # \textquotedblleft -> ``
     # \textquoteleft -> `
     # etc.
-    # TODO: detect fields that are already unicoded (e.g. {H}askell or $p$)
+    # TODO: detect fields that are already de-unicoded (e.g. {H}askell or $p$)
+
     # Eliminate Unicode
     for my $field ($entry->fieldlist()) {
         $entry->set($field, latex_encode(decode('utf8', $entry->get($field))))
@@ -150,6 +159,9 @@ for my $url (@ARGV) {
                      map { $months{lc $_}
                            or [Text::BibTeX::BTAST_STRING, $_] }
                      split qr[\b]) });
+
+    # TODO: Generate standard key name: author/editor1.last year title/journal.abbriv
+    # TODO: Put upper case words in {.} (e.g. IEEE)
 
     print $entry->print_s();
 }
@@ -284,6 +296,8 @@ sub parse {
     elsif (domain('computer.org')) { parse_ieee_computer_society(@_); }
     elsif (domain('jstor.org')) { parse_jstor(@_); }
     elsif (domain('iospress.metapress.com')) { parse_ios_press(@_); }
+    elsif (domain('ieeexplore.ieee.org')) { parse_ieeexplore(@_); }
+    elsif (domain('onlinelibrary.wiley.com')) {parse_wiley(@_); }
     else { die "Unknown URI: " . $mech->uri(); }
 }
 
@@ -312,10 +326,13 @@ sub parse_acm {
         $mech->follow_link(text => 'download', n => $i);
         $cont = $mech->content()
             unless defined $cont and
-            $mech->content() =~ m[journal = SIGPLAN Not]i;
+            $mech->content() =~ m[journal = \{?SIGPLAN Not]i;
         $mech->back();
         $i++;
     }
+    $cont =~ s[(\@.*) ][$1]; # Prevent keys with spaces.  E.g. http://portal.acm.org/citation.cfm?id=1411243
+    $cont =~ s[<i>(.*?)</i>][{\\it $1}]ig; # HTML -> LaTeX Codes
+
     # Avoid spurious "journal" when proceedings are published in SIGPLAN Not.
     delete $fields->{'journal'} unless $cont =~ m[journal =]i;
     return $cont;
@@ -331,7 +348,7 @@ sub parse_acm {
 sub parse_science_direct {
     my ($mech, $fields) = @_;
 
-    $mech->follow_link(class => 'icon_exportarticlesci_dir');
+    $mech->follow_link(text => 'Export citation');
     $mech->submit_form(with_fields => {'citation-type' => 'RIS'});
     my $f = ris_to_bib(parse_ris($mech->content()));
     $fields->{'author'} = $f->{'author'};
@@ -351,11 +368,11 @@ sub parse_springerlink {
     $mech->submit_form(
         with_fields => {
             'ctl00$ContentPrimary$ctl00$ctl00$Export' => 'AbstractRadioButton',
-            'ctl00$ContentPrimary$ctl00$ctl00$Format' => 'RisRadioButton',
+# TODO:            'ctl00$ContentPrimary$ctl00$ctl00$Format' => 'RisRadioButton',
             'ctl00$ContentPrimary$ctl00$ctl00$CitationManagerDropDownList'
                 => 'EndNote'},
         button => 'ctl00$ContentPrimary$ctl00$ctl00$ExportCitationButton');
-    my $f = ris_to_bib(parse_ris(decode('utf8', $mech->content())));
+    my $f = ris_to_bib(parse_ris($mech->content()));#decode('utf8', $mech->content())));
     for ('doi', 'month', 'issn', 'isbn') { $fields->{$_} = $f->{$_} if $f->{$_}}
     
     $mech->back();
@@ -363,7 +380,7 @@ sub parse_springerlink {
     $mech->submit_form(
         with_fields => {
             'ctl00$ContentPrimary$ctl00$ctl00$Export' => 'AbstractRadioButton',
-            'ctl00$ContentPrimary$ctl00$ctl00$Format' => 'RisRadioButton',
+            #'ctl00$ContentPrimary$ctl00$ctl00$Format' => 'RisRadioButton',
             'ctl00$ContentPrimary$ctl00$ctl00$CitationManagerDropDownList'
                 => 'BibTex'},
         button => 'ctl00$ContentPrimary$ctl00$ctl00$ExportCitationButton');
@@ -391,6 +408,35 @@ sub parse_ieee_computer_society {
     # TODO: volume is 0?
 }
 
+sub parse_ieeexplore {
+    my ($mech, $fields) = @_;
+    my ($record) = $mech->content() =~
+        m[<span *id="recordId" *style="display:none;">(\d*)</span>];
+#    $mech->get('http://ieeexplore.ieee.org/xpl/downloadCitations?recordIds=1386650&fromPageName=abstract&citations-format=citation-only&download-format=download-bibtex&x=71&y=15');
+#    $mech->get('http://ieeexplore.ieee.org/xpl/downloadCitations?recordIds=1386650&fromPageName=abstract&citations-format=citation-only&download-format=download-bibtex&x=71&y=15');
+#    $mech->get("http://ieeexplore.ieee.org/xpl/downloadCitations?".
+#               "recordIds=1386650&".
+#               "recordIds=$record&".
+#               "fromPageName=abstract&".
+#               "citations-format=citation-only&".
+#               "download-format=download-bibtex&x=71&y=15");
+    $mech->get("http://ieeexplore.ieee.org/xpl/downloadCitations?".
+               "recordIds=$record&".
+               "fromPageName=abstract&".
+               "citations-format=citation-abstract&".
+               "download-format=download-bibtex");
+#    print $mech->content(), "\n";
+
+#    $mech->follow_link(
+#http://ieeexplore.ieee.org/xpl/downloadCitations?recordIds=1058095&fromPageName=abstract&citations-format=citation-abstract&download-format=download-bibtex&x=37&y=14
+
+#http://ieeexplore.ieee.org/xpl/downloadCitations?recordIds=1058095&fromPageName=abstract&citations-format=citation-abstract&download-format=download-bibtex
+    my $cont = $mech->content();
+    $cont =~ s/<br>//gi;
+    $cont =~ s/month=([^,\.{}"]*?)\./month=$1/;
+    return $cont;
+}
+
 sub parse_jstor {
     my ($mech, $fields) = @_;
     # TODO: abstract is ""?
@@ -412,6 +458,7 @@ sub parse_ios_press {
         $mech->content() =~ m[>Publisher</td><td.*?>(.*?)</td>]i;
     ($fields->{'issn'}) =
         $mech->content() =~ m[>ISSN</td><td.*?>(.*?)</td>]i;
+    ($fields->{'issn'}) =~ s[<br/?>][ ];
     ($fields->{'isbn'}) =
         $mech->content() =~ m[>ISBN</td><td.*?>(.*?)</td>]i;
 
@@ -426,4 +473,15 @@ sub parse_ios_press {
     $fields->{'title'} = encode('utf8', $fields->{'title'});
 
     return "\@$f->{'*type*'} {X,}";
+}
+
+sub parse_wiley {
+    my ($mech, $fields) = @_;
+    $mech->follow_link(text => 'Export Citation for this Article');
+    $mech->submit_form(with_fields => {'fileFormat' => 'BIBTEX',
+                                       'hasAbstract' => 'CITATION_AND_ABSTRACT'});
+    my $cont = $mech->content();
+    $cont =~ s[(abstract\s+=\s+({|")\s*)Abstract][$1];
+    $cont =~ s[ Copyright .. \d\d\d\d John Wiley \& Sons, Ltd\.][];
+    return $cont;
 }
