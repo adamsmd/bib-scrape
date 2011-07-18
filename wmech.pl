@@ -25,6 +25,11 @@ use Text::BibTeX::Months;
 #  titles: superscript (r6rs, r5rs), &part;
 #  author as editors?
 
+# \ensuremath{FOO} is better than $FOO$
+for (keys %TeX::Encode::LATEX_Escapes) {
+    $TeX::Encode::LATEX_Escapes{$_} =~ s[^\$(.*)\$$][\\ensuremath{$1}];
+}
+
 
 sub DEBUG() { 0; }
 
@@ -103,12 +108,8 @@ sub latex_encode
     $str = decode_entities($str);
     $str =~ s[([$TeX::Encode::LATEX_Reserved])][\\$1]sog;
     $str =~ s[<i>(.*?)</i>][{\\it $1}]sog; # HTML -> LaTeX Codes
-    $str =~ s[([<>])][\$$1\$]sog;
+    $str =~ s[([<>])][\\ensuremath{$1}]sog;
     $str =~ s[([^\x00-\x80])][\{$TeX::Encode::LATEX_Escapes{$1}\}]sg;
-    $str =~ s[{\\textquotedblleft}][``]sg;
-    $str =~ s[{\\textquotedblright}]['']sg;
-    $str =~ s[{\\textquotedleft}][`]sg;
-    $str =~ s[{\\textquotedright}][']sg;
     return $str;
 }
 
@@ -126,7 +127,8 @@ sub parse_bibtex {
 
     # Parsing the bibtex converts it to utf8, so we have to decode it
     $entry->set_key(decode('utf8', $entry->key));
-    for ($entry->fieldlist) { $entry->set($_, decode('utf8', $entry->get($_))) }
+    for ($entry->fieldlist) { $entry->set($_, 
+decode('utf8', $entry->get($_))) }
 
     return $entry;
 }
@@ -196,11 +198,20 @@ sub parse_acm {
     $entry->set('journal', meta_tag('citation_journal_title'))
         if $entry->exists('journal');
 
+    if ($entry->exists('author')) {
+        my @x = meta_tag('citation_authors');
+        $x[0] =~ s[;][ and ]g;
+        $x[0] =~ s[  ][ ]g;
+        $entry->set('author', $x[0]);
+    }
+
     # Abstract
     my ($abstr_url) = $mech->content() =~ m[(tab_abstract.*?)\'];
     $mech->get($abstr_url);
     $entry->set('abstract', $mech->content() =~
                 m[<div style="display:inline">(?:<par>|<p>)?(.+?)(?:</par>|</p>)?</div>]);
+    # Fix the double HTML encoding (Bug in ACM?)
+    $entry->set('abstract', decode_entities($entry->get('abstract')));
 
     return $entry;
 

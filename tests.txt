@@ -3,6 +3,7 @@ http://portal.acm.org/citation.cfm?id=908021&CFID=112731887&CFTOKEN=92268833&pre
  #^BUG (ACM's fault): download bibtex link is broken
 http://portal.acm.org/citation.cfm?id=258960&CFID=34772520&CFTOKEN=23076949
  #^BUG (ACM's fault): Blume misspelled as Blu
+
 http://portal.acm.org/citation.cfm?id=159531&CFID=112554091&CFTOKEN=96971667&preflayout=flat
  #^non ACM publication
 http://www.springerlink.com/content/m746t0/#section=281461&page=1
@@ -14,8 +15,5 @@ http://www.springerlink.com/content/m8x0246j74044t6l/
  #^empty ISBN
  #^over long affiliation
  #^blank abstract
-http://portal.acm.org/citation.cfm?id=232627.232630&coll=DL&dl=ACM&CFID=34772520&CFTOKEN=23076949
- #^wrong code in author name
- #^key with spaces
 http://dx.doi.org/10.1145/53990.54007
  #^should use series to prefix booktitle
