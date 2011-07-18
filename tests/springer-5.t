@@ -3,7 +3,7 @@ Shows unicode handling, but missing name for Bruno C.d.S. Oliveira
 @incollection{springerlink:10.1007/11737414_3,
   author = {Hinze, Ralf and L{\"o}h, Andres and Oliveira, Bruno C.d.S.},
   affiliation = {Institut f{\"u}r Informatik III, Universit{\"a}t Bonn, R{\"o}merstra{\ss}e 164, 53117 Bonn, Germany},
-  title = {{\textquotedblleft}Scrap Your Boilerplate{\textquotedblright} Reloaded},
+  title = {``Scrap Your Boilerplate'' Reloaded},
   booktitle = {Functional and Logic Programming},
   series = {Lecture Notes in Computer Science},
   editor = {Hagiya, Masami and Wadler, Philip},
