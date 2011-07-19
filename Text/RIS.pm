@@ -7,9 +7,10 @@ use Text::BibTeX::Months;
 
 use Class::Struct 'Text::RIS' => { data => '%' };
 
-sub Text::RIS::get { my ($self, $key) = @_; $self->data->{$key} }
-sub Text::RIS::set { my ($self, $key, $val) = @_; $self->data->{$key} = $val }
-sub Text::RIS::exists { my ($self, $key) = @_; exists $self->data->{$key} }
+sub Text::RIS::get    { my ($self, $key) = @_;       $self->data->{$key} }
+sub Text::RIS::set    { my ($self, $key, $val) = @_; $self->data->{$key} = $val }
+sub Text::RIS::exists { my ($self, $key) = @_;       exists $self->data->{$key} }
+sub Text::RIS::delete { my ($self, $key) = @_;       delete $self->data->{$key} }
 
 sub Text::RIS::parse {
     my ($text) = @_;
@@ -17,8 +18,7 @@ sub Text::RIS::parse {
 
     my $ris = {}; # {key, [string]}
     my $last_key = "";
-    my @lines = (split("\n", $text));
-    for my $line (@lines ) { #(split("\n", $text))) {
+    for my $line (split("\n", $text)) { #(split("\n", $text))) {
         $line =~ s[\r|\n][]g;
         my ($key, $val) = $line =~ m[^([A-Z][A-Z0-9]|DOI)  - *(.*?) *$];
         if (defined $key) { push @{$ris->{$key}}, $val; $last_key = $key; }
@@ -27,9 +27,9 @@ sub Text::RIS::parse {
             @$list[$#$list] .= "\n" . $line;
         } else {} # blank line
     }
+
     Text::RIS->new(data => $ris);
 }
-
 
 #ABST		Abstract
 #INPR		In Press
@@ -50,6 +50,8 @@ my %ris_types = (
     'REP', 'techreport',
     'UNPB', 'unpublished');
 
+# last, first, suffix -> von Last, Jr, First
+# (skip [,\.]*)
 sub ris_author { join(" and ", map { s[(.*),(.*),(.*)][$1,$3,$2];
                                      m[[^, ]] ? $_ : (); } @_); }
 
@@ -118,45 +120,6 @@ sub Text::RIS::bibtex {
 
     $entry;
 }
-
-1;
-
-__END__
-
-sub Text::RIS::parse {
-    my ($text) = @_;
-    my $ris = {}; #  {key, [string]}
-    my $last_key = "";
-    for my $line (map { tr[\r\n][] } split("\n", $text)) {
-        ($key, $val) = m[^([A-Z][A-Z0-9]|DOI)  - *(.*?) *$];
-        push @{$ris->{$key}}, $val if defined $key;
-    } elsif ("" ne $line) {
-            $list = $ris->{$last_key};
-            @$list[$#$list] .= "\n" . $line;
-    } else {} # blank line
-Text::RIS::new($ris);
-}
-
-            if ("ER" eq $key) {
-                if (exists $ris->{'SP'}) {
-                    my ($sp, $ep) = $ris->{'SP'}[0] =~
-                        m[^ *(\d+) *-+ *(\d+) *$];
-                    $ris->{'EP'}[0] = $ep if (defined $ep);
-                }
-                push @ris $ris; $ris = {};
-            }
-}
-
-1;
-
-__END__
-
-# last, first, suffix -> von Last, Jr, First
-# (skip [,\.]*)
-sub ris_name { $_[0] =~ s[(.*),(.*),(.*)][$1,$3,$2];  $_[0]; }
-sub ris_date { split m[/|-]; (other field may be empty)} # 4 fields
-sub ris_pages { (\d+)-(\d+) }
-
 
 1;
 
