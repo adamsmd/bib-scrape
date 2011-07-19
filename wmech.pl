@@ -16,7 +16,6 @@ use Text::RIS;
 use Text::BibTeX::Months;
 
 # TODO:
-#  comma after last field
 #  adjust key
 #  get PDF
 #  abstract:
@@ -24,12 +23,13 @@ use Text::BibTeX::Months;
 #  - HTML encoding?
 #  titles: superscript (r6rs, r5rs), &part;
 #  author as editors?
+#  Put upper case words in {.} (e.g. IEEE)
+# TODO: detect fields that are already de-unicoded (e.g. {H}askell or $p$)
 
 # \ensuremath{FOO} is better than $FOO$
 for (keys %TeX::Encode::LATEX_Escapes) {
     $TeX::Encode::LATEX_Escapes{$_} =~ s[^\$(.*)\$$][\\ensuremath{$1}];
 }
-
 
 sub DEBUG() { 0; }
 
@@ -48,41 +48,50 @@ for my $url (@ARGV) {
     update($entry, 'doi', sub { s[http://[^/]+/][]i; s[DOI:\s*][]ig; });
     # Page numbers: no "pp." or "p."
     update($entry, 'pages', sub { s[pp?\.\s*][]ig; });
-    # TODO: single element range as x not x-x
+
+    for (['issue', 'number'], ['keyword', 'keywords']) {
+        # Fix broken field names (SpringerLink and ACM violate this)
+        if ($entry->exists($_->[0]) and not $entry->exists($_->[1])) {
+            $entry->set($_->[1], $entry->get($_->[0]));
+            $entry->delete($_->[0]);
+        }
+    }
+
     # Ranges: convert "-" to "--"
-    # TODO: might misfire if "-" doesn't represent a range
-    #  Common for tech report numbers
+    # TODO: might misfire if "-" doesn't represent a range, Common for tech report numbers
     for my $key ('chapter', 'month', 'number', 'pages', 'volume', 'year') {
         update($entry, $key, sub { s[\s*-+\s*][--]ig; });
+        # TODO: single element range as x not x--x
     }
 
     # Don't include pointless URLs to publisher's page
     update($entry, 'url', sub {
         $_ = undef if m[^(http://dx.doi.org/
                          |http://doi.acm.org/
+                         |http://portal.acm.org/citation.cfm
+                         |http://www.jstor.org/stable/
                          |http://www.sciencedirect.com/science/article/)]x; } );
     update($entry, 'note', sub { $_ = undef if $_ eq "" });
     update($entry, 'note', sub { $_ = undef if $_ eq ($entry->get('doi') or "") });
-    update($entry, 'issue', sub { # Broken SpringerLink BibTeX
-        unless ($entry->exists('number')) {
-            $entry->set('number', $_);
-            $_ = undef;
-        }});
 
-    # \textquotedblleft -> ``
-    # \textquoteleft -> `
-    # etc.
-    # TODO: detect fields that are already de-unicoded (e.g. {H}askell or $p$)
+    # Generate an entry key
+    # TODO: Formats: author/editor1.last year title/journal.abbriv
+    # TODO: Key may fail on unicode names? Remove doi?
+    my ($name) = ($entry->names('author'), $entry->names('editor'));
+        #$organization, or key
+    if ($name and $entry->exists('year')) {
+        ($name) = join("", $name->part('last'));
+        $entry->set_key($name . ':' . $entry->get('year') .
+            ($entry->exists('doi') ? ":" . $entry->get('doi') : ""));
+    }
 
-    # Eliminate Unicode
+    # Eliminate Unicode but not for doi and url fields (assuming \usepackage{url})
     for my $field ($entry->fieldlist()) {
         $entry->set($field, latex_encode($entry->get($field)))
-            # But not for doi and url fields (assuming \usepackage{url})
             unless $field eq 'doi' or $field eq 'url'
     }
 
-    # month abbriv: jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec
-    #  ACM: {April}
+    # Use bibtex month abbriv: jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec
     update($entry, 'month', # Must be after field encoding
            sub { my @x = split qr[\b];
                  for (1..$#x) {
@@ -92,10 +101,28 @@ for my $url (@ARGV) {
                      map { (str2month(lc $_)) or ([Text::BibTeX::BTAST_STRING, $_]) }
                      map { $_ ne "" ? $_ : () } @x)});
 
-    # TODO: Generate standard key name: author/editor1.last year title/journal.abbriv
-    # TODO: Put upper case words in {.} (e.g. IEEE)
+    # Put fields in a standard order.
+    my @field_order = qw(
+      author editor affiliation title
+      howpublished booktitle journal volume number series jstor_issuetitle
+      type jstor_articletype school institution location
+      chapter pages articleno numpages
+      edition month year issue_date jstor_formatteddate
+      organization publisher address
+      language isbn issn doi eid acmid url eprint
+      note annote keywords abstract copyright
+      );
+    for my $field ($entry->fieldlist()) {
+        die "Unknown field: $field.\n" unless grep { $field eq $_ } @field_order;
+        die "Duplicate field '$field' will be mangled" if
+            scalar(grep { $field eq $_ } $entry->fieldlist()) >= 2;
+    }
+    $entry->set_fieldlist([map { $entry->exists($_) ? ($_) : () } @field_order]);
 
-    print $entry->print_s();
+    # Force comma after last field to make editing easier
+    my $str = $entry->print_s();
+    $str =~ s[}(\s*}\s*)$][\},$1];
+    print $str;
 }
 
 ################
@@ -108,6 +135,9 @@ sub latex_encode
     $str = decode_entities($str);
     $str =~ s[([$TeX::Encode::LATEX_Reserved])][\\$1]sog;
     $str =~ s[<i>(.*?)</i>][{\\it $1}]sog; # HTML -> LaTeX Codes
+    $str =~ s[<em>(.*?)</em>][{\\em $1}]sog;
+    $str =~ s[<sup>(.*?)</sup>][\\ensuremath{\^\\textrm{$1}}]sog;
+    $str =~ s[<sub>(.*?)</sub>][\\ensuremath{\_\\textrm{$1}}]sog;
     $str =~ s[([<>])][\\ensuremath{$1}]sog;
     $str =~ s[([^\x00-\x80])][\{$TeX::Encode::LATEX_Escapes{$1}\}]sg;
     return $str;
@@ -123,12 +153,11 @@ sub parse_bibtex {
     print "BIBTEXT:\n$bib_text\n" if DEBUG;
     $entry->parse_s(encode('utf8', $bib_text), 0); # 1 for preserve values
 #    $entry = new Text::BibTeX::Entry($bib_text); # macros: pass "$bib_text, 1"
-    die "Can't parse BibTeX" unless $entry->parse_ok;
+    die "Can't parse BibTeX:\n$bib_text\n" unless $entry->parse_ok;
 
     # Parsing the bibtex converts it to utf8, so we have to decode it
     $entry->set_key(decode('utf8', $entry->key));
-    for ($entry->fieldlist) { $entry->set($_, 
-decode('utf8', $entry->get($_))) }
+    for ($entry->fieldlist) { $entry->set($_, decode('utf8', $entry->get($_))) }
 
     return $entry;
 }
@@ -205,6 +234,13 @@ sub parse_acm {
         $entry->set('author', $x[0]);
     }
 
+    if ($entry->exists('title')) {
+        $entry->set('title', $mech->content() =~
+                    m[<h1 class="mediumb-text".*?><strong>(.*?)</strong></h1>]);
+#        my @x = meta_tag('citation_title');
+#        $entry->set('title', $x[0]);
+    }
+
     # Abstract
     my ($abstr_url) = $mech->content() =~ m[(tab_abstract.*?)\'];
     $mech->get($abstr_url);
@@ -236,6 +272,8 @@ sub parse_science_direct {
     $entry->set('author', $f->get('author'));
     $entry->set('month', $f->get('month'));
     $entry->set('abstract', $f->get('abstract'));
+    $entry->delete('keywords');
+    $entry->set('keywords', $f->get('keywords'));
 # TODO: editor
 
     return $entry;
@@ -281,7 +319,12 @@ sub parse_cambridge_university_press {
                                   'displayAbstract' => 'Yes',
                                   'format' => 'BibTex'});
     my $entry = parse_bibtex($mech->content());
-    update($entry, 'abstract', sub {s[\s*ABSTRACT\s+][]});
+    $mech->back(); $mech->back();
+
+    my ($abst) = $mech->content() =~ m[>Abstract</.*?><p><p>(.*?)</p>]s;
+    $entry->set('abstract', $abst) if $abst;
+    update($entry, 'doi', sub { $_ = undef if $_ eq "null" });
+
     return $entry;
     # TODO: fix authors
 }
@@ -295,33 +338,18 @@ sub parse_ieee_computer_society {
     # TODO: volume is 0?
 }
 
-#TODO: find example and fix
 sub parse_ieeexplore {
     my ($mech, $fields) = @_;
     my ($record) = $mech->content() =~
         m[<span *id="recordId" *style="display:none;">(\d*)</span>];
-#    $mech->get('http://ieeexplore.ieee.org/xpl/downloadCitations?recordIds=1386650&fromPageName=abstract&citations-format=citation-only&download-format=download-bibtex&x=71&y=15');
-#    $mech->get('http://ieeexplore.ieee.org/xpl/downloadCitations?recordIds=1386650&fromPageName=abstract&citations-format=citation-only&download-format=download-bibtex&x=71&y=15');
-#    $mech->get("http://ieeexplore.ieee.org/xpl/downloadCitations?".
-#               "recordIds=1386650&".
-#               "recordIds=$record&".
-#               "fromPageName=abstract&".
-#               "citations-format=citation-only&".
-#               "download-format=download-bibtex&x=71&y=15");
+
+    # Ick, work around javascript by hard coding the URL
     $mech->get("http://ieeexplore.ieee.org/xpl/downloadCitations?".
                "recordIds=$record&".
                "fromPageName=abstract&".
                "citations-format=citation-abstract&".
                "download-format=download-bibtex");
-#http://ieeexplore.ieee.org/xpl/downloadCitations?recordIds=1386650&fromPageName=abstract&citations-format=citation-only&download-format=download-bibtex&x=71&y=15&tag=1
-#    print $mech->content(), "\n";
-
-#    $mech->follow_link(
-#http://ieeexplore.ieee.org/xpl/downloadCitations?recordIds=1058095&fromPageName=abstract&citations-format=citation-abstract&download-format=download-bibtex&x=37&y=14
-
-#http://ieeexplore.ieee.org/xpl/downloadCitations?recordIds=1058095&fromPageName=abstract&citations-format=citation-abstract&download-format=download-bibtex
     my $cont = $mech->content();
-#    print $cont;
     $cont =~ s/<br>//gi;
     $cont =~ s/month=([^,\.{}"]*?)\./month=$1/;
     return parse_bibtex($cont);

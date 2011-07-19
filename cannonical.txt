@@ -31,13 +31,13 @@ capitals:
 no blank or zero fields
 ranges are x--x
   - BibTeX accepts "x-x" but only for backwards compatibility purposes.
-  - How do we format a range with a single element? "x" or "x--x"
+  - Page ranges are comma separated.
+  - Single element "x" and multi-element "x+" ranges are allowed.
 special chars are {\"o} not \"{o} (See the BibTeX FAQ)
 journal is unabriviated
 edition is "1st"???
 quotes are proper form
-Use a comma after the last field.  It is legal
-  and makes copy-paste easier.
+Use a comma after the last field.  It is legal and makes copy-paste easier.
 Continuously paginated journals
 Non-sentensial periods
 
@@ -99,3 +99,96 @@ mathpartir for proof trees
 overfull-line bars
 itemize: \parskip, $-$
 
+
+
+
+
+------------------------
+
+author, editor, title
+
+author,           title, journal,                              year.
+author or editor, title,                            publisher, year.
+                  title. 
+author or editor, title,            chapter, pages, publisher, year. 
+author,           title, booktitle,                 publisher, year. 
+author,           title, booktitle,                            year. 
+                  title.
+author,           title, school,                               year. 
+author,           title, school,                               year.
+                  title,                                       year.
+author,           title, institution,                          year.
+author,           title,                                             note. 
+
+volume, number,                          pages,                   month,                                note.
+volume or number, series,                       address, edition, month,                                note.
+howpublished,                                   address,          month, year,                          note.
+volume or number, series, type,                 address, edition, month,                                note.
+volume or number, series, type, chapter, pages, address, edition, month,                                note.
+volume or number, series,                pages, address,          month,       organization, publisher, note.
+organization,                                   address, edition, month, year,                          note.
+                          type,                 address,          month,                                note.
+howpublished,                                                     month, year,                          note.
+                          type,                 address,          month,                                note.
+volume or number, series,                       address,          month,       organization, publisher, note.
+type, number,                                   address,          month,                                note.
+                                                                  month,                                year.
+
+author or editor, title, booktitle, journal, chapter, pages,                          publisher/year. 
+             volume,   number, series, type, chapter, pages, address, edition, month, year, organization, publisher, note.
+howpublished < address
+
+
+author or editor, title, journal, booktitle, chapter, pages,                          publisher/year. 
+             volume,   number, series, type, chapter, pages, address, edition, month, year, organization, publisher, note.
+howpublished < address
+
+  { "  author = {" author * "}," * write.line } author if.nonnull
+  { "  editor = {" editor * "}," * write.line } editor if.nonnull
+affiliation 
+  { "  title = {" title * "}," * write.line } title if.nonnull
+
+  { "  howpublished = {" howpublished * "}," * write.line } howpublished if.nonnull
+  { "  booktitle = {" booktitle * "}," * write.line } booktitle if.nonnull
+C { "  journal = {" journal * "}," * write.line } journal if.nonnull
+C { "  volume = {" volume * "}," * write.line } volume if.nonnull
+C { "  number = {" number * "}," * write.line } number if.nonnull
+  { "  series = {" series * "}," * write.line } series if.nonnull
+jstor_issuetitle 
+
+  { "  type = {" type * "}," * write.line } type if.nonnull
+jstor_articletype 
+  { "  school = {" school * "}," * write.line } school if.nonnull
+  { "  institution = {" institution * "}," * write.line } institution if.nonnull
+location 
+
+  { "  chapter = {" chapter * "}," * write.line } chapter if.nonnull
+  { "  pages = {" pages * "}," * write.line } pages if.nonnull
+articleno 
+numpages 
+
+  { "  edition = {" edition * "}," * write.line } edition if.nonnull
+  { "  month = {" month * "}," * write.line } month if.nonnull
+  { "  year = {" year * "}," * write.line } year if.nonnull
+issue_date 
+jstor_formatteddate 
+
+  { "  organization = {" organization * "}," * write.line } organization if.nonnull
+  { "  publisher = {" publisher * "}," * write.line } publisher if.nonnull
+  { "  address = {" address * "}," * write.line } address if.nonnull
+
+language
+
+  { "  isbn = {" isbn * "}," * write.line } isbn if.nonnull
+  { "  issn = {" issn * "}," * write.line } issn if.nonnull
+  { "  doi = {" doi * "}," * write.line } doi if.nonnull
+acmid 
+  { "  eid = {" eid * "}," * write.line } eid if.nonnull
+  { "  url = {" url * "}," * write.line } url if.nonnull
+eprint 
+
+  { "  note = {" note * "}," * write.line } note if.nonnull
+anote
+keywords 
+abstract
+copyright 

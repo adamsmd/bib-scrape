@@ -1,10 +1,8 @@
 http://portal.acm.org/citation.cfm?id=908021&CFID=112731887&CFTOKEN=92268833&preflayout=tabs
  #^dissertation
  #^BUG (ACM's fault): download bibtex link is broken
-http://portal.acm.org/citation.cfm?id=258960&CFID=34772520&CFTOKEN=23076949
- #^BUG (ACM's fault): Blume misspelled as Blu
 
-http://portal.acm.org/citation.cfm?id=159531&CFID=112554091&CFTOKEN=96971667&preflayout=flat
+http://portal.acm.org/citation.cfm?id=159531
  #^non ACM publication
 http://www.springerlink.com/content/m746t0/#section=281461&page=1
  #^broken? no export link?
