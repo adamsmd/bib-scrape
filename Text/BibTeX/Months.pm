@@ -1,4 +1,4 @@
-package Text::RIS;
+package Text::BibTeX::Months;
 
 use Exporter qw(import);
 
@@ -9,55 +9,21 @@ our @EXPORT_OK = qw();
 
 #Text::BibTeX::Bib::month_names
 
-my @months = (
-    undef,
-    [Text::BibTeX::BTAST_MACRO, 'jan'],
-    [Text::BibTeX::BTAST_MACRO, 'feb'],
-    [Text::BibTeX::BTAST_MACRO, 'mar'],
-    [Text::BibTeX::BTAST_MACRO, 'apr'],
-    [Text::BibTeX::BTAST_MACRO, 'may'],
-    [Text::BibTeX::BTAST_MACRO, 'jun'],
-    [Text::BibTeX::BTAST_MACRO, 'jul'],
-    [Text::BibTeX::BTAST_MACRO, 'aug'],
-    [Text::BibTeX::BTAST_MACRO, 'sep'],
-    [Text::BibTeX::BTAST_MACRO, 'oct'],
-    [Text::BibTeX::BTAST_MACRO, 'nov'],
-    [Text::BibTeX::BTAST_MACRO, 'dec']);
+my @long_names = qw(
+  january february march april may june july august september october november december);
 
-sub num2month { $months[$_[0]] }
+my @macro_names = qw(jan feb mar apr may jun jul aug sep oct nov dec);
 
-my %months = (
-    $months[1]->[1] => $months[1],
-    'january' => $months[1],
-    $months[2]->[1] => $months[2],
-    'february' => $months[2],
-    $months[3]->[1] => $months[3],
-    'march' => $months[3],
-    $months[4]->[1] => $months[4],
-    'april' => $months[4],
-    $months[5]->[1] => $months[5],
-    'may' => $months[5],
-    $months[6]->[1] => $months[6],
-    'june' => $months[6],
-    $months[7]->[1] => $months[7],
-    'july' => $months[7],
-    $months[8]->[1] => $months[8],
-    'august' => $months[8],
-    $months[9]->[1] => $months[9],
-    'september' => $months[9],
-    'sept' => $months[9],
-    $months[10]->[1] => $months[10],
-    'october' => $months[10],
-    $months[11]->[1] => $months[11],
-    'november' => $months[11],
-    $months[12]->[1] => $months[12],
-    'december' => $months[12]);
+my %months;
+$months{$macro_names[$_]} = $macro_names[$_] for (0..$#long_names);
+$months{$long_names[$_]} = $macro_names[$_] for (0..$#long_names);
+$months{'sept'} = 'sep';
 
-sub str2month { $months{$_[0]} }
+Text::BibTeX::add_macro_text($_, macro($months{$_})) for (keys %months);
 
-for my $i (keys %months) {
-    Text::BibTeX::add_macro_text($i, $months{$i}[1]);
-}
+sub macro { [Text::BibTeX::BTAST_MACRO, shift()] }
+sub num2month { macro($macro_names[shift()-1]) }
+sub str2month { macro($months{shift()}) }
 
 1;
 
