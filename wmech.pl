@@ -16,15 +16,13 @@ use Text::RIS;
 use Text::BibTeX::Months;
 
 # TODO:
-#  adjust key
 #  get PDF
 #  abstract:
 #  - paragraphs: no marker but often we get ".<Uperchar>" or "<p></p>"
-#  - HTML encoding?
-#  titles: superscript (r6rs, r5rs), &part;
 #  author as editors?
 #  Put upper case words in {.} (e.g. IEEE)
-# TODO: detect fields that are already de-unicoded (e.g. {H}askell or $p$)
+#  detect fields that are already de-unicoded (e.g. {H}askell or $p$)
+#END TODO
 
 # \ensuremath{FOO} is better than $FOO$
 for (keys %TeX::Encode::LATEX_Escapes) {
@@ -152,7 +150,6 @@ sub parse_bibtex {
     my $entry = new Text::BibTeX::Entry;
     print "BIBTEXT:\n$bib_text\n" if DEBUG;
     $entry->parse_s(encode('utf8', $bib_text), 0); # 1 for preserve values
-#    $entry = new Text::BibTeX::Entry($bib_text); # macros: pass "$bib_text, 1"
     die "Can't parse BibTeX:\n$bib_text\n" unless $entry->parse_ok;
 
     # Parsing the bibtex converts it to utf8, so we have to decode it
@@ -205,9 +202,7 @@ sub parse_acm {
     my ($url) = $mech->find_link(text=>'BibTeX')->url()
         =~ m[navigate\('(.*?)'];
     $mech->get($url);
-    my $content = $mech->content();
-    my $i = 1;
-    my $cont = undef;
+    my ($i, $cont) = (1, undef);
     # Try to avoid SIGPLAN Notices
     while ($mech->find_link(text => 'download', n => $i)) {
         $mech->follow_link(text => 'download', n => $i);
@@ -217,7 +212,7 @@ sub parse_acm {
         $mech->back();
         $i++;
     }
-    $cont =~ s[(\@.*) ][$1]; # Prevent keys with spaces.
+    $cont =~ s[(\@.*) ][$1]; # Prevent keys with spaces
     my $entry = parse_bibtex($cont);
 
     $mech->back();
@@ -230,30 +225,23 @@ sub parse_acm {
     if ($entry->exists('author')) {
         my @x = meta_tag('citation_authors');
         $x[0] =~ s[;][ and ]g;
-        $x[0] =~ s[  ][ ]g;
+        $x[0] =~ s[  +][ ]g;
         $entry->set('author', $x[0]);
     }
 
-    if ($entry->exists('title')) {
-        $entry->set('title', $mech->content() =~
-                    m[<h1 class="mediumb-text".*?><strong>(.*?)</strong></h1>]);
-#        my @x = meta_tag('citation_title');
-#        $entry->set('title', $x[0]);
-    }
+    $entry->set('title', $mech->content() =~
+                m[<h1 class="mediumb-text".*?><strong>(.*?)</strong></h1>])
+        if $entry->exists('title');
 
     # Abstract
     my ($abstr_url) = $mech->content() =~ m[(tab_abstract.*?)\'];
     $mech->get($abstr_url);
     $entry->set('abstract', $mech->content() =~
                 m[<div style="display:inline">(?:<par>|<p>)?(.+?)(?:</par>|</p>)?</div>]);
-    # Fix the double HTML encoding (Bug in ACM?)
+    # Fix the double HTML encoding of the abstract (Bug in ACM?)
     $entry->set('abstract', decode_entities($entry->get('abstract')));
 
     return $entry;
-
-# TODO: uses issue if document is from springer.
-
-# TODO: handle multiple entries
 }
 
 sub parse_science_direct {
@@ -297,14 +285,10 @@ sub parse_springerlink {
     $mech->submit_form(
         with_fields => {
             'ctl00$ContentPrimary$ctl00$ctl00$Export' => 'AbstractRadioButton',
-# TODO:     'ctl00$ContentPrimary$ctl00$ctl00$Format' => 'RisRadioButton',
-            'ctl00$ContentPrimary$ctl00$ctl00$CitationManagerDropDownList'
-                => 'EndNote'},
+            'ctl00$ContentPrimary$ctl00$ctl00$CitationManagerDropDownList' => 'EndNote'},
         button => 'ctl00$ContentPrimary$ctl00$ctl00$ExportCitationButton');
     my $f = Text::RIS::parse($mech->content())->bibtex();
-    for ('doi', 'month', 'issn', 'isbn') {
-        $entry->set($_, $f->get($_)) if $f->exists($_);
-    }
+    ($f->exists($_) && $entry->set($_, $f->get($_))) for ('doi', 'month', 'issn', 'isbn');
     # TODO: remove "Summary" from abstract
 
     return $entry;
@@ -367,8 +351,8 @@ sub parse_jstor {
                  'include'=>'abs', 'format'=>'bibtex', 'noDoi'=>'yesDoi'});
 
     my $cont = $mech->content();
-    $cont =~ s[\@comment{.*$][]gm; # TODO: get around comments
-    $cont =~ s[JSTOR CITATION LIST][]g; # TODO: hack avoid junk chars
+    $cont =~ s[\@comment{.*$][]gm; # hack to get around comments
+    $cont =~ s[JSTOR CITATION LIST][]g; # hack to avoid junk chars
     my $entry = parse_bibtex($cont);
     $entry->set('doi', $suffix);
     my ($month) = ($entry->get('jstor_formatteddate') =~ m[^(.*), \d\d\d\d$]);

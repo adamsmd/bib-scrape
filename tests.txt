@@ -15,3 +15,13 @@ http://www.springerlink.com/content/m8x0246j74044t6l/
  #^blank abstract
 http://dx.doi.org/10.1145/53990.54007
  #^should use series to prefix booktitle
+http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=6046168&fulltextType=RA&fileId=S0956796809990074
+ #^superscript in title
+http://www.cambridge.org/gb/knowledge/isbn/item2705333/?site_locale=en_GB
+ #^book
+http://onlinelibrary.wiley.com/doi/10.1002/spe.978/abstract
+ #^italics in title
+
+Unicode in Title, Abstract, Author
+Formatted (e.g. superscript, italics) in Title, Abstract, Author
+Complex names (e.g. Bruno C.d.S. Oliveira, Simon Peyton Jones)
