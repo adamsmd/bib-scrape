@@ -22,6 +22,8 @@ use Text::BibTeX::Months;
 #  author as editors?
 #  Put upper case words in {.} (e.g. IEEE)
 #  detect fields that are already de-unicoded (e.g. {H}askell or $p$)
+#  follow jstor links to original publisher
+#  add abstract to jstor
 #END TODO
 
 # \ensuremath{FOO} is better than $FOO$
@@ -89,7 +91,7 @@ for my $url (@ARGV) {
             unless $field eq 'doi' or $field eq 'url'
     }
 
-    # Use bibtex month abbriv: jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec
+    # Use bibtex month macros
     update($entry, 'month', # Must be after field encoding
            sub { my @x = split qr[\b];
                  for (1..$#x) {
@@ -108,8 +110,7 @@ for my $url (@ARGV) {
       edition month year issue_date jstor_formatteddate
       organization publisher address
       language isbn issn doi eid acmid url eprint
-      note annote keywords abstract copyright
-      );
+      note annote keywords abstract copyright);
     for my $field ($entry->fieldlist()) {
         die "Unknown field: $field.\n" unless grep { $field eq $_ } @field_order;
         die "Duplicate field '$field' will be mangled" if
@@ -355,7 +356,7 @@ sub parse_jstor {
     $cont =~ s[JSTOR CITATION LIST][]g; # hack to avoid junk chars
     my $entry = parse_bibtex($cont);
     $entry->set('doi', $suffix);
-    my ($month) = ($entry->get('jstor_formatteddate') =~ m[^(.*), \d\d\d\d$]);
+    my ($month) = ($entry->get('jstor_formatteddate') =~ m[^(.*)( \d\d?), \d\d\d\d$]);
     $entry->set('month', $month) if defined $month;
     # TODO: remove empty abstract
     return $entry;

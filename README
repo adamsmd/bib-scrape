@@ -1,0 +1,121 @@
+TODO: name
+
+This is a BibTeX scraper for collecting BibTeX entries from the
+websites of computer-science academic publishers.  I use it personally
+to make preparing my BibTeX files easier.  Currently it supports ACM,
+Springer, IEEE Computer Society, IEEE Explore, Science Direct,
+Cambridge Journals (e.g. Journal of Functional Programming), JSTOR,
+IOS Press, and Wiley.
+
+In addition, this scraper fixes common problems with the BibTeX that
+these services provide.  For example, it fixes:
+ - the handling of Unicode and other formatting (e.g. subscripts) in titles;
+ - the incorrect use of the 'issue' field instead of the 'number' field;
+ - the format of the 'doi' and 'pages' fields; and
+ - the use of macros for the 'month' field; and
+ - miscellaneous problems with specific publishers.
+
+Usage
+================
+The usage is
+  ./wmech.pl URL ...
+
+Each URL is the page of an article you want to scrape.  Note that if
+you have a DOI, then prefixing 'http://dx.doi.org/' on the DOI will
+form a usable URL.
+
+Examples:
+  ./wmech.pl http://portal.acm.org/citation.cfm?id=1614435
+  ./wmech.pl http://www.springerlink.com/content/nhw5736n75028853/
+  ./wmech.pl http://dx.doi.org/10.1007/BF01975011
+
+Disclaimer
+================
+Please use this software responsibly.  You are responsible for how you
+use it.  It does not contain any bandwidth limiting code as most
+publisher pages respond slowly enough that it is usually not
+necessary.  However, I've only tested it for preparing small
+bibliographies with fewer than 100 entries.  If you try to scrape too
+many at a time, I make no guarantees that you won't accidentally DoS
+the publisher.
+
+Feedback
+================
+If you have any problems or suggestions, feel free to contact me.  I
+am particularly interested in any articles on which that wmech breaks
+or formats incorrectly, and any BibTeX fixes that you think should be
+included.
+
+Until I build up my test suite, I am also interested in collecting
+pages that test things like articles that have Unicode in their titles
+and so forth.
+
+However, since I am the only maintainer and there are hundreds of
+publishers, I have to limit what publishers to support.  If you find a
+computer-science publisher that I forgot, let me know and I'll add it.
+I'm more hesitant to add other publishers.
+
+Features
+================
+
+ - All fields except 'doi' and 'url' are escaped.  The 'doi' and 'url' fields
+   are not escaped on the assumption that you are using the Latex url package.
+
+ - Fields are stripped to bare values. For example, leading 'ABSTRACT', 'p.' or 'doi:'
+   are stripped from the 'abstract', 'pages' and 'doi' fields respectively.
+
+ - The 'url' field is omitted if it just points back to the publisher's page.
+
+ - The 'note' field is omitted if it just contains the 'doi'.
+
+ - Unicode and some form formatting (e.g. superscripts) use the correct Latex codes.
+
+ - Ranges (e.g. pages) use "--" instead of "-".  (Note, this be
+   incorrect for the 'number' field of a @techreport.)
+
+ - Full journal names are used when available instead of
+   abbreviations.
+
+ - Fields are put in a standard order.
+
+ - Entry keys are generated as "last-name-of-first-author:year:doi"
+   or when there is no doi as "last-name-of-first-author:year".
+   (This needs improvement.)
+
+ - The 'issue' and 'keyword' fields are renamed to 'number' and
+   'keywords' respectively.
+
+ - For ACM, the conference proceedings are preferred over SIGPLAN Notices.
+
+Limitations
+================
+
+ - Formatting of author names is the biggest problem.  The data from
+   the publishers is often incomplete or incorrect.  For example,
+   I've found 'Blume' misspelled as 'Blu', 'Bruno C.d.S Oliviera'
+   listed as 'Bruno Oliviera' and 'Simon Peyton Jones' listed as
+   'Jones, Simon Peyton'.  
+ - Data from the publishers if often wrong (e.g. incorrect author names: 'Blume' => 'Blu', Bruno C.d.S Oliviera, Simon Peyton Jones)
+ - Many huristics are involved
+ - Often 2-3 pages have to be loaded and publisher pages can be slow.
+   In total it takes around 1 second per citation.
+ - There are many BibTeX problems that it can't fix:
+   - The howpublished field shouldn't be used for URLs.  Use the url field for that.
+   - Names should be 'von last, first, jr' as it is the only unambiguous format in BibTeX.
+   - Proper names in titles should be capitalized with braces (e.g. "{H}askell").
+
+License
+================
+Copyright (c) 2011, Michael D. Adams <http://www.cs.indiana.edu/~adamsmd/>
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
