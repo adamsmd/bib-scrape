@@ -28,7 +28,7 @@ sub Text::RIS::parse {
         } else {} # blank line
     }
 
-    return Text::DATA->new(data => $data);
+    return Text::RIS->new(data => $data);
 }
 
 #ABST		Abstract
@@ -43,7 +43,8 @@ my %ris_types = (
     'CHAP', 'inbook',
     'CHAPTER', 'inbook',
     'INCOL', 'incollection',
-    'JOUR', 'journal',
+    'JFULL', 'journal',
+    'JOUR', 'article',
     'MGZN', 'article',
     'PAMP', 'booklet',
     'RPRT', 'techreport',
@@ -72,8 +73,8 @@ sub Text::RIS::bibtex {
     my $doi = qr[^(\s*doi:\s*\w+\s+)?(.*)$]s;
 
     # TODO: flattening
-    $entry->set_type(exists $self_types{$self->{'TY'}} ?
-        $self_types{$self->{'TY'}} :
+    $entry->set_type(exists $ris_types{$self->{'TY'}} ?
+        $ris_types{$self->{'TY'}} :
         (print STDERR "Unknown RIS TY: $self->{'TY'}. Using misc.\n" and 'misc'));
     #ID: ref id
     $entry->set('title', $self->{'T1'} || $self->{'TI'} || $self->{'CT'} || (

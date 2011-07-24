@@ -10,5 +10,6 @@ http://www.computer.org/portal/web/csdl/doi/10.1109/SITIS.2008.31
   address = {Los Alamitos, CA, USA},
   isbn = {978-0-7695-3493-0},
   doi = {10.1109/SITIS.2008.31},
+  bib_scrape_url = {http://www.computer.org/portal/web/csdl/doi/10.1109/SITIS.2008.31},
 }
 

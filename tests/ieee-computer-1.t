@@ -10,5 +10,6 @@ Volume should not be 0
   address = {Los Alamitos, CA, USA},
   issn = {1043-6871},
   doi = {10.1109/LICS.1997.614960},
+  bib_scrape_url = {http://www.computer.org/portal/web/csdl/doi/10.1109/LICS.1997.614960}
 }
 

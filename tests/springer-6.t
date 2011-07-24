@@ -3,7 +3,7 @@ Book
 @Book{,
   author =    {Nielson, Flemming and Nielson, Hanne R. and Hankin, Chris},
   title =        {Principles of Program Analysis},
-  publisher =    {},
+  publisher =    {TODO},
   year =         {1999},
   OPTkey =       {},
   OPTvolume =    {},
@@ -13,7 +13,7 @@ Book
   edition =   {1st},
   OPTmonth =     {},
   OPTnote =      {},
-  OPTannote =    {}
+  OPTannote =    {},
   isbn = {978-3-540-65410-0},
 }
 

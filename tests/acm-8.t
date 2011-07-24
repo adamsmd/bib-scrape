@@ -17,6 +17,7 @@ Unicode in title
   issn = {1529-3785},
   doi = {10.1145/1614431.1614436},
   acmid = {1614436},
+  bib_scrape_url = {http://portal.acm.org/citation.cfm?id=1614431.1614436},
   keywords = {Abbreviations, environments as terms, terms as types},
   abstract = {The formal system {\lambda}{\ensuremath{\delta}} is a typed {\lambda}-calculus that pursues the unification of terms, types, environments, and contexts as the main goal. {\lambda}{\ensuremath{\delta}} takes some features from the Automath-related {\lambda}-calculi and some from the pure type systems, but differs from both in that it does not include the {\ensuremath{\Pi}} construction while it provides for an abbreviation mechanism at the level of terms. {\lambda}{\ensuremath{\delta}} enjoys some important desirable properties such as the confluence of reduction, the correctness of types, the uniqueness of types up to conversion, the subject reduction of the type assignment, the strong normalization of the typed terms, and, as a corollary, the decidability of type inference problem.},
 }

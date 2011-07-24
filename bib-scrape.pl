@@ -22,6 +22,8 @@ my ($BIBTEX, $DEBUG, $KEEP_KEYS, @OMIT);
 
 GetOptions('bibtex!' => \$BIBTEX, 'debug!' => \$DEBUG, 'keep-keys!' => \$KEEP_KEYS,
     'omit=s' => \@OMIT);
+# Omit:class/type
+# Include:class/type
 # no issn, no isbn
 # known fields
 # SIGPLAN
@@ -59,6 +61,8 @@ my %latex_fixes = (
     "\x{2a7e}" => "\$\\geqslant\$",
     "\x{204e}" => "\textasteriskcentered", # Not a perfect match but close enough
     "\x{2113}" => "\$\\ell\$",
+    "\x{03bb}" => "\$\\lambda\$",
+    "\x{039b}" => "\$\\Lambda\$",
     );
 
 $TeX::Encode::LATEX_Escapes{$_} = $latex_fixes{$_} for keys %latex_fixes;
@@ -151,7 +155,7 @@ for my $old_entry (@entries) {
     for my $field ($entry->fieldlist()) {
         warn "Undefined $field" unless defined $entry->get($field);
         $entry->set($field, latex_encode($entry->get($field)))
-            unless $field eq 'doi' or $field eq 'url'
+            unless $field eq 'doi' or $field eq 'url' or $field eq 'eprint';
     }
 
     # Use bibtex month macros
@@ -413,6 +417,7 @@ sub parse_cambridge_university_press {
 #</h3><h3><a>(.*?)</a></h3>]s));
 
     update($entry, 'doi', sub { $_ = undef if $_ eq "null" });
+    $entry->set('doi', $entry->get('url')) if (not $entry->exists('doi'));
 
     return $entry;
     # TODO: fix authors
