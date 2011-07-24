@@ -16,19 +16,19 @@ sub Text::RIS::parse {
     my ($text) = @_;
     $text =~ s/^\x{FEFF}//; # Remove Byte Order Mark
 
-    my $ris = {}; # {key, [string]}
+    my $data = {}; # {key, [string]}
     my $last_key = "";
     for my $line (split("\n", $text)) { #(split("\n", $text))) {
         $line =~ s[\r|\n][]g;
         my ($key, $val) = $line =~ m[^([A-Z][A-Z0-9]|DOI)  - *(.*?) *$];
-        if (defined $key) { push @{$ris->{$key}}, $val; $last_key = $key; }
+        if (defined $key) { push @{$data->{$key}}, $val; $last_key = $key; }
         elsif ("" ne $line) {
-            my $list = $ris->{$last_key};
+            my $list = $data->{$last_key};
             @$list[$#$list] .= "\n" . $line;
         } else {} # blank line
     }
 
-    Text::RIS->new(data => $ris);
+    return Text::DATA->new(data => $data);
 }
 
 #ABST		Abstract
@@ -56,54 +56,54 @@ sub ris_author { join(" and ", map { s[(.*),(.*),(.*)][$1,$3,$2];
                                      m[[^, ]] ? $_ : (); } @_); }
 
 sub Text::RIS::bibtex {
-    my ($ris) = @_;
-    $ris = {%{$ris->data}};
+    my ($self) = @_;
+    $self = {%{$self->data}};
 
     my $entry = new Text::BibTeX::Entry;
     $entry->parse_s("\@misc{RIS,}", 0); # 1 for preserve values
 
-    $entry->set('author', ris_author(@{$ris->{'A1'} || $ris->{'AU'} || []}));
-    $entry->set('editor', ris_author(@{$ris->{'A2'} || $ris->{'ED'} || []}));
-    $entry->set('keywords', join " ; ", @{$ris->{'KW'}}) if $ris->{'KW'};
-    $entry->set('url', join " ; ", @{$ris->{'UR'}}) if $ris->{'UR'};
+    $entry->set('author', ris_author(@{$self->{'A1'} || $self->{'AU'} || []}));
+    $entry->set('editor', ris_author(@{$self->{'A2'} || $self->{'ED'} || []}));
+    $entry->set('keywords', join " ; ", @{$self->{'KW'}}) if $self->{'KW'};
+    $entry->set('url', join " ; ", @{$self->{'UR'}}) if $self->{'UR'};
 
-    for (keys %$ris) { $ris->{$_} = join "", @{$ris->{$_}} }
+    for (keys %$self) { $self->{$_} = join " ; ", @{$self->{$_}} }
 
     my $doi = qr[^(\s*doi:\s*\w+\s+)?(.*)$]s;
 
     # TODO: flattening
-    $entry->set_type(exists $ris_types{$ris->{'TY'}} ?
-        $ris_types{$ris->{'TY'}} :
-        (print STDERR "Unknown RIS TY: $ris->{'TY'}. Using misc.\n" and 'misc'));
+    $entry->set_type(exists $self_types{$self->{'TY'}} ?
+        $self_types{$self->{'TY'}} :
+        (print STDERR "Unknown RIS TY: $self->{'TY'}. Using misc.\n" and 'misc'));
     #ID: ref id
-    $entry->set('title', $ris->{'T1'} || $ris->{'TI'} || $ris->{'CT'} || (
-        ($ris->{'TY'} eq 'BOOK' || $ris->{'TY'} eq 'UNPB') && $ris->{'BT'}));
-    $entry->set('booktitle', $ris->{'T2'} || (
-        !($ris->{'TY'} eq 'BOOK' || $ris->{'TY'} eq 'UNPB') && $ris->{'BT'}));
-    $entry->set('series', $ris->{'T3'}); # check
+    $entry->set('title', $self->{'T1'} || $self->{'TI'} || $self->{'CT'} || (
+        ($self->{'TY'} eq 'BOOK' || $self->{'TY'} eq 'UNPB') && $self->{'BT'}));
+    $entry->set('booktitle', $self->{'T2'} || (
+        !($self->{'TY'} eq 'BOOK' || $self->{'TY'} eq 'UNPB') && $self->{'BT'}));
+    $entry->set('series', $self->{'T3'}); # check
     #A3: author series
     #A[4-9]: author (undocumented)
-    my ($year, $month, $day) = split m[/|-], ($ris->{'PY'} || $ris->{'Y1'});
+    my ($year, $month, $day) = split m[/|-], ($self->{'PY'} || $self->{'Y1'});
     $entry->set('year', $year);
     $entry->set('month', num2month($month)->[1]) if $month;
     $entry->set('day', $day);
     #Y2: date secondary
-    ($ris->{'N1'} || $ris->{'AB'} || $ris->{'N2'} || "") =~ $doi;
+    ($self->{'N1'} || $self->{'AB'} || $self->{'N2'} || "") =~ $doi;
     $entry->set('abstract', $2) if length($2);
     #RP: reprint status (too complex for what we need)
-    $entry->set('journal', ($ris->{'JF'} || $ris->{'JO'} || $ris->{'JA'} ||
-                            $ris->{'J1'} || $ris->{'J2'}));
-    $entry->set('volume', $ris->{'VL'});
-    $entry->set('number', $ris->{'IS'} || $ris->{'CP'});
-    $entry->set('pages', $ris->{'EP'} ?
-        "$ris->{'SP'}--$ris->{'EP'}" :
-        $ris->{'SP'}); # start page may contain end page
+    $entry->set('journal', ($self->{'JF'} || $self->{'JO'} || $self->{'JA'} ||
+                            $self->{'J1'} || $self->{'J2'}));
+    $entry->set('volume', $self->{'VL'});
+    $entry->set('number', $self->{'IS'} || $self->{'CP'});
+    $entry->set('pages', $self->{'EP'} ?
+        "$self->{'SP'}--$self->{'EP'}" :
+        $self->{'SP'}); # start page may contain end page
     #CY: city
-    $entry->set('publisher', $ris->{'PB'});
+    $entry->set('publisher', $self->{'PB'});
     $entry->set('issn', $1) if
-        $ris->{'SN'} && $ris->{'SN'} =~ m[\b(\d{4}-\d{4})\b];
-    $entry->set('isbn', $ris->{'SN'}) if
-        $ris->{'SN'} && $ris->{'SN'} =~ m[\b((\d|X)[- ]*){10,13}\b];
+        $self->{'SN'} && $self->{'SN'} =~ m[\b(\d{4}-\d{4})\b];
+    $entry->set('isbn', $self->{'SN'}) if
+        $self->{'SN'} && $self->{'SN'} =~ m[\b((\d|X)[- ]*){10,13}\b];
     #AD: address
     #AV: (unneeded)
     #M[1-3]: misc
@@ -112,13 +112,13 @@ sub Text::RIS::bibtex {
     #L2: link to text, multiple lines or separated by semi
     #L3: link to records
     #L4: link to images
-    $entry->set('doi', $ris->{'DO'} || $ris->{'DOI'} || $ris->{'M3'} || (
-        $ris->{'N1'} && $ris->{'N1'} =~ $doi && $1));
+    $entry->set('doi', $self->{'DO'} || $self->{'DOI'} || $self->{'M3'} || (
+        $self->{'N1'} && $self->{'N1'} =~ $doi && $1));
     #ER
 
     for ($entry->fieldlist) { $entry->delete($_) if not defined $entry->get($_) }
 
-    $entry;
+    return $entry;
 }
 
 1;

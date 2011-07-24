@@ -7,13 +7,41 @@ $|++;
 use WWW::Mechanize;
 use Text::BibTeX;
 use Text::BibTeX::Value;
-use HTML::HeadParser;
 use TeX::Encode;
 use HTML::Entities;
 use Encode;
 
 use Text::RIS;
+use Text::GoogleScholar;
 use Text::BibTeX::Months;
+
+use Getopt::Long qw(:config auto_version auto_help);
+
+$main::VERSION=1.0;
+my ($BIBTEX, $DEBUG, $KEEP_KEYS, @OMIT);
+
+GetOptions('bibtex!' => \$BIBTEX, 'debug!' => \$DEBUG, 'keep-keys!' => \$KEEP_KEYS,
+    'omit=s' => \@OMIT);
+# no issn, no isbn
+# known fields
+# SIGPLAN
+# title-case after ":"
+
+=head1 SYNOPSIS
+
+bibscrape [options] <url> ...
+
+=head2 OPTIONS
+
+=item --omit=field
+
+    Omit a particular field from the output.
+
+=item --debug
+
+    Print debug data (TODO: make it verbose and go to STDERR)
+
+=cut
 
 # TODO:
 #  get PDF
@@ -26,19 +54,49 @@ use Text::BibTeX::Months;
 #  add abstract to jstor
 #END TODO
 
+my %latex_fixes = (
+    "\x{2a7d}" => "\$\\leqslant\$",
+    "\x{2a7e}" => "\$\\geqslant\$",
+    "\x{204e}" => "\textasteriskcentered", # Not a perfect match but close enough
+    "\x{2113}" => "\$\\ell\$",
+    );
+
+$TeX::Encode::LATEX_Escapes{$_} = $latex_fixes{$_} for keys %latex_fixes;
+#
 # \ensuremath{FOO} is better than $FOO$
 for (keys %TeX::Encode::LATEX_Escapes) {
     $TeX::Encode::LATEX_Escapes{$_} =~ s[^\$(.*)\$$][\\ensuremath{$1}];
 }
 
-sub DEBUG() { 0; }
-
 my $mech;
 
-for my $url (@ARGV) {
+my @entries;
+
+if ($BIBTEX) {
+    my $file = new Text::BibTeX::File "<-";
+    while (my $entry = new Text::BibTeX::Entry $file) {
+#    bib_scrape_url = dx.doi if doi and not bib_scrape_url
+#    $x->exists('doi') ? "http://dx.doi.org/".doi_clean($x->get('doi')) :
+#        $x->exists('bib-scrape-url') ? $x->get('bib-scrape-url') : warn "";
+#    push @entries, ...;
+        print $entry, "\n";
+        push @entries, $entry;
+    }
+}
+
+for (@ARGV) {
+    my $entry = new Text::BibTeX::Entry;
+    $entry->set('bib_scrape_url', $_);
+    push @entries, $entry;
+}
+
+for my $old_entry (@entries) {
+    my $url = $old_entry->get('bib_scrape_url');
+    print $old_entry->print_s() and next unless $url;
+# TODO: comma, other clean up code?
     $mech = WWW::Mechanize->new(autocheck => 1);
-    $mech->add_handler("request_send",  sub { shift->dump; return }) if DEBUG;
-    $mech->add_handler("response_done", sub { shift->dump; return }) if DEBUG;
+    $mech->add_handler("request_send",  sub { shift->dump; return }) if $DEBUG;
+    $mech->add_handler("response_done", sub { shift->dump; return }) if $DEBUG;
     $mech->agent_alias('Windows IE 6');
     $mech->get($url);
 
@@ -77,16 +135,21 @@ for my $url (@ARGV) {
     # Generate an entry key
     # TODO: Formats: author/editor1.last year title/journal.abbriv
     # TODO: Key may fail on unicode names? Remove doi?
-    my ($name) = ($entry->names('author'), $entry->names('editor'));
+    if (defined $old_entry->key() and $KEEP_KEYS) {
+        $entry->set_key($old_entry->key());
+    } else {
+        my ($name) = ($entry->names('author'), $entry->names('editor'));
         #$organization, or key
-    if ($name and $entry->exists('year')) {
-        ($name) = join("", $name->part('last'));
-        $entry->set_key($name . ':' . $entry->get('year') .
-            ($entry->exists('doi') ? ":" . $entry->get('doi') : ""));
+        if ($name and $entry->exists('year')) {
+            ($name) = join("", $name->part('last'));
+            $entry->set_key($name . ':' . $entry->get('year') .
+                            ($entry->exists('doi') ? ":" . $entry->get('doi') : ""));
+        }
     }
 
     # Eliminate Unicode but not for doi and url fields (assuming \usepackage{url})
     for my $field ($entry->fieldlist()) {
+        warn "Undefined $field" unless defined $entry->get($field);
         $entry->set($field, latex_encode($entry->get($field)))
             unless $field eq 'doi' or $field eq 'url'
     }
@@ -101,6 +164,8 @@ for my $url (@ARGV) {
                      map { (str2month(lc $_)) or ([Text::BibTeX::BTAST_STRING, $_]) }
                      map { $_ ne "" ? $_ : () } @x)});
 
+    $entry->set('bib_scrape_url', $url);
+
     # Put fields in a standard order.
     my @field_order = qw(
       author editor affiliation title
@@ -109,7 +174,7 @@ for my $url (@ARGV) {
       chapter pages articleno numpages
       edition month year issue_date jstor_formatteddate
       organization publisher address
-      language isbn issn doi eid acmid url eprint
+      language isbn issn doi eid acmid url eprint bib_scrape_url
       note annote keywords abstract copyright);
     for my $field ($entry->fieldlist()) {
         die "Unknown field: $field.\n" unless grep { $field eq $_ } @field_order;
@@ -117,6 +182,8 @@ for my $url (@ARGV) {
             scalar(grep { $field eq $_ } $entry->fieldlist()) >= 2;
     }
     $entry->set_fieldlist([map { $entry->exists($_) ? ($_) : () } @field_order]);
+
+    $entry->delete($_) for (@OMIT);
 
     # Force comma after last field to make editing easier
     my $str = $entry->print_s();
@@ -133,12 +200,17 @@ sub latex_encode
     my ($str) = @_;
     $str = decode_entities($str);
     $str =~ s[([$TeX::Encode::LATEX_Reserved])][\\$1]sog;
-    $str =~ s[<i>(.*?)</i>][{\\it $1}]sog; # HTML -> LaTeX Codes
+    # HTML -> LaTeX Codes
+    $str =~ s[<i>(.*?)</i>][{\\it $1}]sog;
+    $str =~ s[<italic>(.*?)</italic>][{\\it $1}]sog;
     $str =~ s[<em>(.*?)</em>][{\\em $1}]sog;
+    $str =~ s[<strong>(.*?)</strong>][{\\bf $1}]sog;
     $str =~ s[<sup>(.*?)</sup>][\\ensuremath{\^\\textrm{$1}}]sog;
+    $str =~ s[<supscrpt>(.*?)</supscrpt>][\\ensuremath{\^\\textrm{$1}}]sog;
     $str =~ s[<sub>(.*?)</sub>][\\ensuremath{\_\\textrm{$1}}]sog;
     $str =~ s[([<>])][\\ensuremath{$1}]sog;
-    $str =~ s[([^\x00-\x80])][\{$TeX::Encode::LATEX_Escapes{$1}\}]sg;
+    $str =~ s[([^\x00-\x80])][\{@{[$TeX::Encode::LATEX_Escapes{$1} or
+             die "Unknown Unicode charater: $1 ", sprintf("0x%x", ord($1))]}\}]sg;
     return $str;
 }
 
@@ -149,7 +221,7 @@ sub parse_bibtex {
     $bib_text =~ s/^\x{FEFF}//; # Remove Byte Order Mark
 
     my $entry = new Text::BibTeX::Entry;
-    print "BIBTEXT:\n$bib_text\n" if DEBUG;
+    print "BIBTEXT:\n$bib_text\n" if $DEBUG;
     $entry->parse_s(encode('utf8', $bib_text), 0); # 1 for preserve values
     die "Can't parse BibTeX:\n$bib_text\n" unless $entry->parse_ok;
 
@@ -172,12 +244,24 @@ sub update {
     }
 }
 
-sub meta_tag {
-    my ($name) = @_;
-    my $p = new HTML::HeadParser;
-    $p->parse($mech->content());
-    return $p->header('X-Meta-' . $name);
-}
+#sub meta_tag {
+#    my ($name) = @_;
+#    my $p = new HTML::HeadParser;
+#    $p->parse($mech->content());
+#    return $p->header('X-Meta-' . $name);
+#}
+#
+#sub citation_authors {
+#    my $authors;
+#    if (meta_tag('citation_author')) {
+#        $authors = join(" and ", meta_tag('citation_author'));
+#    } else {
+#        ($x) = meta_tag('citation_authors');
+#        $x =~ s[;][ and ]g;
+#    }
+#    $authors =~ s[  +][ ]g;
+#    return $authors;
+#}
 
 ################
 
@@ -185,14 +269,13 @@ sub parse {
     if (domain('acm.org')) { parse_acm(@_); }
     elsif (domain('sciencedirect.com')) { parse_science_direct(@_); }
     elsif (domain('springerlink.com')) { parse_springerlink(@_); }
-    elsif (domain('journals.cambridge.org')) {
-        parse_cambridge_university_press(@_);
-    }
+    elsif (domain('journals.cambridge.org')) { parse_cambridge_university_press(@_); }
     elsif (domain('computer.org')) { parse_ieee_computer_society(@_); }
     elsif (domain('jstor.org')) { parse_jstor(@_); }
     elsif (domain('iospress.metapress.com')) { parse_ios_press(@_); }
     elsif (domain('ieeexplore.ieee.org')) { parse_ieeexplore(@_); }
     elsif (domain('onlinelibrary.wiley.com')) {parse_wiley(@_); }
+    elsif (domain('oxfordjournals.org')) { parse_oxford_journals(@_); }
     else { die "Unknown URI: " . $mech->uri(); }
 }
 
@@ -220,15 +303,10 @@ sub parse_acm {
 
     # Un-abbreviated journal title, but avoid spurious "journal" when
     # proceedings are published in SIGPLAN Not.
-    $entry->set('journal', meta_tag('citation_journal_title'))
-        if $entry->exists('journal');
+    my $html = Text::GoogleScholar::parse($mech->content())->bibtex();
+    $entry->set('journal', $html->get('journal')) if $entry->exists('journal');
 
-    if ($entry->exists('author')) {
-        my @x = meta_tag('citation_authors');
-        $x[0] =~ s[;][ and ]g;
-        $x[0] =~ s[  +][ ]g;
-        $entry->set('author', $x[0]);
-    }
+    $entry->set('author', $html->get('author')) if ($entry->exists('author'));
 
     $entry->set('title', $mech->content() =~
                 m[<h1 class="mediumb-text".*?><strong>(.*?)</strong></h1>])
@@ -237,22 +315,45 @@ sub parse_acm {
     # Abstract
     my ($abstr_url) = $mech->content() =~ m[(tab_abstract.*?)\'];
     $mech->get($abstr_url);
-    $entry->set('abstract', $mech->content() =~
-                m[<div style="display:inline">(?:<par>|<p>)?(.+?)(?:</par>|</p>)?</div>]);
-    # Fix the double HTML encoding of the abstract (Bug in ACM?)
-    $entry->set('abstract', decode_entities($entry->get('abstract')));
+    if (my ($abstr) = $mech->content() =~
+        m[<div style="display:inline">((?:<par>|<p>)?.+?(?:</par>|</p>)?)</div>]) {
+        # Fix the double HTML encoding of the abstract (Bug in ACM?)
+        $entry->set('abstract', decode_html(decode_entities($abstr)));
+    }
 
     return $entry;
 }
 
+sub decode_html {
+    my ($x) = @_;
+    $x =~ s[<!--.*?-->][]sg;
+    $x =~ s[<a [^>]*onclick="toggleTabs\(.*?\)">.*?</a>][]sg; # Science Direct
+    $x =~ s[<a .*?>(.*?)</a>][$1]sg;
+    $x =~ s[<p(| [^>]*)>(.*?)</p>][$2\n\n]sg;
+    $x =~ s[<par(| [^>]*)>(.*?)</par>][$2\n\n]sg;
+    $x =~ s[<span(| [^>]*)>(.*?)</span>][$2]sg;
+    $x =~ s[<img src="http://www.sciencedirect.com/scidirimg/entities/([0-9a-f]+).gif".*?>][@{[chr(hex $1)]}]sg; # Science Direct
+    $x =~ s[\s*$][];
+    $x =~ s[^\s*][];
+    $x;
+}
+
+
 sub parse_science_direct {
     my ($mech) = @_;
+
+    # Find the title and reverse engineer the Unicode
+    my $title = decode_html(
+        $mech->content() =~ m[<div class="articleTitle.*?>\s*(.*?)\s*</div>]s);
+    my $abst = decode_html($mech->content() =~ m[>Abstract</h3>\s*(.*?)\s*</div>]);
 
     $mech->follow_link(text => 'Export citation');
 
     $mech->submit_form(with_fields => {
         'format' => 'cite', 'citation-type' => 'BIBTEX'});
     my $entry = parse_bibtex($mech->content());
+    $entry->set('title', $title);
+    $entry->set('abstract', $abst);
     $mech->back();
 
     $mech->submit_form(with_fields => {
@@ -260,9 +361,8 @@ sub parse_science_direct {
     my $f = Text::RIS::parse($mech->content())->bibtex();
     $entry->set('author', $f->get('author'));
     $entry->set('month', $f->get('month'));
-    $entry->set('abstract', $f->get('abstract'));
     $entry->delete('keywords');
-    $entry->set('keywords', $f->get('keywords'));
+    $entry->set('keywords', $f->get('keywords')) if $f->get('keywords');
 # TODO: editor
 
     return $entry;
@@ -306,8 +406,12 @@ sub parse_cambridge_university_press {
     my $entry = parse_bibtex($mech->content());
     $mech->back(); $mech->back();
 
-    my ($abst) = $mech->content() =~ m[>Abstract</.*?><p><p>(.*?)</p>]s;
-    $entry->set('abstract', $abst) if $abst;
+    my ($abst) = $mech->content() =~ m[>Abstract</.*?><p>(<p>.*?</p>)\s*</p>]s;
+    $entry->set('abstract', decode_html($abst)) if $abst;
+
+    $entry->set('title', decode_html($mech->content() =~ m[<div id="codeDisplayWrapper">\s*<div.*?>\s*<div.*?>(.*?)</div>]));
+#</h3><h3><a>(.*?)</a></h3>]s));
+
     update($entry, 'doi', sub { $_ = undef if $_ eq "null" });
 
     return $entry;
@@ -367,7 +471,7 @@ sub parse_ios_press {
 
     $mech->follow_link(text => 'RIS');
     my $f = Text::RIS::parse($mech->content())->bibtex();
-    my $entry = parse_bibtex("\@" . $f->type . " {X,}");
+    my $entry = parse_bibtex("\@" . $f->type . " {unknown_key,}");
     # TODO: missing items?
     for ('journal', 'title', 'volume', 'number', 'abstract', 'pages',
          'author', 'year', 'month', 'doi') {
@@ -388,7 +492,7 @@ sub parse_ios_press {
 }
 
 sub parse_wiley {
-    my ($mech, $fields) = @_;
+    my ($mech) = @_;
     $mech->follow_link(text => 'Export Citation for this Article');
     $mech->submit_form(with_fields => {
         'fileFormat' => 'BIBTEX', 'hasAbstract' => 'CITATION_AND_ABSTRACT'});
@@ -396,5 +500,34 @@ sub parse_wiley {
     update($entry, 'abstract', sub { s[^\s*Abstract\s+][] });
     update($entry, 'abstract',
            sub { s[ Copyright . \d\d\d\d John Wiley \& Sons, Ltd\.$][] });
+    return $entry;
+}
+
+sub parse_oxford_journals {
+    my ($mech) = @_;
+
+    my $html = Text::GoogleScholar::parse($mech->content())->bibtex();
+    my $entry = parse_bibtex("\@article{unknown_key,}");
+
+    $html->exists($_) and $entry->set($_, $html->get($_)) for (qw(
+      author editor affiliation title
+      howpublished booktitle journal volume number series
+      type school institution location
+      chapter pages
+      edition month year
+      organization publisher address
+      language isbn issn doi url
+      note annote keywords abstract copyright));
+
+    my ($year, $month) = ($mech->content() =~
+                          m[<meta +content="(\d+)-(\d+)-\d+" +name="DC.Date" */>]i);
+    $entry->set('year', $year);
+    $entry->set('month', num2month($month)->[1]);
+
+    $entry->set('publisher', ($mech->content() =~
+                              m[<meta +content="(.*?)" name="DC.Publisher" */>]i));
+#    $entry->set('address', 'Oxford, UK');
+    update($entry, 'issn', sub { s[ *; *][/]g; });
+
     return $entry;
 }

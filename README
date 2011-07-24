@@ -55,6 +55,10 @@ publishers, I have to limit what publishers to support.  If you find a
 computer-science publisher that I forgot, let me know and I'll add it.
 I'm more hesitant to add other publishers.
 
+TODO: Also as a matter of policy, I tend to prefer the publisher's
+page over that of an aggregator (e.g. BibSonomy).  My rule of thumb
+is that I'll grab the data from where the DOI points.
+
 Features
 ================
 
@@ -89,6 +93,12 @@ Features
 
 Limitations
 ================
+ - Basically don't trust the "title", "author" and "abstract" fields.
+   Other fields will generally be right, but these fields often have
+   Latex code that don't get preserved by the publishers. Though
+   bib-scrape will do it's best, the results are often spotty.
+   Example $O$$($n$)$.
+   
 
  - Formatting of author names is the biggest problem.  The data from
    the publishers is often incomplete or incorrect.  For example,
@@ -103,6 +113,8 @@ Limitations
    - The howpublished field shouldn't be used for URLs.  Use the url field for that.
    - Names should be 'von last, first, jr' as it is the only unambiguous format in BibTeX.
    - Proper names in titles should be capitalized with braces (e.g. "{H}askell").
+ - Complex math in titles or abstracts is likely to break.  A couple superscripts and
+   greek charaters are fine, but more than that is trouble.
 
 License
 ================
