@@ -1,4 +1,5 @@
-TODO: name
+Title: bib-scrape
+Version: 1.0
 
 This is a BibTeX scraper for collecting BibTeX entries from the
 websites of computer-science academic publishers.  I use it personally
@@ -18,16 +19,16 @@ these services provide.  For example, it fixes:
 Usage
 ================
 The usage is
-  ./wmech.pl URL ...
+  ./bib-scrape.pl URL ...
 
 Each URL is the page of an article you want to scrape.  Note that if
 you have a DOI, then prefixing 'http://dx.doi.org/' on the DOI will
 form a usable URL.
 
 Examples:
-  ./wmech.pl http://portal.acm.org/citation.cfm?id=1614435
-  ./wmech.pl http://www.springerlink.com/content/nhw5736n75028853/
-  ./wmech.pl http://dx.doi.org/10.1007/BF01975011
+  ./bib-scrape.pl http://portal.acm.org/citation.cfm?id=1614435
+  ./bib-scrape.pl http://www.springerlink.com/content/nhw5736n75028853/
+  ./bib-scrape.pl http://dx.doi.org/10.1007/BF01975011
 
 Disclaimer
 ================
@@ -42,7 +43,7 @@ the publisher.
 Feedback
 ================
 If you have any problems or suggestions, feel free to contact me.  I
-am particularly interested in any articles on which that wmech breaks
+am particularly interested in any articles on which that bib-scrape breaks
 or formats incorrectly, and any BibTeX fixes that you think should be
 included.
 
