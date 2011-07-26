@@ -5,7 +5,7 @@ cat ../tests/*.t >test.bib
 rm test.bbl test.aux test.pdf
 cat >test.tex <<EOF
 \documentclass[11pt]{article}
-\usepackage{cite}
+\usepackage{hyperref}
 \usepackage{amssymb}
 
 \begin{document}
@@ -13,7 +13,7 @@ cat >test.tex <<EOF
 \nocite{*}
 
 \bibliography{test}
-\bibliographystyle{plain}
+\bibliographystyle{bib-scrape}
 \end{document}
 EOF
 
