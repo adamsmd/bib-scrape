@@ -6,8 +6,10 @@ $|++;
 
 use WWW::Mechanize;
 use Text::BibTeX;
+use Text::BibTeX qw(:subs);
 use Text::BibTeX::Value;
 use TeX::Encode;
+use TeX::Unicode;
 use HTML::Entities;
 use Encode;
 
@@ -17,17 +19,48 @@ use Text::BibTeX::Months;
 
 use Getopt::Long qw(:config auto_version auto_help);
 
+
+# TODO: move copyright from abstract to copyright field
+
+############
+# Options
+############
+#
+# Omit fields (filtered by type or other fields)
+# Omit if matches
+# Non-encoded fields (e.g. doi and url)
+# Comma at end
+# Key: Keep vs generate
+# Field order
+#
+# Author, Editor, Affiliation(?): List of renames
+# Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
+#  List of renames (regex?)
+#
+# Title
+#  Captialization: Initialisms, After colon, list of proper names
+#
+# ISBN: 10 vs 13 vs native, no-dash
+# ISSN: Print vs Electronic
+# Keywords: ';' vs ','
+#
+#
+
 $main::VERSION=1.0;
 my ($BIBTEX, $DEBUG, $KEEP_KEYS, @OMIT);
 
 GetOptions('bibtex!' => \$BIBTEX, 'debug!' => \$DEBUG, 'keep-keys!' => \$KEEP_KEYS,
     'omit=s' => \@OMIT);
+# Warn about non-four-digit year
 # Omit:class/type
 # Include:class/type
 # no issn, no isbn
 # known fields
 # SIGPLAN
 # title-case after ":"
+# Warn if first alpha after ":" is not capitalized
+# Flag about whether to Unicode, HTML, or LaTeX encode
+# purify_string
 
 =head1 SYNOPSIS
 
@@ -56,21 +89,21 @@ bibscrape [options] <url> ...
 #  add abstract to jstor
 #END TODO
 
-my %latex_fixes = (
-    "\x{2a7d}" => "\$\\leqslant\$",
-    "\x{2a7e}" => "\$\\geqslant\$",
-    "\x{204e}" => "\textasteriskcentered", # Not a perfect match but close enough
-    "\x{2113}" => "\$\\ell\$",
-    "\x{03bb}" => "\$\\lambda\$",
-    "\x{039b}" => "\$\\Lambda\$",
-    );
+#my %latex_fixes = (
+#    "\x{2a7d}" => "\$\\leqslant\$",
+#    "\x{2a7e}" => "\$\\geqslant\$",
+#    "\x{204e}" => "\textasteriskcentered", # Not a perfect match but close enough
+#    "\x{2113}" => "\$\\ell\$",
+#    "\x{03bb}" => "\$\\lambda\$",
+#    "\x{039b}" => "\$\\Lambda\$",
+#    );
 
-$TeX::Encode::LATEX_Escapes{$_} = $latex_fixes{$_} for keys %latex_fixes;
+#$TeX::Encode::LATEX_Escapes{$_} = $latex_fixes{$_} for keys %latex_fixes;
 #
 # \ensuremath{FOO} is better than $FOO$
-for (keys %TeX::Encode::LATEX_Escapes) {
-    $TeX::Encode::LATEX_Escapes{$_} =~ s[^\$(.*)\$$][\\ensuremath{$1}];
-}
+#for (keys %TeX::Encode::LATEX_Escapes) {
+#    $TeX::Encode::LATEX_Escapes{$_} =~ s[^\$(.*)\$$][\\ensuremath{$1}];
+#}
 
 my $mech;
 
@@ -107,6 +140,9 @@ for my $old_entry (@entries) {
     my $entry = parse($mech);
 
     # Doi field: remove "http://hostname/" or "DOI: "
+    $entry->set('doi', $entry->get('url')) if (
+        not $entry->exists('doi') and
+        ($entry->get('url') || "") =~ m[^http://dx.doi.org/.*$]);
     update($entry, 'doi', sub { s[http://[^/]+/][]i; s[DOI:\s*][]ig; });
     # Page numbers: no "pp." or "p."
     update($entry, 'pages', sub { s[pp?\.\s*][]ig; });
@@ -123,6 +159,7 @@ for my $old_entry (@entries) {
     # TODO: might misfire if "-" doesn't represent a range, Common for tech report numbers
     for my $key ('chapter', 'month', 'number', 'pages', 'volume', 'year') {
         update($entry, $key, sub { s[\s*-+\s*][--]ig; });
+        update($entry, $key, sub { s[n/a--n/a][]ig; $_ = undef if $_ eq "" });
         # TODO: single element range as x not x--x
     }
 
@@ -136,6 +173,25 @@ for my $old_entry (@entries) {
     update($entry, 'note', sub { $_ = undef if $_ eq "" });
     update($entry, 'note', sub { $_ = undef if $_ eq ($entry->get('doi') or "") });
 
+    for my $field (qw(
+      author editor affiliation title
+      howpublished booktitle journal volume number series jstor_issuetitle
+      type jstor_articletype school institution location
+      chapter pages articleno numpages
+      edition month year issue_date jstor_formatteddate
+      organization publisher address
+      language isbn issn doi eid acmid url eprint bib_scrape_url
+      keywords copyright)) {
+        update($entry, $field, sub { $_ =~ s/\s+/ /sg; });
+    }
+
+    # Eliminate Unicode but not for doi and url fields (assuming \usepackage{url})
+    for my $field ($entry->fieldlist()) {
+        warn "Undefined $field" unless defined $entry->get($field);
+        $entry->set($field, latex_encode($entry->get($field)))
+            unless $field eq 'doi' or $field eq 'url' or $field eq 'eprint';
+    }
+
     # Generate an entry key
     # TODO: Formats: author/editor1.last year title/journal.abbriv
     # TODO: Key may fail on unicode names? Remove doi?
@@ -145,17 +201,10 @@ for my $old_entry (@entries) {
         my ($name) = ($entry->names('author'), $entry->names('editor'));
         #$organization, or key
         if ($name and $entry->exists('year')) {
-            ($name) = join("", $name->part('last'));
+            ($name) = purify_string(join("", $name->part('last')));
             $entry->set_key($name . ':' . $entry->get('year') .
                             ($entry->exists('doi') ? ":" . $entry->get('doi') : ""));
         }
-    }
-
-    # Eliminate Unicode but not for doi and url fields (assuming \usepackage{url})
-    for my $field ($entry->fieldlist()) {
-        warn "Undefined $field" unless defined $entry->get($field);
-        $entry->set($field, latex_encode($entry->get($field)))
-            unless $field eq 'doi' or $field eq 'url' or $field eq 'eprint';
     }
 
     # Use bibtex month macros
@@ -201,20 +250,14 @@ for my $old_entry (@entries) {
 sub latex_encode
 {
     use utf8;
-    my ($str) = @_;
-    $str = decode_entities($str);
-    $str =~ s[([$TeX::Encode::LATEX_Reserved])][\\$1]sog;
-    # HTML -> LaTeX Codes
-    $str =~ s[<i>(.*?)</i>][{\\it $1}]sog;
-    $str =~ s[<italic>(.*?)</italic>][{\\it $1}]sog;
-    $str =~ s[<em>(.*?)</em>][{\\em $1}]sog;
-    $str =~ s[<strong>(.*?)</strong>][{\\bf $1}]sog;
-    $str =~ s[<sup>(.*?)</sup>][\\ensuremath{\^\\textrm{$1}}]sog;
-    $str =~ s[<supscrpt>(.*?)</supscrpt>][\\ensuremath{\^\\textrm{$1}}]sog;
-    $str =~ s[<sub>(.*?)</sub>][\\ensuremath{\_\\textrm{$1}}]sog;
+    my ($str) = decode_html2(@_);
+    $str =~ s[\s*$][];
+    $str =~ s[^\s*][];
+    $str =~ s[\n{2,}][\n{\\par}\n]sg; # BibTeX eats whitespace
     $str =~ s[([<>])][\\ensuremath{$1}]sog;
-    $str =~ s[([^\x00-\x80])][\{@{[$TeX::Encode::LATEX_Escapes{$1} or
-             die "Unknown Unicode charater: $1 ", sprintf("0x%x", ord($1))]}\}]sg;
+    $str = unicode2tex($str);
+#    $str =~ s[([^\x00-\x80])][\{@{[$TeX::Encode::LATEX_Escapes{$1} or
+#             die "Unknown Unicode charater: $1 ", sprintf("0x%x", ord($1))]}\}]sg;
     return $str;
 }
 
@@ -247,25 +290,6 @@ sub update {
         else { $entry->delete($field); }
     }
 }
-
-#sub meta_tag {
-#    my ($name) = @_;
-#    my $p = new HTML::HeadParser;
-#    $p->parse($mech->content());
-#    return $p->header('X-Meta-' . $name);
-#}
-#
-#sub citation_authors {
-#    my $authors;
-#    if (meta_tag('citation_author')) {
-#        $authors = join(" and ", meta_tag('citation_author'));
-#    } else {
-#        ($x) = meta_tag('citation_authors');
-#        $x =~ s[;][ and ]g;
-#    }
-#    $authors =~ s[  +][ ]g;
-#    return $authors;
-#}
 
 ################
 
@@ -322,24 +346,36 @@ sub parse_acm {
     if (my ($abstr) = $mech->content() =~
         m[<div style="display:inline">((?:<par>|<p>)?.+?(?:</par>|</p>)?)</div>]) {
         # Fix the double HTML encoding of the abstract (Bug in ACM?)
-        $entry->set('abstract', decode_html(decode_entities($abstr)));
+        $entry->set('abstract', decode_entities($abstr));
     }
 
     return $entry;
 }
 
-sub decode_html {
+sub decode_html2 {
     my ($x) = @_;
+    # HTML -> LaTeX Codes
+    $x = decode_entities($x);
+# #$%&~_^{}\\
+#    print $TeX::Encode::LATEX_Reserved, "\n";
+    $x =~ s[([$TeX::Encode::LATEX_Reserved])][\\$1]sog;
     $x =~ s[<!--.*?-->][]sg;
     $x =~ s[<a [^>]*onclick="toggleTabs\(.*?\)">.*?</a>][]sg; # Science Direct
-    $x =~ s[<a .*?>(.*?)</a>][$1]sg;
+    $x =~ s[<a( .*?)?>(.*?)</a>][$2]sog;
     $x =~ s[<p(| [^>]*)>(.*?)</p>][$2\n\n]sg;
     $x =~ s[<par(| [^>]*)>(.*?)</par>][$2\n\n]sg;
-    $x =~ s[<span(| [^>]*)>(.*?)</span>][$2]sg;
+    $x =~ s[<span style="font-family:monospace">(.*?)</span>][{\\tt $1}];
+    $x =~ s[<span( .*)?>(.*?)</span>][$2]sg;
+    $x =~ s[<i>(.*?)</i>][{\\it $1}]sog;
+    $x =~ s[<italic>(.*?)</italic>][{\\it $1}]sog;
+    $x =~ s[<em>(.*?)</em>][{\\em $1}]sog;
+    $x =~ s[<strong>(.*?)</strong>][{\\bf $1}]sog;
+    $x =~ s[<b>(.*?)</b>][{\\bf $1}]sog;
+    $x =~ s[<sup>(.*?)</sup>][\\ensuremath{\^\\textrm{$1}}]sog;
+    $x =~ s[<supscrpt>(.*?)</supscrpt>][\\ensuremath{\^\\textrm{$1}}]sog;
+    $x =~ s[<sub>(.*?)</sub>][\\ensuremath{\_\\textrm{$1}}]sog;
     $x =~ s[<img src="http://www.sciencedirect.com/scidirimg/entities/([0-9a-f]+).gif".*?>][@{[chr(hex $1)]}]sg; # Science Direct
-    $x =~ s[\s*$][];
-    $x =~ s[^\s*][];
-    $x;
+    return $x;
 }
 
 
@@ -347,9 +383,8 @@ sub parse_science_direct {
     my ($mech) = @_;
 
     # Find the title and reverse engineer the Unicode
-    my $title = decode_html(
-        $mech->content() =~ m[<div class="articleTitle.*?>\s*(.*?)\s*</div>]s);
-    my $abst = decode_html($mech->content() =~ m[>Abstract</h3>\s*(.*?)\s*</div>]);
+    my ($title) = $mech->content() =~ m[<div class="articleTitle.*?>\s*(.*?)\s*</div>]s;
+    my ($abst) = $mech->content() =~ m[>Abstract</h3>\s*(.*?)\s*</div>];
 
     $mech->follow_link(text => 'Export citation');
 
@@ -411,16 +446,22 @@ sub parse_cambridge_university_press {
     $mech->back(); $mech->back();
 
     my ($abst) = $mech->content() =~ m[>Abstract</.*?><p>(<p>.*?</p>)\s*</p>]s;
-    $entry->set('abstract', decode_html($abst)) if $abst;
+    $entry->set('abstract', $abst) if $abst;
 
-    $entry->set('title', decode_html($mech->content() =~ m[<div id="codeDisplayWrapper">\s*<div.*?>\s*<div.*?>(.*?)</div>]));
-#</h3><h3><a>(.*?)</a></h3>]s));
+    $entry->set('title',
+                join(": ",
+                     map { $_ ne "" ? $_ : () }
+                     ($mech->content() =~ m[<h2><font.*?>(.*?)</font></h2>]sg,
+                      $mech->content() =~ m[</h3>\s*<h3>(.*?)(?=</h3>)]sg
+                     )));
+    $entry->set('title', $mech->content() =~
+                m[<div id="codeDisplayWrapper">\s*<div.*?>\s*<div.*?>(.*?)</div>])
+        unless $entry->get('title');
 
     update($entry, 'doi', sub { $_ = undef if $_ eq "null" });
-    $entry->set('doi', $entry->get('url')) if (not $entry->exists('doi'));
 
     return $entry;
-    # TODO: fix authors
+    # TODO: fix case of authors
 }
 
 sub parse_ieee_computer_society {
@@ -444,6 +485,7 @@ sub parse_ieeexplore {
                "citations-format=citation-abstract&".
                "download-format=download-bibtex");
     my $cont = $mech->content();
+    print $cont, "\n";
     $cont =~ s/<br>//gi;
     $cont =~ s/month=([^,\.{}"]*?)\./month=$1/;
     return parse_bibtex($cont);
@@ -465,9 +507,12 @@ sub parse_jstor {
     $cont =~ s[JSTOR CITATION LIST][]g; # hack to avoid junk chars
     my $entry = parse_bibtex($cont);
     $entry->set('doi', $suffix);
-    my ($month) = ($entry->get('jstor_formatteddate') =~ m[^(.*)( \d\d?), \d\d\d\d$]);
+    my ($month) = ($entry->get('jstor_formatteddate') =~ m[^(.*?)( \d\d?)?, \d\d\d\d$]);
     $entry->set('month', $month) if defined $month;
     # TODO: remove empty abstract
+
+    $mech->back(); $mech->back();
+    $entry->set('title', $mech->content() =~ m[><div class="hd title">(.*?)</div>]);
     return $entry;
 }
 
@@ -502,9 +547,16 @@ sub parse_wiley {
     $mech->submit_form(with_fields => {
         'fileFormat' => 'BIBTEX', 'hasAbstract' => 'CITATION_AND_ABSTRACT'});
     my $entry = parse_bibtex(decode('utf8', $mech->content()));
-    update($entry, 'abstract', sub { s[^\s*Abstract\s+][] });
+
+    $mech->back(); $mech->back();
+    $entry->set('title', $mech->content() =~ m[<h1 class="articleTitle">(.*?)</h1>]s);
+    $entry->set('abstract', $mech->content() =~ m[<div class="para">(.*?)</div>]s);
+
+#    update($entry, 'abstract', sub { s[^\s*Abstract\s+][] });
     update($entry, 'abstract',
-           sub { s[ Copyright . \d\d\d\d John Wiley \& Sons, Ltd\.$][] });
+           sub { s[Copyright \x{00a9} \d\d\d\d John Wiley \& Sons, Ltd\.\s*$][] });
+    update($entry, 'abstract',
+           sub { s[\x{00a9} \d\d\d\d Wiley Periodicals, Inc\. Random Struct\. Alg\., \d\d\d\d\s*$][] });
     return $entry;
 }
 

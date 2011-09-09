@@ -15,6 +15,7 @@ http://www.jstor.org/stable/2034627
   language = {English},
   issn = {00029939},
   doi = {10.2307/2034627},
+  bib_scrape_url = {http://www.jstor.org/stable/2034627},
   copyright = {Copyright {\textcopyright} 1963 American Mathematical Society},
 }
 

@@ -15,6 +15,7 @@ http://www.jstor.org/stable/2975544
   language = {English},
   issn = {00029890},
   doi = {10.2307/2975544},
+  bib_scrape_url = {http://www.jstor.org/stable/2975544},
   copyright = {Copyright {\textcopyright} 1983 Mathematical Association of America},
 }
 

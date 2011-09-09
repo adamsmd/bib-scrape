@@ -9,7 +9,7 @@ http://dx.doi.org/10.1017/S0956796801004129
   pages = {681--689},
   year = {2001},
   doi = {10.1017/S0956796801004129},
-  eprint = {http://journals.cambridge.org/article\_S0956796801004129},
+  eprint = {http://journals.cambridge.org/article_S0956796801004129},
   bib_scrape_url = {http://dx.doi.org/10.1017/S0956796801004129},
   abstract = {Suppose, you want to implement a structured editor for some term type, so that 
 the user can navigate through a given term and perform edit actions on subterms. 

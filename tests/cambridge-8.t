@@ -17,7 +17,7 @@ This is exemplified in a tutorial way by studying the case of extensional untype
 {\ensuremath{\lambda}}-calculus with Felleisen's control operator [script C]. 
 We derive the transition rules for an 
 abstract machine from a continuation semantics which appears as a generalization of the 
-{\textlnot}{\textlnot}-translation known from logic. The resulting abstract machine 
+{\ensuremath{\lnot}}{\ensuremath{\lnot}}-translation known from logic. The resulting abstract machine 
 appears as an extension of Krivine's machine implementing head reduction. Though 
 the result, namely Krivine's machine, 
 is well known our method of deriving it from continuation semantics is new and applicable to 
