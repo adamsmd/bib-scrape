@@ -136,7 +136,7 @@ for my $old_entry (@entries) {
 
     my $entry = parse($mech);
     $entry->set('bib_scrape_url', $url);
-    print $entry->print_s();
+    print encode('utf8', $entry->print_s());
 }
 
 ################

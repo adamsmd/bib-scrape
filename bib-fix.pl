@@ -16,9 +16,6 @@ use Text::BibTeX::Months;
 
 use Getopt::Long qw(:config auto_version auto_help);
 
-
-# TODO: move copyright from abstract to copyright field
-
 ############
 # Options
 ############
@@ -101,6 +98,10 @@ bibscrape [options] <url> ...
 my $file = new Text::BibTeX::File "<-";
 
 while (my $entry = new Text::BibTeX::Entry $file) {
+    # Fix any unicode that is in the field values
+    $entry->set($_, decode('utf8', $entry->get($_)))
+        for ($entry->fieldlist());
+
     # Doi field: remove "http://hostname/" or "DOI: "
     $entry->set('doi', $entry->get('url')) if (
         not $entry->exists('doi') and
