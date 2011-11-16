@@ -127,7 +127,6 @@ for (@ARGV) {
 for my $old_entry (@entries) {
     my $url = $old_entry->get('bib_scrape_url');
     print $old_entry->print_s() and next unless $url;
-# TODO: comma, other clean up code?
     $mech = WWW::Mechanize->new(autocheck => 1);
     $mech->add_handler("request_send",  sub { shift->dump; return }) if $DEBUG;
     $mech->add_handler("response_done", sub { shift->dump; return }) if $DEBUG;
@@ -235,7 +234,6 @@ sub parse_science_direct {
 
     # Find the title and reverse engineer the Unicode
     my ($title) = $mech->content() =~ m[<div\b[^>]*\bclass="articleTitle.*?>\s*(.*?)\s*</div>]s;
-    print "title:$title\n";
     my ($abst) = $mech->content() =~ m[>Abstract</h3>\s*(.*?)\s*</div>];
 
     $mech->follow_link(text => 'Export citation');
@@ -249,7 +247,7 @@ sub parse_science_direct {
 
     $mech->submit_form(with_fields => {
         'format' => 'cite-abs', 'citation-type' => 'RIS'});
-    my $f = Text::RIS::parse($mech->content())->bibtex();
+    my $f = Text::RIS::parse(decode('utf8', $mech->content()))->bibtex();
     $entry->set('author', $f->get('author'));
     $entry->set('month', $f->get('month'));
     $entry->delete('keywords');
@@ -372,7 +370,7 @@ sub parse_ios_press {
     my ($mech) = @_;
 
     $mech->follow_link(text => 'RIS');
-    my $f = Text::RIS::parse($mech->content())->bibtex();
+    my $f = Text::RIS::parse(decode('utf8', $mech->content()))->bibtex();
     my $entry = parse_bibtex("\@" . $f->type . " {unknown_key,}");
     # TODO: missing items?
     for ('journal', 'title', 'volume', 'number', 'abstract', 'pages',

@@ -44,7 +44,7 @@ use Getopt::Long qw(:config auto_version auto_help);
 $main::VERSION=1.0;
 
 my ($DEBUG, $GENERATE_KEY, $COMMA) = (0, 1, 1);
-my %NO_ENCODE_FIELD = ('doi' => 1, 'url' => 1, 'eprint' => 1);
+my %NO_ENCODE_FIELD = ('doi' => 1, 'url' => 1, 'eprint' => 1, 'bib_scrape_url' => 1);
 #my %OMIT =
 
 GetOptions(
@@ -98,7 +98,9 @@ bibscrape [options] <url> ...
 my $file = new Text::BibTeX::File "<-";
 
 while (my $entry = new Text::BibTeX::Entry $file) {
+    # TODO: $bib_text =~ s/^\x{FEFF}//; # Remove Byte Order Mark
     # Fix any unicode that is in the field values
+    $entry->set_key(decode('utf8', $entry->key));
     $entry->set($_, decode('utf8', $entry->get($_)))
         for ($entry->fieldlist());
 
@@ -234,7 +236,7 @@ sub latex_encode
     my ($str) = decode_html(@_);
     $str =~ s[\s*$][];
     $str =~ s[^\s*][];
-    $str =~ s[\n{2,}][\n{\\par}\n]sg; # BibTeX eats whitespace
+    $str =~ s[\n{2,} *][\n{\\par}\n]sg; # BibTeX eats whitespace
     $str =~ s[([<>])][\\ensuremath{$1}]sog;
     $str = unicode2tex($str);
 #    $str =~ s[([^\x00-\x80])][\{@{[$TeX::Encode::LATEX_Escapes{$1} or
@@ -247,7 +249,6 @@ sub decode_html {
     # HTML -> LaTeX Codes
     $x = decode_entities($x);
 # #$%&~_^{}\\
-#    print $TeX::Encode::LATEX_Reserved, "\n";
     #$x =~ s[([$TeX::Encode::LATEX_Reserved])][\\$1]sog;
     $x =~ s[([\#\$\%\&\~\_\^\{\}\\])][\\$1]sog;
     $x =~ s[<!--.*?-->][]sg;
@@ -265,26 +266,9 @@ sub decode_html {
     $x =~ s[<sup>(.*?)</sup>][\\ensuremath{\^\\textrm{$1}}]sog;
     $x =~ s[<supscrpt>(.*?)</supscrpt>][\\ensuremath{\^\\textrm{$1}}]sog;
     $x =~ s[<sub>(.*?)</sub>][\\ensuremath{\_\\textrm{$1}}]sog;
-    $x =~ s[<img src="http://www.sciencedirect.com/scidirimg/entities/([0-9a-f]+).gif".*?>][@{[chr(hex $1)]}]sg; # Science Direct
+    $x =~ s[<img src="http://www.sciencedirect.com/scidirimg/entities/([0-9a-f]+).gif".*?>][@{[chr(hex $1)]}]sg; # Fix for Science Direct
+    $x =~ s[<!--title-->][]sg; # Fix for Science Direct
     return $x;
-}
-
-################
-
-sub parse_bibtex {
-    my ($bib_text) = @_;
-    $bib_text =~ s/^\x{FEFF}//; # Remove Byte Order Mark
-
-    my $entry = new Text::BibTeX::Entry;
-    print "BIBTEXT:\n$bib_text\n" if $DEBUG;
-    $entry->parse_s(encode('utf8', $bib_text), 0); # 1 for preserve values
-    die "Can't parse BibTeX:\n$bib_text\n" unless $entry->parse_ok;
-
-    # Parsing the bibtex converts it to utf8, so we have to decode it
-    $entry->set_key(decode('utf8', $entry->key));
-    for ($entry->fieldlist) { $entry->set($_, decode('utf8', $entry->get($_))) }
-
-    return $entry;
 }
 
 sub update {
