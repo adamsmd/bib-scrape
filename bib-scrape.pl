@@ -19,9 +19,6 @@ use Text::BibTeX::Months;
 
 use Getopt::Long qw(:config auto_version auto_help);
 
-
-# TODO: move copyright from abstract to copyright field
-
 ############
 # Options
 ############
@@ -138,127 +135,8 @@ for my $old_entry (@entries) {
     $mech->get($url);
 
     my $entry = parse($mech);
-
-    # Doi field: remove "http://hostname/" or "DOI: "
-    $entry->set('doi', $entry->get('url')) if (
-        not $entry->exists('doi') and
-        ($entry->get('url') || "") =~ m[^http://dx.doi.org/.*$]);
-    update($entry, 'doi', sub { s[http://[^/]+/][]i; s[DOI:\s*][]ig; });
-    # Page numbers: no "pp." or "p."
-    update($entry, 'pages', sub { s[pp?\.\s*][]ig; });
-
-    for (['issue', 'number'], ['keyword', 'keywords']) {
-        # Fix broken field names (SpringerLink and ACM violate this)
-        if ($entry->exists($_->[0]) and not $entry->exists($_->[1])) {
-            $entry->set($_->[1], $entry->get($_->[0]));
-            $entry->delete($_->[0]);
-        }
-    }
-
-    # Ranges: convert "-" to "--"
-    # TODO: might misfire if "-" doesn't represent a range, Common for tech report numbers
-    for my $key ('chapter', 'month', 'number', 'pages', 'volume', 'year') {
-        update($entry, $key, sub { s[\s*-+\s*][--]ig; });
-        update($entry, $key, sub { s[n/a--n/a][]ig; $_ = undef if $_ eq "" });
-        # TODO: single element range as x not x--x
-    }
-
-    # Don't include pointless URLs to publisher's page
-    update($entry, 'url', sub {
-        $_ = undef if m[^(http://dx.doi.org/
-                         |http://doi.acm.org/
-                         |http://portal.acm.org/citation.cfm
-                         |http://www.jstor.org/stable/
-                         |http://www.sciencedirect.com/science/article/)]x; } );
-    update($entry, 'note', sub { $_ = undef if $_ eq "" });
-    update($entry, 'note', sub { $_ = undef if $_ eq ($entry->get('doi') or "") });
-
-    for my $field (qw(
-      author editor affiliation title
-      howpublished booktitle journal volume number series jstor_issuetitle
-      type jstor_articletype school institution location
-      chapter pages articleno numpages
-      edition month year issue_date jstor_formatteddate
-      organization publisher address
-      language isbn issn doi eid acmid url eprint bib_scrape_url
-      keywords copyright)) {
-        update($entry, $field, sub { $_ =~ s/\s+/ /sg; });
-    }
-
-    # Eliminate Unicode but not for doi and url fields (assuming \usepackage{url})
-    for my $field ($entry->fieldlist()) {
-        warn "Undefined $field" unless defined $entry->get($field);
-        $entry->set($field, latex_encode($entry->get($field)))
-            unless $field eq 'doi' or $field eq 'url' or $field eq 'eprint';
-    }
-
-    # Generate an entry key
-    # TODO: Formats: author/editor1.last year title/journal.abbriv
-    # TODO: Key may fail on unicode names? Remove doi?
-    if (defined $old_entry->key() and $KEEP_KEYS) {
-        $entry->set_key($old_entry->key());
-    } else {
-        my ($name) = ($entry->names('author'), $entry->names('editor'));
-        #$organization, or key
-        if ($name and $entry->exists('year')) {
-            ($name) = purify_string(join("", $name->part('last')));
-            $entry->set_key($name . ':' . $entry->get('year') .
-                            ($entry->exists('doi') ? ":" . $entry->get('doi') : ""));
-        }
-    }
-
-    # Use bibtex month macros
-    update($entry, 'month', # Must be after field encoding
-           sub { my @x = split qr[\b];
-                 for (1..$#x) {
-                     $x[$_] = "" if $x[$_] eq "." and str2month(lc $x[$_-1]);
-                 }
-                 $_ = new Text::BibTeX::Value(
-                     map { (str2month(lc $_)) or ([Text::BibTeX::BTAST_STRING, $_]) }
-                     map { $_ ne "" ? $_ : () } @x)});
-
     $entry->set('bib_scrape_url', $url);
-
-    # Put fields in a standard order.
-    my @field_order = qw(
-      author editor affiliation title
-      howpublished booktitle journal volume number series jstor_issuetitle
-      type jstor_articletype school institution location
-      chapter pages articleno numpages
-      edition month year issue_date jstor_formatteddate
-      organization publisher address
-      language isbn issn doi eid acmid url eprint bib_scrape_url
-      note annote keywords abstract copyright);
-    for my $field ($entry->fieldlist()) {
-        die "Unknown field: $field.\n" unless grep { $field eq $_ } @field_order;
-        die "Duplicate field '$field' will be mangled" if
-            scalar(grep { $field eq $_ } $entry->fieldlist()) >= 2;
-    }
-    $entry->set_fieldlist([map { $entry->exists($_) ? ($_) : () } @field_order]);
-
-    $entry->delete($_) for (@OMIT);
-
-    # Force comma after last field to make editing easier
-    my $str = $entry->print_s();
-    $str =~ s[}(\s*}\s*)$][\},$1];
-    print $str;
-}
-
-################
-
-# Based on TeX::Encode and modified to use braces appropriate for BibTeX.
-sub latex_encode
-{
-    use utf8;
-    my ($str) = decode_html2(@_);
-    $str =~ s[\s*$][];
-    $str =~ s[^\s*][];
-    $str =~ s[\n{2,}][\n{\\par}\n]sg; # BibTeX eats whitespace
-    $str =~ s[([<>])][\\ensuremath{$1}]sog;
-    $str = unicode2tex($str);
-#    $str =~ s[([^\x00-\x80])][\{@{[$TeX::Encode::LATEX_Escapes{$1} or
-#             die "Unknown Unicode charater: $1 ", sprintf("0x%x", ord($1))]}\}]sg;
-    return $str;
+    print $entry->print_s();
 }
 
 ################
@@ -279,8 +157,6 @@ sub parse_bibtex {
     return $entry;
 }
 
-sub domain { $mech->uri()->authority() =~ m[^(|.*\.)\Q$_[0]\E]i; }
-
 sub update {
     my ($entry, $field, $fun) = @_;
     if ($entry->exists($field)) {
@@ -292,6 +168,8 @@ sub update {
 }
 
 ################
+
+sub domain { $mech->uri()->authority() =~ m[^(|.*\.)\Q$_[0]\E]i; }
 
 sub parse {
     if (domain('acm.org')) { parse_acm(@_); }
@@ -352,38 +230,12 @@ sub parse_acm {
     return $entry;
 }
 
-sub decode_html2 {
-    my ($x) = @_;
-    # HTML -> LaTeX Codes
-    $x = decode_entities($x);
-# #$%&~_^{}\\
-#    print $TeX::Encode::LATEX_Reserved, "\n";
-    $x =~ s[([$TeX::Encode::LATEX_Reserved])][\\$1]sog;
-    $x =~ s[<!--.*?-->][]sg;
-    $x =~ s[<a [^>]*onclick="toggleTabs\(.*?\)">.*?</a>][]sg; # Science Direct
-    $x =~ s[<a( .*?)?>(.*?)</a>][$2]sog;
-    $x =~ s[<p(| [^>]*)>(.*?)</p>][$2\n\n]sg;
-    $x =~ s[<par(| [^>]*)>(.*?)</par>][$2\n\n]sg;
-    $x =~ s[<span style="font-family:monospace">(.*?)</span>][{\\tt $1}];
-    $x =~ s[<span( .*)?>(.*?)</span>][$2]sg;
-    $x =~ s[<i>(.*?)</i>][{\\it $1}]sog;
-    $x =~ s[<italic>(.*?)</italic>][{\\it $1}]sog;
-    $x =~ s[<em>(.*?)</em>][{\\em $1}]sog;
-    $x =~ s[<strong>(.*?)</strong>][{\\bf $1}]sog;
-    $x =~ s[<b>(.*?)</b>][{\\bf $1}]sog;
-    $x =~ s[<sup>(.*?)</sup>][\\ensuremath{\^\\textrm{$1}}]sog;
-    $x =~ s[<supscrpt>(.*?)</supscrpt>][\\ensuremath{\^\\textrm{$1}}]sog;
-    $x =~ s[<sub>(.*?)</sub>][\\ensuremath{\_\\textrm{$1}}]sog;
-    $x =~ s[<img src="http://www.sciencedirect.com/scidirimg/entities/([0-9a-f]+).gif".*?>][@{[chr(hex $1)]}]sg; # Science Direct
-    return $x;
-}
-
-
 sub parse_science_direct {
     my ($mech) = @_;
 
     # Find the title and reverse engineer the Unicode
-    my ($title) = $mech->content() =~ m[<div class="articleTitle.*?>\s*(.*?)\s*</div>]s;
+    my ($title) = $mech->content() =~ m[<div\b[^>]*\bclass="articleTitle.*?>\s*(.*?)\s*</div>]s;
+    print "title:$title\n";
     my ($abst) = $mech->content() =~ m[>Abstract</h3>\s*(.*?)\s*</div>];
 
     $mech->follow_link(text => 'Export citation');

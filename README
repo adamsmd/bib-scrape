@@ -30,6 +30,13 @@ Examples:
   ./bib-scrape.pl http://www.springerlink.com/content/nhw5736n75028853/
   ./bib-scrape.pl http://dx.doi.org/10.1007/BF01975011
 
+Install
+================
+WWW::Mechanize
+Text::BibTeX
+TeX::Encode
+  broken dependancy requires: Test::Pod::Coverage
+
 Disclaimer
 ================
 Please use this software responsibly.  You are responsible for how you
