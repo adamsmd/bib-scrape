@@ -8,14 +8,12 @@ use WWW::Mechanize;
 use Text::BibTeX;
 use Text::BibTeX qw(:subs);
 use Text::BibTeX::Value;
-use TeX::Encode;
-use TeX::Unicode;
-use HTML::Entities;
+use HTML::Entities qw(decode_entities);
 use Encode;
 
 use Text::RIS;
 use Text::GoogleScholar;
-use Text::BibTeX::Months;
+use Text::BibTeX::Months qw(num2month);
 
 use Getopt::Long qw(:config auto_version auto_help);
 
@@ -23,41 +21,11 @@ use Getopt::Long qw(:config auto_version auto_help);
 # Options
 ############
 #
-# Omit fields (filtered by type or other fields)
-# Omit if matches
-# Non-encoded fields (e.g. doi and url)
-# Comma at end
-# Key: Keep vs generate
-# Field order
-#
-# Author, Editor, Affiliation(?): List of renames
-# Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
-#  List of renames (regex?)
-#
-# Title
-#  Captialization: Initialisms, After colon, list of proper names
-#
-# ISBN: 10 vs 13 vs native, no-dash
-# ISSN: Print vs Electronic
-# Keywords: ';' vs ','
-#
-#
 
 $main::VERSION=1.0;
-my ($BIBTEX, $DEBUG, $KEEP_KEYS, @OMIT);
+my ($BIBTEX, $DEBUG);
 
-GetOptions('bibtex!' => \$BIBTEX, 'debug!' => \$DEBUG, 'keep-keys!' => \$KEEP_KEYS,
-    'omit=s' => \@OMIT);
-# Warn about non-four-digit year
-# Omit:class/type
-# Include:class/type
-# no issn, no isbn
-# known fields
-# SIGPLAN
-# title-case after ":"
-# Warn if first alpha after ":" is not capitalized
-# Flag about whether to Unicode, HTML, or LaTeX encode
-# purify_string
+GetOptions('bibtex!' => \$BIBTEX, 'debug!' => \$DEBUG);
 
 =head1 SYNOPSIS
 
@@ -65,9 +33,10 @@ bibscrape [options] <url> ...
 
 =head2 OPTIONS
 
-=item --omit=field
+=item --bibtex
 
-    Omit a particular field from the output.
+    Take input as BibTeX data from standard input instead of the
+    default of taking input as URLs from the command line.
 
 =item --debug
 
@@ -80,27 +49,9 @@ bibscrape [options] <url> ...
 #  abstract:
 #  - paragraphs: no marker but often we get ".<Uperchar>" or "<p></p>"
 #  author as editors?
-#  Put upper case words in {.} (e.g. IEEE)
-#  detect fields that are already de-unicoded (e.g. {H}askell or $p$)
 #  follow jstor links to original publisher
 #  add abstract to jstor
 #END TODO
-
-#my %latex_fixes = (
-#    "\x{2a7d}" => "\$\\leqslant\$",
-#    "\x{2a7e}" => "\$\\geqslant\$",
-#    "\x{204e}" => "\textasteriskcentered", # Not a perfect match but close enough
-#    "\x{2113}" => "\$\\ell\$",
-#    "\x{03bb}" => "\$\\lambda\$",
-#    "\x{039b}" => "\$\\Lambda\$",
-#    );
-
-#$TeX::Encode::LATEX_Escapes{$_} = $latex_fixes{$_} for keys %latex_fixes;
-#
-# \ensuremath{FOO} is better than $FOO$
-#for (keys %TeX::Encode::LATEX_Escapes) {
-#    $TeX::Encode::LATEX_Escapes{$_} =~ s[^\$(.*)\$$][\\ensuremath{$1}];
-#}
 
 my $mech;
 
@@ -124,10 +75,20 @@ for (@ARGV) {
     push @entries, $entry;
 }
 
+sub jstor_patch {
+    &WWW::Mechanize::_die(@_)
+        unless ($_[0] eq "Error " and
+                $_[1] eq "GET" and
+                $_[2] eq "ing " and
+                $_[3] =~ m[^http://www.jstor.org/] and
+                $_[4] eq ": " and
+                $_[5] eq "Forbidden");
+}
+
 for my $old_entry (@entries) {
     my $url = $old_entry->get('bib_scrape_url');
     print $old_entry->print_s() and next unless $url;
-    $mech = WWW::Mechanize->new(autocheck => 1);
+    $mech = WWW::Mechanize->new(autocheck => 1, onerror => \&jstor_patch );
     $mech->add_handler("request_send",  sub { shift->dump; return }) if $DEBUG;
     $mech->add_handler("response_done", sub { shift->dump; return }) if $DEBUG;
     $mech->agent_alias('Windows IE 6');
@@ -343,11 +304,12 @@ sub parse_ieeexplore {
 
 sub parse_jstor {
     my ($mech) = @_;
-    $mech->follow_link(text => 'Export Citation');
 
-    # Ick, we have to get around the javascript
-    $mech->form_with_fields('suffix');
-    my $suffix = $mech->value('suffix');
+    # Ick, not only does JSTOR hide behind JavaScript, but
+    # it hides the link for downloading BibTeX if we are not logged in.
+    # We get around this by hard coding the URL that we know it should be at.
+    my ($suffix) = $mech->content() =~
+        m[<div class="stable">Stable URL: .*www.jstor.org/stable/(\d+)</div>];
     $mech->post("http://www.jstor.org/action/downloadSingleCitation",
                 {'singleCitation'=>'true', 'suffix'=>$suffix,
                  'include'=>'abs', 'format'=>'bibtex', 'noDoi'=>'yesDoi'});
@@ -356,13 +318,13 @@ sub parse_jstor {
     $cont =~ s[\@comment{.*$][]gm; # hack to get around comments
     $cont =~ s[JSTOR CITATION LIST][]g; # hack to avoid junk chars
     my $entry = parse_bibtex($cont);
-    $entry->set('doi', $suffix);
+    $entry->set('doi', '10.2307/' . $suffix);
     my ($month) = ($entry->get('jstor_formatteddate') =~ m[^(.*?)( \d\d?)?, \d\d\d\d$]);
     $entry->set('month', $month) if defined $month;
     # TODO: remove empty abstract
 
-    $mech->back(); $mech->back();
-    $entry->set('title', $mech->content() =~ m[><div class="hd title">(.*?)</div>]);
+    $mech->back();
+    $entry->set('title', $mech->content() =~ m[(?<!<!--)<div class="hd title">(.*?)</div>]);
     return $entry;
 }
 

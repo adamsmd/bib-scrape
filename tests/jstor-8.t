@@ -22,4 +22,3 @@ Missing italics in title
   copyright = {Copyright {\textcopyright} 2003 American Association for the Advancement of Science},
 }
 
-

@@ -8,6 +8,7 @@ Superscript and Unicode in title
   number = {4},
   jstor_articletype = {research-article},
   pages = {417--451},
+  month = dec,
   year = {1954},
   jstor_formatteddate = {Dec., 1954},
   publisher = {International Biometric Society},
