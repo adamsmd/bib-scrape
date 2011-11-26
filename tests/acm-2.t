@@ -2,7 +2,7 @@ http://portal.acm.org/citation.cfm?id=1411204.1411243
 Converts HTML italics to Tex
 @inproceedings{VanHorn:2008:10.1145/1411204.1411243,
   author = {Van Horn, David and Mairson, Harry G.},
-  title = {Deciding {\it k}CFA is complete for {EXPTIME}},
+  title = {Deciding {\it k}{CFA} is complete for {EXPTIME}},
   booktitle = {Proceeding of the 13th ACM SIGPLAN international conference on Functional programming},
   series = {ICFP '08},
   location = {Victoria, BC, Canada},

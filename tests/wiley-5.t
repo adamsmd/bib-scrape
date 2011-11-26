@@ -8,7 +8,7 @@ Monospace in title and abstract
   number = {1},
   pages = {67--101},
   year = {2001},
-  publisher = {John Wiley & Sons, Ltd.},
+  publisher = {John Wiley \& Sons, Ltd.},
   issn = {1097-024X},
   doi = {10.1002/1097-024X(200101)31:1<67::AID-SPE357>3.0.CO;2-A},
   bib_scrape_url = {http://onlinelibrary.wiley.com/doi/10.1002/1097-024X%28200101%2931:1%3C67::AID-SPE357%3E3.0.CO;2-A/abstract},

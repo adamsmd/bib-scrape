@@ -12,7 +12,7 @@ Complex math in abstract
   issn = {0020-0190},
   doi = {10.1016/j.ipl.2011.05.008},
   bib_scrape_url = {http://www.sciencedirect.com/science/article/pii/S0020019011001281},
-  keywords = {Algorithms ; Channel assignment ; Inclusion-exclusion ; Exact algorithm ; L(2,1)-labeling},
+  keywords = {Algorithms ; Channel assignment ; Inclusion{--}exclusion ; Exact algorithm ; L(2,1)-labeling},
   abstract = {We show an {\it O}\ensuremath{^\textrm{{	extasteriskcentered}}}(({\it {\ensuremath{\ell}}}+1)\ensuremath{^\textrm{{\it n}}})-time algorithm for the channel assignment problem, where {\it {\ensuremath{\ell}}} is the maximum edge weight. This improves on the previous {\it O}\ensuremath{^\textrm{{	extasteriskcentered}}}(({\it {\ensuremath{\ell}}}+2)\ensuremath{^\textrm{{\it n}}})-time algorithm by Kr{\'a}l (2005) [1], as well as algorithms for important special cases, like {\it L}(2,1)-labeling. For the latter problem, our algorithm works in {\it O}\ensuremath{^\textrm{{	extasteriskcentered}}}(3\ensuremath{^\textrm{{\it n}}}) time. The progress is achieved by applying the fast zeta transform in combination with the inclusion{--}exclusion principle.},
 }
 

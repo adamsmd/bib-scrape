@@ -6,7 +6,7 @@ Call for papers.  Italics in abstract.  Subtitle.
   journal = {Journal of Functional Programming},
   volume = {11},
   number = {04},
-  pages = {437--437},
+  pages = {437},
   year = {2001},
   doi = {10.1017/S0956796801004105},
   eprint = {http://journals.cambridge.org/article_S0956796801004105},
