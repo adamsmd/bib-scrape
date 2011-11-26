@@ -106,6 +106,9 @@ Limitations
    Latex code that don't get preserved by the publishers. Though
    bib-scrape will do it's best, the results are often spotty.
    Example $O$$($n$)$.
+
+   - IOS press often doesn't preserve mathematical italics, and
+     you can get better results by visiting the corresponding page on SpringerLink.
    
 
  - Formatting of author names is the biggest problem.  The data from

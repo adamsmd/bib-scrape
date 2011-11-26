@@ -269,6 +269,7 @@ sub parse_cambridge_university_press {
                 m[<div id="codeDisplayWrapper">\s*<div.*?>\s*<div.*?>(.*?)</div>])
         unless $entry->get('title');
 
+    update($entry, 'abstract', sub { $_ = undef if m[^\s*$] });
     update($entry, 'doi', sub { $_ = undef if $_ eq "null" });
 
     return $entry;
@@ -344,11 +345,16 @@ sub parse_ios_press {
 
     my ($pub) = ($mech->content() =~ m[>Publisher</td><td.*?>(.*?)</td>]i);
     $entry->set('publisher', $pub) if defined $pub;
+
     my ($issn) = ($mech->content() =~ m[>ISSN</td><td.*?>(.*?)</td>]i);
     $issn =~ s[<br/?>][ ];
     $entry->set('issn', $issn) if defined $issn;
+
     my ($isbn) = ($mech->content() =~ m[>ISBN</td><td.*?>(.*?)</td>]i);
     $entry->set('isbn', $isbn) if defined $isbn;
+
+    my ($abstract) = ($mech->content() =~ m[>\s*Abstract\s*</h5>\s*<div class="blob">\s*<p>(.*?)</p>\s*</div>]i);
+    $entry->set('abstract', $abstract) if defined $abstract;
 
     return $entry;
 }
@@ -366,9 +372,9 @@ sub parse_wiley {
 
 #    update($entry, 'abstract', sub { s[^\s*Abstract\s+][] });
     update($entry, 'abstract',
-           sub { s[Copyright \x{00a9} \d\d\d\d John Wiley \& Sons, Ltd\.\s*$][] });
+           sub { s[Copyright &copy; \d\d\d\d John Wiley &amp; Sons, Ltd\.\s*(</p>)?$][$1] });
     update($entry, 'abstract',
-           sub { s[\x{00a9} \d\d\d\d Wiley Periodicals, Inc\. Random Struct\. Alg\., \d\d\d\d\s*$][] });
+           sub { s[&copy; \d\d\d\d Wiley Periodicals, Inc\. Random Struct\. Alg\., \d\d\d\d\s*(</p>)?$][$1] });
     return $entry;
 }
 

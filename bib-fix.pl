@@ -37,6 +37,15 @@ use Getopt::Long qw(:config auto_version auto_help);
 #
 #
 
+# TODO:
+#  abstract:
+#  - paragraphs: no marker but often we get ".<Uperchar>" or "<p></p>"
+#  - pass it through paragraph fmt
+#  author as editors?
+#  Put upper case words in {.} (e.g. IEEE)
+#  detect fields that are already de-unicoded (e.g. {H}askell or $p$)
+#  move copyright from abstract to copyright field
+#END TODO
 
 # TODO: omit type-regex field-regex (existing entry is in scope)
 
@@ -52,15 +61,6 @@ use Getopt::Long qw(:config auto_version auto_help);
 
 $main::VERSION=1.0;
 
-my ($DEBUG, $GENERATE_KEY, $COMMA) = (0, 1, 1);
-my %NO_ENCODE = map {($_,1)} ('doi', 'url', 'eprint', 'bib_scrape_url');
-my %NO_COLLAPSE = map {($_,1)} ('note', 'annote', 'abstract');
-my %RANGE = map {($_,1)} ('chapter', 'month', 'number', 'pages', 'volume', 'year');
-my %OMIT = ();
-#my @OMIT_FIELDS = (...); # per type (optional regex on value)
-#my @REQUIRE_FIELDS = (...); # per type (optional regex on value)
-#my @RENAME
-
 # TODO: per type
 # Doubles as field order
 my @KNOWN_FIELDS = qw(
@@ -73,16 +73,36 @@ my @KNOWN_FIELDS = qw(
       language isbn issn doi eid acmid url eprint bib_scrape_url
       note annote keywords abstract copyright);
 
+my ($DEBUG, $GENERATE_KEY, $COMMA) = (0, 1, 1);
+my %NO_ENCODE = map {($_,1)} ('doi', 'url', 'eprint', 'bib_scrape_url');
+my %NO_COLLAPSE = map {($_,1)} ('note', 'annote', 'abstract');
+my %RANGE = map {($_,1)} ('chapter', 'month', 'number', 'pages', 'volume', 'year');
+my %OMIT = (); # per type (optional regex on value)
+#my %OMIT_BLANK = (); # per type
+#my @REQUIRE_FIELDS = (...); # per type (optional regex on value)
+#my @RENAME
+
+sub string_no_flag {
+    my ($name, $HASH) = @_;
+    ("$name=s" => sub { delete $HASH->{$_[1]} },
+     "no-$name=s" => sub { $HASH->{$_[1]} = 1 });
+}
+
+sub string_flag {
+    my ($name, $HASH) = @_;
+    ("$name=s" => sub { $HASH->{$_[1]} = 1 },
+     "no-$name=s" => sub { delete $HASH->{$_[1]} });
+}
+
 GetOptions(
+    'field=s' => sub { push @KNOWN_FIELDS, $_[1] },
     'debug!' => \$DEBUG,
     #no-defaults
     'generate-keys!' => \$GENERATE_KEY,
     'comma!' => \$COMMA,
-    'field=s' => sub { push @KNOWN_FIELDS, $_[1] },
-    'encode=s' => sub { delete $NO_ENCODE{$_[1]} },
-    'no-encode=s' => sub { $NO_ENCODE{$_[1]} = 1 },
-    'collapse=s' => sub { delete $NO_COLLAPSE{$_[1]} },
-    'no-collapse=s' => sub { $NO_COLLAPSE{$_[1]} = 1 },
+    string_no_flag('encode', \%NO_ENCODE),
+    string_no_flag('collapse', \%NO_COLLAPSE), # Whether to collapse contingues whitespace
+    string_flag('omit', \%OMIT)
     );
 
 =head1 SYNOPSIS
@@ -100,16 +120,6 @@ bibscrape [options] <url> ...
     Print debug data (TODO: make it verbose and go to STDERR)
 
 =cut
-
-# TODO:
-#  abstract:
-#  - paragraphs: no marker but often we get ".<Uperchar>" or "<p></p>"
-#  - pass it through paragraph fmt
-#  author as editors?
-#  Put upper case words in {.} (e.g. IEEE)
-#  detect fields that are already de-unicoded (e.g. {H}askell or $p$)
-#  move copyright from abstract to copyright field
-#END TODO
 
 my $file = new Text::BibTeX::File "<-";
 
@@ -149,7 +159,7 @@ while (my $entry = new Text::BibTeX::Entry $file) {
     for my $key ('chapter', 'month', 'number', 'pages', 'volume', 'year') {
         update($entry, $key, sub { s[\s*-+\s*][--]ig; });
         update($entry, $key, sub { s[n/a--n/a][]ig; $_ = undef if $_ eq "" });
-        update($entry, $key, sub { s[(.*)--\1][$1]ig; });
+        update($entry, $key, sub { s[\b(\w+)--\1\b][$1]ig; });
     }
 
     # TODO: ISBN: 10 vs 13 vs native, dash vs no-dash vs native
@@ -243,24 +253,25 @@ sub latex_encode
 
     # HTML -> LaTeX Codes
     $str = decode_entities($str);
+    #$str =~ s[\_(.)][\\ensuremath{\_{$1}}]isog; # Fix for IOS Press
     $str =~ s[([\#\$\%\&\~\_\^\{\}\\])][\\$1]sog;
     $str =~ s[<!--.*?-->][]sg;
-    $str =~ s[<a [^>]*onclick="toggleTabs\(.*?\)">.*?</a>][]sg; # Science Direct
-    $str =~ s[<a( .*?)?>(.*?)</a>][$2]sog;
-    $str =~ s[<p(| [^>]*)>(.*?)</p>][$2\n\n]sg;
-    $str =~ s[<par(| [^>]*)>(.*?)</par>][$2\n\n]sg;
-    $str =~ s[<span style="font-family:monospace">(.*?)</span>][{\\tt $1}];
-    $str =~ s[<span( .*)?>(.*?)</span>][$2]sg;
-    $str =~ s[<i>(.*?)</i>][{\\it $1}]sog;
-    $str =~ s[<italic>(.*?)</italic>][{\\it $1}]sog;
-    $str =~ s[<em>(.*?)</em>][{\\em $1}]sog;
-    $str =~ s[<strong>(.*?)</strong>][{\\bf $1}]sog;
-    $str =~ s[<b>(.*?)</b>][{\\bf $1}]sog;
-    $str =~ s[<sup>(.*?)</sup>][\\ensuremath{\^\\textrm{$1}}]sog;
-    $str =~ s[<supscrpt>(.*?)</supscrpt>][\\ensuremath{\^\\textrm{$1}}]sog;
-    $str =~ s[<sub>(.*?)</sub>][\\ensuremath{\_\\textrm{$1}}]sog;
-    $str =~ s[<img src="http://www.sciencedirect.com/scidirimg/entities/([0-9a-f]+).gif".*?>][@{[chr(hex $1)]}]sg; # Fix for Science Direct
-    $str =~ s[<!--title-->$][]sg; # Fix for Science Direct
+    $str =~ s[<a [^>]*onclick="toggleTabs\(.*?\)">.*?</a>][]isg; # Science Direct
+    $str =~ s[<a( .*?)?>(.*?)</a>][$2]isog;
+    $str =~ s[<p(| [^>]*)>(.*?)</p>][$2\n\n]isg;
+    $str =~ s[<par(| [^>]*)>(.*?)</par>][$2\n\n]isg;
+    $str =~ s[<span style="font-family:monospace">(.*?)</span>][{\\tt $1}]i;
+    $str =~ s[<span( .*)?>(.*?)</span>][$2]isg;
+    $str =~ s[<i>(.*?)</i>][{\\it $1}]isog;
+    $str =~ s[<italic>(.*?)</italic>][{\\it $1}]isog;
+    $str =~ s[<em>(.*?)</em>][{\\em $1}]isog;
+    $str =~ s[<strong>(.*?)</strong>][{\\bf $1}]isog;
+    $str =~ s[<b>(.*?)</b>][{\\bf $1}]isog;
+    $str =~ s[<sup>(.*?)</sup>][\\ensuremath{\^\\textrm{$1}}]isog;
+    $str =~ s[<supscrpt>(.*?)</supscrpt>][\\ensuremath{\^\\textrm{$1}}]isog;
+    $str =~ s[<sub>(.*?)</sub>][\\ensuremath{\_\\textrm{$1}}]isog;
+    $str =~ s[<img src="http://www.sciencedirect.com/scidirimg/entities/([0-9a-f]+).gif".*?>][@{[chr(hex $1)]}]isg; # Fix for Science Direct
+    $str =~ s[<!--title-->$][]isg; # Fix for Science Direct
 
     # Misc fixes
     $str =~ s[\s*$][]; # remove trailing whitespace
