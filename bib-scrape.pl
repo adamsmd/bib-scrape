@@ -12,7 +12,7 @@ use HTML::Entities qw(decode_entities);
 use Encode;
 
 use Text::RIS;
-use Text::GoogleScholar;
+use Text::MetaBib;
 use Text::BibTeX::Months qw(num2month);
 
 use Getopt::Long qw(:config auto_version auto_help);
@@ -169,10 +169,10 @@ sub parse_acm {
 
     # Un-abbreviated journal title, but avoid spurious "journal" when
     # proceedings are published in SIGPLAN Not.
-    my $html = Text::GoogleScholar::parse($mech->content())->bibtex();
-    $entry->set('journal', $html->get('journal')) if $entry->exists('journal');
+     my $html = Text::MetaBib::parse($mech->content());
+    $entry->set('journal', $html->get('citation_journal_title')->[0]) if $entry->exists('journal');
 
-    $entry->set('author', $html->get('author')) if ($entry->exists('author'));
+    $entry->set('author', $html->authors()) if $entry->exists('author');
 
     $entry->set('title', $mech->content() =~
                 m[<h1 class="mediumb-text".*?><strong>(.*?)</strong></h1>])
@@ -269,6 +269,13 @@ sub parse_cambridge_university_press {
                 m[<div id="codeDisplayWrapper">\s*<div.*?>\s*<div.*?>(.*?)</div>])
         unless $entry->get('title');
 
+    #print $mech->content();
+    my $html = Text::MetaBib::parse($mech->content());
+    if ($html->exists('citation_date')) {
+        my ($year, $month) = $html->date('citation_date');
+        $entry->set('month', $month);
+    }
+
     update($entry, 'abstract', sub { $_ = undef if m[^\s*$] });
     update($entry, 'doi', sub { $_ = undef if $_ eq "null" });
 
@@ -276,13 +283,45 @@ sub parse_cambridge_university_press {
     # TODO: fix case of authors
 }
 
+# TODO: why are answers intermittent from IEEE?
 sub parse_ieee_computer_society {
     my ($mech) = @_;
-    $mech->follow_link(text => 'BibTex');
-    my $entry = parse_bibtex($mech->content());
+
+    #$mech->follow_link(text => 'BibTex');
+    my ($bibtex) = $mech->content() =~ m[<div id="bibText-content">(.*?)</div>]sig;
+    $bibtex =~ s[<br>][\n]sig;
+    $bibtex = decode_entities($bibtex); # Fix the HTML encoding
+    my $entry = parse_bibtex($bibtex);
     update($entry, 'volume', sub { $_ = undef if $_ eq "0" });
+    #$mech->back();
+
+    my $html = Text::MetaBib::parse($mech->content());
+    #$entry->set('author', $html->get('author')) if $html->exists('author');
+    #$entry->set('title', $html->get('title')) if $html->exists('title');
+    $entry->set('abstract', $html->get('dc.description')->[0]) if $html->exists('dc.description');
+    if ($html->exists('dc.date')) {
+        my ($year, $month) = $html->date('dc.date');
+        $entry->set('month', $month);
+    }
+
+    my ($ris) = $mech->content() =~ m[<div id="refWorksText-content">(.*?)</div>]si;
+    $ris =~ s[<br>][\n]sig;
+    $ris = decode_entities($ris); # Fix the HTML encoding
+    #$mech->follow_link(text => 'RefWorks Procite/RefMan');
+    my $f = Text::RIS::parse($ris)->bibtex();
+    $entry->set('keywords', $f->get('keywords')) if $f->exists('keywords');
+    #$mech->back();
+    if ($f->type() eq 'proceedings') { # IEEE gets this all wrong
+        $entry->set_type('inproceedings') ;
+        my ($booktitle) = ($mech->content() =~ m[<div id="abs-proceedingTitle">(.*?)</div>]s);
+        if ($booktitle) {
+            $entry->set('series', $entry->get('journal')) if $entry->exists('journal');
+            $entry->delete('journal');
+            $entry->set('booktitle', $booktitle);
+        }
+    }
+
     return $entry;
-    # TODO: volume is 0?
 }
 
 sub parse_ieeexplore {
@@ -297,7 +336,6 @@ sub parse_ieeexplore {
                "citations-format=citation-abstract&".
                "download-format=download-bibtex");
     my $cont = $mech->content();
-    print $cont, "\n";
     $cont =~ s/<br>//gi;
     $cont =~ s/month=([^,\.{}"]*?)\./month=$1/;
     return parse_bibtex($cont);
@@ -367,10 +405,13 @@ sub parse_wiley {
     my $entry = parse_bibtex(decode('utf8', $mech->content()));
 
     $mech->back(); $mech->back();
-    $entry->set('title', $mech->content() =~ m[<h1 class="articleTitle">(.*?)</h1>]s);
+    $mech->follow_link(text => 'Abstract') if $mech->find_link(text => 'Abstract');
+    my $html = Text::MetaBib::parse($mech->content());
+    my ($year, $month) = $html->date('citation_date');
+    $entry->set('month', $month);
+    #$entry->set('title', $mech->content() =~ m[<h1 class="articleTitle">(.*?)</h1>]s);
     $entry->set('abstract', $mech->content() =~ m[<div class="para">(.*?)</div>]s);
 
-#    update($entry, 'abstract', sub { s[^\s*Abstract\s+][] });
     update($entry, 'abstract',
            sub { s[Copyright &copy; \d\d\d\d John Wiley &amp; Sons, Ltd\.\s*(</p>)?$][$1] });
     update($entry, 'abstract',
@@ -381,26 +422,34 @@ sub parse_wiley {
 sub parse_oxford_journals {
     my ($mech) = @_;
 
-    my $html = Text::GoogleScholar::parse($mech->content())->bibtex();
+    my $html = Text::MetaBib::parse($mech->content());
     my $entry = parse_bibtex("\@article{unknown_key,}");
 
-    $html->exists($_) and $entry->set($_, $html->get($_)) for (qw(
-      author editor affiliation title
-      howpublished booktitle journal volume number series
-      type school institution location
-      chapter pages
-      edition month year
-      organization publisher address
-      language isbn issn doi url
-      note annote keywords abstract copyright));
+    $entry->set('author', $html->authors()) if $html->authors();
+    $entry->set('pages', $html->pages()) if $html->pages();
+    $html->exists($_->[0]) and $entry->set($_->[1], join(' ; ', @{$html->get($_->[0])})) for (
+#      editor affiliation title
+        ['citation_title', 'title'],
+#      howpublished booktitle journal volume number series
+        ['citation_journal_title', 'journal'], ['citation_volume', 'volume'],
+        ['citation_issue', 'number'], # patent_number, technical_report_number
+#      type school institution location
+#      chapter pages
+#      edition month year
+#      organization publisher address
+        ['dc.publisher', 'publisher'],
+#      language isbn issn doi url
+        ['dc.language', 'language'],
+        ['citation_isbn', 'isbn'], ['citation_issn', 'issn'], ['citation_doi', 'doi'],
+#        ['citation_mjid', 'mjid'],
+#        ['citation_pdf_url', 'pdf_url'],
+#      note annote keywords abstract copyright));        
+        );
 
-    my ($year, $month) = ($mech->content() =~
-                          m[<meta +content="(\d+)-(\d+)-\d+" +name="DC.Date" */>]i);
+    my ($year, $month) = $html->date('dc.date');
     $entry->set('year', $year);
-    $entry->set('month', num2month($month)->[1]);
+    $entry->set('month', $month);
 
-    $entry->set('publisher', ($mech->content() =~
-                              m[<meta +content="(.*?)" name="DC.Publisher" */>]i));
 #    $entry->set('address', 'Oxford, UK');
     update($entry, 'issn', sub { s[ *; *][/]g; });
 
