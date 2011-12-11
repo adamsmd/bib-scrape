@@ -15,8 +15,8 @@ my @long_names = qw(
 my @macro_names = qw(jan feb mar apr may jun jul aug sep oct nov dec);
 
 my %months;
-$months{$macro_names[$_]} = $macro_names[$_] for (0..$#long_names);
-$months{$long_names[$_]} = $macro_names[$_] for (0..$#long_names);
+$months{$macro_names[$_]} = $macro_names[$_] for (0..@long_names);
+$months{$long_names[$_]} = $macro_names[$_] for (0..@long_names);
 $months{'sept'} = 'sep';
 
 Text::BibTeX::add_macro_text($_, macro($months{$_})) for (keys %months);
