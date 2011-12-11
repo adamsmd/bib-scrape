@@ -7,6 +7,7 @@ Unicode in first author's last name and math in abstract.
   volume = {39},
   number = {4},
   pages = {507--525},
+  month = dec,
   year = {2011},
   publisher = {Wiley Subscription Services, Inc., A Wiley Company},
   issn = {1098-2418},

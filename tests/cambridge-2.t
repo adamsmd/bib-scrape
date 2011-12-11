@@ -7,6 +7,7 @@ Unicode in title, author and abstract
   volume = {19},
   number = {05},
   pages = {581--631},
+  month = sep,
   year = {2009},
   doi = {10.1017/S0956796809007369},
   eprint = {http://journals.cambridge.org/article_S0956796809007369},

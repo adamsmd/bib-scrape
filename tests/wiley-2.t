@@ -7,6 +7,7 @@ Italic and superscript in title and abstract
   volume = {36},
   number = {2},
   pages = {185--217},
+  month = mar,
   year = {2010},
   publisher = {Wiley Subscription Services, Inc., A Wiley Company},
   issn = {1098-2418},

@@ -7,6 +7,7 @@ Book review and italic in title
   volume = {19},
   number = {06},
   pages = {723--725},
+  month = nov,
   year = {2009},
   doi = {10.1017/S0956796809007357},
   eprint = {http://journals.cambridge.org/article_S0956796809007357},

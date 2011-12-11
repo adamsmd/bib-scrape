@@ -7,6 +7,7 @@ Subtitle
   volume = {20},
   number = {Special Issue 3--4},
   pages = {303--352},
+  month = jul,
   year = {2010},
   doi = {10.1017/S0956796810000171},
   eprint = {http://journals.cambridge.org/article_S0956796810000171},

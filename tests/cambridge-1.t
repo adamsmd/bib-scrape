@@ -7,6 +7,7 @@ http://dx.doi.org/10.1017/S0956796801004129
   volume = {11},
   number = {06},
   pages = {681--689},
+  month = nov,
   year = {2001},
   doi = {10.1017/S0956796801004129},
   eprint = {http://journals.cambridge.org/article_S0956796801004129},

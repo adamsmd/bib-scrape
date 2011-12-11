@@ -7,6 +7,7 @@ http://onlinelibrary.wiley.com/doi/10.1002/1097-024X%28200009%2930:11%3C1203::AI
   volume = {30},
   number = {11},
   pages = {1203--1233},
+  month = sep,
   year = {2000},
   publisher = {John Wiley \& Sons, Ltd.},
   issn = {1097-024X},

@@ -1,12 +1,13 @@
 http://onlinelibrary.wiley.com/doi/10.1002/1097-024X%28200009%2930:11%3C1325::AID-SPE342%3E3.0.CO;2-T/abstract
 Unicode in first author's last name
-@article{Jünger:2000:10.1002/1097-024X(200009)30:11<1325::AID-SPE342>3.0.CO;2-T,
+@article{Junger:2000:10.1002/1097-024X(200009)30:11<1325::AID-SPE342>3.0.CO;2-T,
   author = {J{\"u}nger, Michael and Thienel, Stefan},
   title = {The ABACUS system for branch-and-cut-and-price algorithms in integer programming and combinatorial optimization},
   journal = {Software: Practice and Experience},
   volume = {30},
   number = {11},
   pages = {1325--1352},
+  month = sep,
   year = {2000},
   publisher = {John Wiley \& Sons, Ltd.},
   issn = {1097-024X},

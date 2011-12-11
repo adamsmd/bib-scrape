@@ -7,6 +7,7 @@ Monospace in title and abstract
   volume = {31},
   number = {1},
   pages = {67--101},
+  month = jan,
   year = {2001},
   publisher = {John Wiley \& Sons, Ltd.},
   issn = {1097-024X},

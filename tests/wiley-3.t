@@ -7,6 +7,7 @@ Complex math in title and abstract
   volume = {37},
   number = {4},
   pages = {437--454},
+  month = dec,
   year = {2010},
   publisher = {Wiley Subscription Services, Inc., A Wiley Company},
   issn = {1098-2418},

@@ -7,6 +7,7 @@ Subscript and unicode in abstract
   volume = {8},
   number = {06},
   pages = {543--572},
+  month = nov,
   year = {1998},
   doi = {10.1017/S0956796898003141},
   eprint = {http://journals.cambridge.org/article_S0956796898003141},

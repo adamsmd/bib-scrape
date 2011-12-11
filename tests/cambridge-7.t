@@ -7,6 +7,7 @@ Strange volume/issue. Italics in abstract
   volume = {21},
   number = {06},
   pages = {563--572},
+  month = nov,
   year = {2011},
   doi = {10.1017/S0956796811000128},
   eprint = {http://journals.cambridge.org/article_S0956796811000128},

@@ -7,6 +7,7 @@ Superscript in title
   volume = {19},
   number = {Supplement S1},
   pages = {1--301},
+  month = aug,
   year = {2009},
   doi = {10.1017/S0956796809990074},
   eprint = {http://journals.cambridge.org/article_S0956796809990074},
