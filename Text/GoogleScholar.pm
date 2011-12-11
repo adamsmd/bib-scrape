@@ -22,14 +22,13 @@ sub meta_tag {
 
 sub Text::GoogleScholar::parse {
     my ($text) = @_;
-
     my $data = {};
 
     my $p = new HTML::HeadParser;
     $p->parse($text);
     $p->header()->scan(sub {
         my ($key, $value) = @_;
-        if ($key =~ m[^X-Meta-(citation-.*)$]i) {
+        if ($key =~ m[^X-Meta-((citation-|DC\.).*)$]i) {
             ($key = lc $1) =~ s/-/_/g;
             push @{$data->{lc $key}}, $value;
         }});
@@ -48,12 +47,18 @@ sub Text::GoogleScholar::bibtex {
         join(" ; ", @{$self->{'citation_author'} || []});
     $authors =~ s[;][ and ]g;
     $authors =~ s[  +][ ]g;
-    $entry->set('author', $authors);
+    $entry->set('author', $authors) if $authors;
+
+    $authors = $self->{'dc.creator'}->[0] || "";
+    $authors =~ s[,][ and ]g;
+    $authors =~ s[  +][ ]g;
+    $entry->set('author', $authors) if $authors;
 
     $entry->set('keywords', join " ; ", @{$self->{'citation_keywords'}})
         if $self->{'citation_keywords'};
     $entry->set('abstract_html_url', join " ; ", @{$self->{'citation_abstract_html_url'}})
         if $self->{'citation_abstract_html_url'};
+    $entry->set('abstract', @{$self->{'dc.description'}}) if exists $self->{'dc.description'};
     $entry->set('fulltext_html_url', join " ; ", @{$self->{'citation_fulltext_html_url'}})
         if $self->{'citation_fulltext_html_url'};
     $entry->set('pdf_url', join " ; ", @{$self->{'citation_pdf_url'}})
@@ -61,10 +66,13 @@ sub Text::GoogleScholar::bibtex {
 
     for (keys %$self) { $self->{$_} = join " ; ", @{$self->{$_}} }
 
-    $entry->set('title', $self->{'citation_title'});
+    $entry->set('title', $self->{'citation_title'} || $self->{'dc.title'});
     $entry->set('booktitle',
-                $self->{'citation_conference'} || $self->{'citation_conference_title'});
-    $entry->set('journal', $self->{'citation_journal_title'});
+                $self->{'citation_conference'} || $self->{'citation_conference_title'} ||
+                $self->{'dc.relation.ispartof'});
+    $entry->set('journal',
+                $self->{'citation_journal_title'} ||
+                $self->{'dc.relation.ispartof'});
     $entry->set('volume', $self->{'citation_volume'});
     $entry->set('number', ($self->{'citation_issue'} ||
                            $self->{'citation_patent_number'} ||
@@ -73,7 +81,7 @@ sub Text::GoogleScholar::bibtex {
 
     $entry->set('pages', "$self->{'citation_firstpage'}--$self->{'citation_lastpage'}");
 
-    my ($year, $month, $day) = split m[/|-], $self->{'citation_date'};
+    my ($year, $month, $day) = split m[/|-], ($self->{'citation_date'} || $self->{'dc.date'});
     $entry->set('year', $year);
     $entry->set('month', num2month($month)->[1]) if $month;
     $entry->set('day', $day);
