@@ -18,9 +18,9 @@ sub Text::RIS::parse {
 
     my $data = {}; # {key, [string]}
     my $last_key = "";
-    for my $line (split("\n", $text)) { #(split("\n", $text))) {
+    for my $line (split(/[\n\r]+/, $text)) {
         $line =~ s[\r|\n][]g;
-        my ($key, $val) = $line =~ m[^([A-Z][A-Z0-9]|DOI)  - *(.*?) *$];
+        my ($key, $val) = $line =~ m[^([A-Z][A-Z0-9]|DOI) *- *(.*?) *$];
         if (defined $key) { push @{$data->{$key}}, $val; $last_key = $key; }
         elsif ("" ne $line) {
             my $list = $data->{$last_key};
