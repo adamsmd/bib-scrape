@@ -6,6 +6,7 @@ Unicode in author name
   journal = {Epidemiology},
   volume = {11},
   number = {5},
+  jstor_issuetitle = {},
   jstor_articletype = {research-article},
   pages = {550--560},
   month = sep,

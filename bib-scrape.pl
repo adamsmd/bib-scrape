@@ -287,17 +287,13 @@ sub parse_cambridge_university_press {
 sub parse_ieee_computer_society {
     my ($mech) = @_;
 
-    #$mech->follow_link(text => 'BibTex');
     my ($bibtex) = $mech->content() =~ m[<div id="bibText-content">(.*?)</div>]sig;
     $bibtex =~ s[<br>][\n]sig;
     $bibtex = decode_entities($bibtex); # Fix the HTML encoding
     my $entry = parse_bibtex($bibtex);
     update($entry, 'volume', sub { $_ = undef if $_ eq "0" });
-    #$mech->back();
 
     my $html = Text::MetaBib::parse($mech->content());
-    #$entry->set('author', $html->get('author')) if $html->exists('author');
-    #$entry->set('title', $html->get('title')) if $html->exists('title');
     $entry->set('abstract', $html->get('dc.description')->[0]) if $html->exists('dc.description');
     if ($html->exists('dc.date')) {
         my ($year, $month) = $html->date('dc.date');
@@ -307,10 +303,8 @@ sub parse_ieee_computer_society {
     my ($ris) = $mech->content() =~ m[<div id="refWorksText-content">(.*?)</div>]si;
     $ris =~ s[<br>][\n]sig;
     $ris = decode_entities($ris); # Fix the HTML encoding
-    #$mech->follow_link(text => 'RefWorks Procite/RefMan');
     my $f = Text::RIS::parse($ris)->bibtex();
     $entry->set('keywords', $f->get('keywords')) if $f->exists('keywords');
-    #$mech->back();
     if ($f->type() eq 'proceedings') { # IEEE gets this all wrong
         $entry->set_type('inproceedings') ;
         my ($booktitle) = ($mech->content() =~ m[<div id="abs-proceedingTitle">(.*?)</div>]s);
@@ -360,7 +354,6 @@ sub parse_jstor {
     $entry->set('doi', '10.2307/' . $suffix);
     my ($month) = ($entry->get('jstor_formatteddate') =~ m[^(.*?)( \d\d?)?, \d\d\d\d$]);
     $entry->set('month', $month) if defined $month;
-    # TODO: remove empty abstract
 
     $mech->back();
     $entry->set('title', $mech->content() =~ m[(?<!<!--)<div class="hd title">(.*?)</div>]);
@@ -450,7 +443,10 @@ sub parse_oxford_journals {
     $entry->set('year', $year);
     $entry->set('month', $month);
 
-#    $entry->set('address', 'Oxford, UK');
+    my ($abstract) = ($mech->content() =~ m[>\s*Abstract\s*</h2>\s*(.*?)\s*</div>]si);
+    $entry->set('abstract', $abstract) if defined $abstract;
+
+    #$entry->set('address', 'Oxford, UK');
     update($entry, 'issn', sub { s[ *; *][/]g; });
 
     return $entry;

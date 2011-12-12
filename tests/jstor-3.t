@@ -7,6 +7,7 @@ Month extraction when jstor_formatteddate has day and year
   volume = {286},
   number = {5439},
   series = {New Series},
+  jstor_issuetitle = {},
   jstor_articletype = {research-article},
   pages = {531--537},
   month = oct,

@@ -15,5 +15,5 @@ Author should be "R. Kent Dybvig" instead of "R. Dybvig"
   doi = {10.1007/BFb0032732},
   bib_scrape_url = {http://www.springerlink.com/content/m8x0246j74044t6l/},
   keywords = {Computer Science},
-  abstract = {},
+  abstract = {TODO},
 }

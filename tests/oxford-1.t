@@ -10,6 +10,7 @@ Unicode in authors
   month = may,
   year = {2011},
   publisher = {Oxford University Press},
+  language = {en},
   issn = {0010-4620/1460-2067},
   doi = {10.1093/comjnl/bxp130},
   bib_scrape_url = {http://comjnl.oxfordjournals.org/content/54/5/717.abstract},

@@ -6,6 +6,7 @@ Superscript and Unicode in title
   journal = {Biometrics},
   volume = {10},
   number = {4},
+  jstor_issuetitle = {},
   jstor_articletype = {research-article},
   pages = {417--451},
   month = dec,

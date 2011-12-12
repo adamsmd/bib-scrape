@@ -6,6 +6,7 @@ http://www.jstor.org/stable/2034627
   journal = {Proceedings of the American Mathematical Society},
   volume = {14},
   number = {2},
+  jstor_issuetitle = {},
   jstor_articletype = {research-article},
   pages = {278--284},
   month = apr,

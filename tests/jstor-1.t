@@ -6,6 +6,7 @@ http://www.jstor.org/stable/2975544
   journal = {The American Mathematical Monthly},
   volume = {90},
   number = {3},
+  jstor_issuetitle = {},
   jstor_articletype = {research-article},
   pages = {174--185},
   month = mar,

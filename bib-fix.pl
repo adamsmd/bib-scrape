@@ -45,6 +45,7 @@ use Getopt::Long qw(:config auto_version auto_help);
 #  Put upper case words in {.} (e.g. IEEE)
 #  detect fields that are already de-unicoded (e.g. {H}askell or $p$)
 #  move copyright from abstract to copyright field
+#  address based on publisher
 #END TODO
 
 # TODO: omit type-regex field-regex (existing entry is in scope)
@@ -73,12 +74,12 @@ my @KNOWN_FIELDS = qw(
       language isbn issn doi eid acmid url eprint bib_scrape_url
       note annote keywords abstract copyright);
 
-my ($DEBUG, $GENERATE_KEY, $COMMA) = (0, 1, 1);
+my ($DEBUG, $GENERATE_KEY, $COMMA, $ESCAPE_ACRONYMS) = (0, 1, 1, 1);
 my %NO_ENCODE = map {($_,1)} ('doi', 'url', 'eprint', 'bib_scrape_url');
 my %NO_COLLAPSE = map {($_,1)} ('note', 'annote', 'abstract');
 my %RANGE = map {($_,1)} ('chapter', 'month', 'number', 'pages', 'volume', 'year');
 my %OMIT = (); # per type (optional regex on value)
-#my %OMIT_BLANK = (); # per type
+my %OMIT_EMPTY = map {($_,1)} ('abstract'); # per type
 #my @REQUIRE_FIELDS = (...); # per type (optional regex on value)
 #my @RENAME
 
@@ -102,7 +103,9 @@ GetOptions(
     'comma!' => \$COMMA,
     string_no_flag('encode', \%NO_ENCODE),
     string_no_flag('collapse', \%NO_COLLAPSE), # Whether to collapse contingues whitespace
-    string_flag('omit', \%OMIT)
+    string_flag('omit', \%OMIT),
+    string_flag('omit', \%OMIT_EMPTY),
+    'escape-acronyms!' => \$ESCAPE_ACRONYMS
     );
 
 =head1 SYNOPSIS
@@ -151,8 +154,6 @@ while (my $entry = new Text::BibTeX::Entry $file) {
         }
     }
 
-    # TODO: remove empty fields
-
     # Ranges: convert "-" to "--"
     # TODO: option for numeric range
     # TODO: might misfire if "-" doesn't represent a range, Common for tech report numbers
@@ -166,7 +167,6 @@ while (my $entry = new Text::BibTeX::Entry $file) {
     # TODO: ISSN: Print vs electronic vs native, dash vs no-dash vs native
     # TODO: Keywords: ';' vs ','
 
-    # TODO: Title Capticalization: Initialisms, After colon, list of proper names
     # TODO: Author, Editor, Affiliation: List of renames
 # Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
 #  List of renames (regex?)
@@ -199,6 +199,9 @@ while (my $entry = new Text::BibTeX::Entry $file) {
             unless exists $NO_ENCODE{$field};
     }
 
+    # TODO: Title Capticalization: Initialisms, After colon, list of proper names
+    update($entry, 'title', sub { s/([[:upper:]]{2,})/{$1}/g; }) if $ESCAPE_ACRONYMS;
+
     # Generate an entry key
     # TODO: Formats: author/editor1.last year title/journal.abbriv
     # TODO: Key may fail on unicode names? Remove doi?
@@ -225,8 +228,8 @@ while (my $entry = new Text::BibTeX::Entry $file) {
 
     # Omit fields we don't want
     # TODO: controled per type or with other fields or regex matching
-    # omit if empty
     $entry->exists($_) and $entry->delete($_) for (keys %OMIT);
+    $entry->exists($_) and $entry->get($_) eq '' and $entry->delete($_) for (keys %OMIT_EMPTY);
 
     # Put fields in a standard order.
     for my $field ($entry->fieldlist()) {
