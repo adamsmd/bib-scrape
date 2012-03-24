@@ -19,12 +19,10 @@ $months{$macro_names[$_]} = $macro_names[$_] for (0..@long_names);
 $months{$long_names[$_]} = $macro_names[$_] for (0..@long_names);
 $months{'sept'} = 'sep';
 
-Text::BibTeX::add_macro_text($_, macro($months{$_})) for (keys %months);
+Text::BibTeX::add_macro_text($_, $months{$_}) for (keys %months);
 
 sub macro { [Text::BibTeX::BTAST_MACRO, shift()] }
 sub num2month { macro($macro_names[shift()-1]) or die "Invalid month number" }
 sub str2month { macro($months{shift()}) or die "Invalid month name" }
 
 1;
-
-__END__

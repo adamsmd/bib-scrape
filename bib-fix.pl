@@ -7,6 +7,7 @@ $|++;
 use Text::BibTeX;
 use Text::BibTeX qw(:subs);
 use Text::BibTeX::Value;
+use Text::ISBN;
 use TeX::Encode;
 use TeX::Unicode;
 use HTML::Entities;
@@ -75,6 +76,7 @@ my @KNOWN_FIELDS = qw(
       note annote keywords abstract copyright);
 
 my ($DEBUG, $GENERATE_KEY, $COMMA, $ESCAPE_ACRONYMS) = (0, 1, 1, 1);
+my ($ISBN13, $ISBN_SEP) = (0, '-');
 my %NO_ENCODE = map {($_,1)} ('doi', 'url', 'eprint', 'bib_scrape_url');
 my %NO_COLLAPSE = map {($_,1)} ('note', 'annote', 'abstract');
 my %RANGE = map {($_,1)} ('chapter', 'month', 'number', 'pages', 'volume', 'year');
@@ -100,6 +102,8 @@ GetOptions(
     'debug!' => \$DEBUG,
     #no-defaults
     'generate-keys!' => \$GENERATE_KEY,
+    'isbn13!' => \$ISBN13,
+    'isbn-sep=s' => $ISBN_SEP,
     'comma!' => \$COMMA,
     string_no_flag('encode', \%NO_ENCODE),
     string_no_flag('collapse', \%NO_COLLAPSE), # Whether to collapse contingues whitespace
@@ -163,7 +167,7 @@ while (my $entry = new Text::BibTeX::Entry $file) {
         update($entry, $key, sub { s[\b(\w+)--\1\b][$1]ig; });
     }
 
-    # TODO: ISBN: 10 vs 13 vs native, dash vs no-dash vs native
+    update($entry, 'isbn', sub { $_ = Text::ISBN::canonical($_, $ISBN13, $ISBN_SEP) });
     # TODO: ISSN: Print vs electronic vs native, dash vs no-dash vs native
     # TODO: Keywords: ';' vs ','
 

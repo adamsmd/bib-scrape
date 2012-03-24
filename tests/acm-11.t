@@ -2,7 +2,7 @@ http://portal.acm.org/citation.cfm?id=984506
 Acronym in title
 @article{Hsaio:1982:10.1145/984505.984506,
   author = {Hsaio, David K.},
-  title = {Will the real VLDB conference please stand up?},
+  title = {Will the real {VLDB} conference please stand up?},
   journal = {ACM SIGMOD Record},
   volume = {12},
   number = {3},
