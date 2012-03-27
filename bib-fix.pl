@@ -32,7 +32,6 @@ use Getopt::Long qw(:config auto_version auto_help);
 # Title
 #  Captialization: Initialisms, After colon, list of proper names
 #
-# ISBN: 10 vs 13 vs native, no-dash
 # ISSN: Print vs Electronic
 # Keywords: ';' vs ','
 #
