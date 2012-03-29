@@ -23,9 +23,23 @@ my ($number, $mode) = (undef, undef);
 my $tag;
 my ($latex, $ams);
 
-my ($TEST_TEX, $COMPARE, $MAKE_MODULE) = (1, 0, 0);
+my ($TEST_TEX, $COMPARE, $MAKE_MODULE) = (0, 1, 0);
 
 my %codes;
+
+my %decomp1;
+my %decomp2;
+
+parseUnicodeData();
+
+#for (0x1e00 .. 0x1eff) {
+#    my $x = decomp($_);
+#    if (chr($_) ne $x and not grep {$x == $_} (0) {
+#        printf "%04x %s %s\n", $_, encode_utf8(chr($_)), $x;
+#    }
+#}
+
+#exit 1;
 
 my $p = XML::Parser->new(Style => 'Stream', Pkg => 'main');
 $p->parsefile('-');
@@ -45,225 +59,24 @@ $codes{0x219c} = '\ensuremath{\arrowwaveleft}'; # Wrong: \arrowwaveright
 $codes{0x2244} = '\ensuremath{\nsimeq}'; # Wrong: \nsime
 delete $codes{0x03d0}; # Wrong: \Pisymbol{ppi022}{87}
 
+
+ascii();
+#latin();
+#latinA();
 greek();
 letters();
 
+
+for (0x00c0 .. 0x24f, 0x1e00 .. 0x1eff) {
+    my $x = decomp($_);
+    #print "$_ $codes{0+$_}\n";
+    if ($x ne chr($_) and $_ != 0x01ee and $_ != 0x01ef and $_ != 0x19eb) {
+        $codes{$_} = $x;
+    } else { delete $codes{$_}; }
+}
+
 ########################################
 # Taken from TeX::Encode 1.3
-$codes{0x0126} = '\={H}';
-$codes{0x0127} = '\={h}';
-$codes{0x013f} = '\.{L}';
-$codes{0x0140} = '\.{l}';
-$codes{0x0166} = '\={T}';
-$codes{0x0167} = '\={t}';
-$codes{0x01cd} = '\v{A}';
-$codes{0x01ce} = '\v{a}';
-$codes{0x01cf} = '\v{I}';
-$codes{0x01d0} = '\v{i}';
-$codes{0x01d1} = '\v{O}';
-$codes{0x01d2} = '\v{o}';
-$codes{0x01d3} = '\v{U}';
-$codes{0x01d4} = '\v{u}';
-$codes{0x01e2} = '\={\AE}';
-$codes{0x01e3} = '\={\ae}';
-$codes{0x01e6} = '\v{G}';
-$codes{0x01e7} = '\v{g}';
-$codes{0x01e8} = '\v{K}';
-$codes{0x01e9} = '\v{k}';
-$codes{0x01ea} = '\k{O}';
-$codes{0x01eb} = '\k{o}';
-$codes{0x01f0} = '\v{j}';
-$codes{0x01f4} = '\\\'{G}';
-$codes{0x01f8} = '\`{N}';
-$codes{0x01f9} = '\`{n}';
-$codes{0x01fa} = '\\\'{\AA}';
-$codes{0x01fb} = '\\\'{\aa}';
-$codes{0x01fc} = '\\\'{\AE}';
-$codes{0x01fd} = '\\\'{\ae}';
-$codes{0x01fe} = '\\\'{\O}';
-$codes{0x01ff} = '\\\'{\o}';
-$codes{0x0200} = '\C{A}';
-$codes{0x0201} = '\C{a}';
-$codes{0x0202} = '\f{A}';
-$codes{0x0203} = '\f{a}';
-$codes{0x0204} = '\C{E}';
-$codes{0x0205} = '\C{e}';
-$codes{0x0206} = '\f{E}';
-$codes{0x0207} = '\f{e}';
-$codes{0x0208} = '\C{I}';
-$codes{0x0209} = '\C{i}';
-$codes{0x020a} = '\f{I}';
-$codes{0x020b} = '\f{i}';
-$codes{0x020c} = '\C{O}';
-$codes{0x020d} = '\C{o}';
-$codes{0x020e} = '\f{O}';
-$codes{0x020f} = '\f{o}';
-$codes{0x0210} = '\C{R}';
-$codes{0x0211} = '\C{r}';
-$codes{0x0212} = '\f{R}';
-$codes{0x0213} = '\f{r}';
-$codes{0x0214} = '\C{U}';
-$codes{0x0215} = '\C{u}';
-$codes{0x0216} = '\f{U}';
-$codes{0x0217} = '\f{u}';
-$codes{0x021e} = '\v{H}';
-$codes{0x021f} = '\v{h}';
-$codes{0x0226} = '\.{A}';
-$codes{0x0227} = '\.{a}';
-$codes{0x0228} = '\c{E}';
-$codes{0x0229} = '\c{e}';
-$codes{0x022e} = '\.{O}';
-$codes{0x022f} = '\.{o}';
-$codes{0x0232} = '\={Y}';
-$codes{0x0233} = '\={y}';
-$codes{0x1e00} = '\D{A}';
-$codes{0x1e01} = '\D{a}';
-$codes{0x1e02} = '\.{B}';
-$codes{0x1e03} = '\.{b}';
-$codes{0x1e04} = '\d{B}';
-$codes{0x1e05} = '\d{b}';
-$codes{0x1e06} = '\b{B}';
-$codes{0x1e07} = '\b{b}';
-$codes{0x1e0a} = '\.{D}';
-$codes{0x1e0b} = '\.{d}';
-$codes{0x1e0c} = '\d{D}';
-$codes{0x1e0d} = '\d{d}';
-$codes{0x1e0e} = '\b{D}';
-$codes{0x1e0f} = '\b{d}';
-$codes{0x1e10} = '\c{D}';
-$codes{0x1e11} = '\c{d}';
-$codes{0x1e12} = '\V{D}';
-$codes{0x1e13} = '\V{d}';
-$codes{0x1e18} = '\V{E}';
-$codes{0x1e19} = '\V{e}';
-$codes{0x1e1a} = '\T{E}';
-$codes{0x1e1b} = '\T{e}';
-$codes{0x1e1e} = '\.{F}';
-$codes{0x1e1f} = '\.{f}';
-$codes{0x1e20} = '\={G}';
-$codes{0x1e21} = '\={g}';
-$codes{0x1e22} = '\.{H}';
-$codes{0x1e23} = '\.{h}';
-$codes{0x1e24} = '\d{H}';
-$codes{0x1e25} = '\d{h}';
-$codes{0x1e26} = '\"{H}';
-$codes{0x1e27} = '\"{h}';
-$codes{0x1e28} = '\c{H}';
-$codes{0x1e29} = '\c{h}';
-$codes{0x1e2c} = '\T{I}';
-$codes{0x1e2d} = '\T{i}';
-$codes{0x1e30} = '\\\'{K}';
-$codes{0x1e31} = '\\\'{k}';
-$codes{0x1e32} = '\d{K}';
-$codes{0x1e33} = '\d{k}';
-$codes{0x1e34} = '\b{K}';
-$codes{0x1e35} = '\b{k}';
-$codes{0x1e36} = '\d{L}';
-$codes{0x1e37} = '\d{l}';
-$codes{0x1e3a} = '\b{L}';
-$codes{0x1e3b} = '\b{l}';
-$codes{0x1e3c} = '\V{L}';
-$codes{0x1e3d} = '\V{l}';
-$codes{0x1e3e} = '\\\'{M}';
-$codes{0x1e3f} = '\\\'{m}';
-$codes{0x1e40} = '\.{M}';
-$codes{0x1e41} = '\.{m}';
-$codes{0x1e42} = '\d{M}';
-$codes{0x1e43} = '\d{m}';
-$codes{0x1e44} = '\.{N}';
-$codes{0x1e45} = '\.{n}';
-$codes{0x1e46} = '\d{N}';
-$codes{0x1e47} = '\d{n}';
-$codes{0x1e48} = '\b{N}';
-$codes{0x1e49} = '\b{n}';
-$codes{0x1e4a} = '\V{N}';
-$codes{0x1e4b} = '\V{n}';
-$codes{0x1e54} = '\\\'{P}';
-$codes{0x1e55} = '\\\'{p}';
-$codes{0x1e56} = '\.{P}';
-$codes{0x1e57} = '\.{p}';
-$codes{0x1e58} = '\.{R}';
-$codes{0x1e59} = '\.{r}';
-$codes{0x1e5a} = '\d{R}';
-$codes{0x1e5b} = '\d{r}';
-$codes{0x1e5e} = '\b{R}';
-$codes{0x1e5f} = '\b{r}';
-$codes{0x1e60} = '\.{S}';
-$codes{0x1e61} = '\.{s}';
-$codes{0x1e62} = '\d{S}';
-$codes{0x1e63} = '\d{s}';
-$codes{0x1e6a} = '\.{T}';
-$codes{0x1e6b} = '\.{t}';
-$codes{0x1e6c} = '\d{T}';
-$codes{0x1e6d} = '\d{t}';
-$codes{0x1e6e} = '\b{T}';
-$codes{0x1e6f} = '\b{t}';
-$codes{0x1e70} = '\V{T}';
-$codes{0x1e71} = '\V{t}';
-$codes{0x1e74} = '\T{U}';
-$codes{0x1e75} = '\T{u}';
-$codes{0x1e76} = '\V{U}';
-$codes{0x1e77} = '\V{u}';
-$codes{0x1e7c} = '\~{V}';
-$codes{0x1e7d} = '\~{v}';
-$codes{0x1e7e} = '\d{V}';
-$codes{0x1e7f} = '\d{v}';
-$codes{0x1e80} = '\`{W}';
-$codes{0x1e81} = '\`{w}';
-$codes{0x1e82} = '\\\'{W}';
-$codes{0x1e83} = '\\\'{w}';
-$codes{0x1e84} = '\"{W}';
-$codes{0x1e85} = '\"{w}';
-$codes{0x1e86} = '\.{W}';
-$codes{0x1e87} = '\.{w}';
-$codes{0x1e88} = '\d{W}';
-$codes{0x1e89} = '\d{w}';
-$codes{0x1e8a} = '\.{X}';
-$codes{0x1e8b} = '\.{x}';
-$codes{0x1e8c} = '\"{X}';
-$codes{0x1e8d} = '\"{x}';
-$codes{0x1e8e} = '\.{Y}';
-$codes{0x1e8f} = '\.{y}';
-$codes{0x1e90} = '\^{Z}';
-$codes{0x1e91} = '\^{z}';
-$codes{0x1e92} = '\d{Z}';
-$codes{0x1e93} = '\d{z}';
-$codes{0x1e94} = '\b{Z}';
-$codes{0x1e95} = '\b{z}';
-$codes{0x1e96} = '\b{h}';
-$codes{0x1e97} = '\"{t}';
-$codes{0x1e98} = '\r{w}';
-$codes{0x1e99} = '\r{y}';
-$codes{0x1ea0} = '\d{A}';
-$codes{0x1ea1} = '\d{a}';
-$codes{0x1ea2} = '\h{A}';
-$codes{0x1ea3} = '\h{a}';
-$codes{0x1eb8} = '\d{E}';
-$codes{0x1eb9} = '\d{e}';
-$codes{0x1eba} = '\h{E}';
-$codes{0x1ebb} = '\h{e}';
-$codes{0x1ebc} = '\~{E}';
-$codes{0x1ebd} = '\~{e}';
-$codes{0x1ec8} = '\h{I}';
-$codes{0x1ec9} = '\h{i}';
-$codes{0x1eca} = '\d{I}';
-$codes{0x1ecb} = '\d{i}';
-$codes{0x1ecc} = '\d{O}';
-$codes{0x1ecd} = '\d{o}';
-$codes{0x1ece} = '\h{O}';
-$codes{0x1ecf} = '\h{o}';
-$codes{0x1ee4} = '\d{U}';
-$codes{0x1ee5} = '\d{u}';
-$codes{0x1ee6} = '\h{U}';
-$codes{0x1ee7} = '\h{u}';
-$codes{0x1ef2} = '\`{Y}';
-$codes{0x1ef3} = '\`{y}';
-$codes{0x1ef4} = '\d{Y}';
-$codes{0x1ef5} = '\d{y}';
-$codes{0x1ef6} = '\h{Y}';
-$codes{0x1ef7} = '\h{y}';
-$codes{0x1ef8} = '\~{Y}';
-$codes{0x1ef9} = '\~{y}';
 $codes{0x2070} = '\ensuremath{^0}';
 $codes{0x2071} = '\ensuremath{^i}';
 $codes{0x2074} = '\ensuremath{^4}';
@@ -321,7 +134,7 @@ if ($TEST_TEX) {
 #    \usepackage{mathdesign}
 
     start($main, qw({amssymb} {amsmath} {mathrsfs} {mathabx} {shuffle} {textcomp}));
-    start($ipa, qw({amssymb} {textcomp} [tone]{tipa} {tipx}));
+    start($ipa, qw({amssymb} {combelow} {textcomp} [tone]{tipa} {tipx})); # combelow is for \cb
     start($greek, qw({amssymb} [greek,english]{babel} {teubner})); # amssymb is for \backepsilon and \varkappa
     start($mn, qw({MnSymbol}));
     start($ding, qw({amssymb} {pifont} {wasysym}));
@@ -332,11 +145,14 @@ if ($TEST_TEX) {
     print $ipa "\\newcommand{\\D}{\\textsubring}\n";
     print $ipa "\\newcommand{\\V}{\\textsubcircum}\n";
     print $ipa "\\newcommand{\\T}{\\textsubtilde}\n";
+#textsubbreve
 
     for (sort {$a <=> $b} keys %codes) {
-        my $file = ($_ >= 0x0100 && $_ <= 0x036f ? $ipa :
-                    $_ >= 0x0370 && $_ <= 0x03ff ? $greek :
-                    $_ >= 0x1e00 && $_ <= 0x1eff ? $ipa :
+        my $file = ($_ >= 0x0370 && $_ <= 0x03ff ? $greek :
+                    $_ >= 0x0100 && $_ <= 0x1fff ? $ipa : # General scripts area
+                    $_ >= 0x2c00 && $_ <= 0x2dff ? $ipa : # General scripts area
+                    # 2000-2bff, 2e00-2e7f # Symbols and punctuation
+                    # 3000-3030 # CJK punctuation
                     $_ == 0x2212 || $_ == 0x2a03 ? $mn :
                     $_ >= 0x2400 && $_ <= 0x27bf ? $ding :
                     $_ >= 0x1d400 && $_ <= 0x1d7ff ? $letters :
@@ -353,7 +169,8 @@ if ($TEST_TEX) {
 }
 
 if ($COMPARE) {
-    for (sort(uniq(map {0+$_}   (keys %codes),
+    for (sort {$a <=> $b}
+             (uniq(map {0+$_}   (keys %codes),
                    map {ord $_} (keys %TeX::Encode::charmap::CHAR_MAP),
                    map {ord $_} (keys %TeXEncode::LATEX_Escapes)))) {
         $number = $_;
@@ -363,8 +180,8 @@ if ($COMPARE) {
         my $other2 = $TeXEncode::LATEX_Escapes{$str};
         $other1 =~ s[^\$(.*)\$$][\\ensuremath{$1}] if defined $other1;
         $other2 =~ s[^\$(.*)\$$][\\ensuremath{$1}] if defined $other2;
-        if (defined $self) {
-        #unless (defined $self and defined $other1 and $other1 eq $self) {
+        if (defined $other1) {
+        unless (defined $self and defined $other1 and $other1 eq $self) {
             printf("%04x %s", $number, encode_utf8(chr($number)));
             # XML is better than XML.old
             # XML is better than LATEX_Escapes when they conflict
@@ -372,9 +189,10 @@ if ($COMPARE) {
             #print(" ($other2)") if defined $other2;
             # XML is better than CHAR_MAP when they conflict
             # There are some in CHARP_MAP that are missing from XML
-            #print(" ($other1)") if defined $other1;
+            print(" ($other1)") if defined $other1;
             print(" [$self]") if defined $self;
             print("\n");
+        }
         }
     }
 }
@@ -609,4 +427,222 @@ sub letters {
             ($codes{$char++} = $tex) =~ s/_/$_/g;
         }
     }
+}
+
+sub ding {
+
+#    2423 X{\textvisiblespace}X;
+#
+#    2460 \ding{172} (1..9)
+#    2468
+#
+#        24B6 \textcircled{A} .. Z a .. z
+#
+#    2500 .. 259f pmboxdraw
+
+
+
+}
+
+sub set_codes {
+    my ($char, @codes) = @_;
+    for (@codes) {
+        if ($_ eq '_') { delete $codes{$char} }
+        else { $codes{$char} = $_ }
+        $char++;
+    }
+}
+
+sub ascii {
+# Taken from Table 328 of "The Comprehensive LaTeX Symbol List"
+    set_codes(0x22, qw(\textquotedbl \# \$ \% \&));
+    set_codes(0x3c, qw(\textless _ \textgreater));
+    set_codes(0x5c, qw(\textbackslash));
+    set_codes(0x5e, qw(\^{}));
+    set_codes(0x5f, qw(\_));
+    set_codes(0x7b, qw(\{));
+    #set_codes(0x7c, qw(\textbar));
+    set_codes(0x7e, qw(\}));
+    set_codes(0x7f, qw(\~{}));
+
+}
+
+sub latin1 {
+# Taken from Table 329 of "The Comprehensive LaTeX Symbol List"
+    set_codes(0xa0, qw(
+~
+!`
+\textcent
+\pounds
+\textcurrency
+\textyen
+\textbrokenbar
+\S
+\textasciidieresis
+\textcopyright
+\textordfeminine
+\guillemotleft
+\textlnot
+\-
+\textregistered
+\textasciimacron
+
+\textdegree
+\textpm
+\texttwosuperior
+\textthreesuperior
+\textasciiacute
+\textmu
+\P
+\textperiodcentered
+\c{}
+\textonesuperior
+\textordmasculine
+\guillemotright
+\textonequarter
+\textonehalf
+\textthreequarters
+?`
+
+\`{A}
+\'{A}
+\^{A}
+\~{A}
+\"{A}
+\AA
+\AE
+\c{C}
+\`{E}
+\'{E}
+\^{E}
+\"{E}
+\`{I}
+\'{I}
+\^{I}
+\"{I}
+
+\DH
+\~{N}
+\`{O}
+\'{O}
+\^{O}
+\~{O}
+\"{O}
+\texttimes
+\O
+\`{U}
+\'{U}
+\^{U}
+\"{U}
+\'{Y}
+\TH
+\ss
+
+\`{a}
+\'{a}
+\^{a}
+\~{a}
+\"{a}
+\aa
+\ae
+\c{c}
+\`{e}
+\'{e}
+\^{e}
+\"{e}
+\`{i}
+\'{i}
+\^{i}
+\"{i}
+
+\dh
+\~{n}
+\`{o}
+\'{o}
+\^{o}
+\~{o}
+\"{o}
+\textdiv
+\o
+\`{u}
+\'{u}
+\^{u}
+\"{u}
+\'{y}
+\th
+\"{y}
+));
+}
+
+sub parseUnicodeData {
+    my $fh = IO::File->new("UnicodeData.txt", 'r');
+    while (<$fh>) {
+        my ($code, $dummy, $decomp1, $decomp2) = m/^([0-9A-F]+);([^;]*;){4}([0-9A-F]+) ([0-9A-F]+);/;
+        if (defined $decomp2) {
+            #print $_, "\n";
+            #printf "%04x %04x %04x\n", hex($code), hex($decomp1), hex($decomp2);
+            $decomp1{hex($code)} = hex($decomp1);
+            $decomp2{hex($code)} = hex($decomp2);
+        }
+    }
+}
+
+sub decomp {
+    my ($char) = @_;
+
+    #printf "char=%04x\n", $char;
+
+    my @accents = qw(
+`  '  ^  ~  =  __ u  .
+"  h  r  H  v  |  U  G
+
+__ textroundcap __ __ __ __ __ __
+__ __ __ __ __ __ __ __
+
+__ __ __ d  textsubumlaut textsubring   cb c 
+k  __ __ __ __            textsubcircum textsubbreve __
+
+textsubtilde b  __ __ __ __ __ __
+__ __ __ __ __ __ __ __
+);
+
+# 17f .. 1cc
+    my %special = (
+        0x00c5, '\AA',
+        0x00c6, '\AE',
+        0x00d0, '\DH',
+        0x00d7, '\texttimes',
+        0x00d8, '\O',
+        0x00de, '\TH',
+        0x00df, '\ss',
+        0x00e5, '\aa',
+        0x00e6, '\ae',
+        0x00f0, '\dh',
+        0x00f7, '\textdiv',
+        0x00f8, '\o',
+        0x00fe, '\th',
+
+        0x0110, '\DJ',
+        0x0111, '\dj',
+        0x0131, '\i',
+        0x0132, '\IJ',
+        0x0133, '\ij',
+        0x0141, '\L',
+        0x0142, '\l',
+        0x0149, '\'n',
+        0x014a, '\NG',
+        0x014b, '\ng',
+        0x0152, '\OE',
+        0x0153, '\oe',
+        0x01a0, '\OHORN',
+        0x01a1, '\ohorn',
+        0x01af, '\UHORN',
+        0x01b0, '\uhorn',
+        );
+
+    if (exists $special{$char}) {
+        return $special{$char};
+    } elsif (exists $decomp2{$char}) {
+        return "\\$accents[$decomp2{$char}-0x300]\{" . decomp($decomp1{$char}) . "}";
+    } else { return chr($char); }
 }
