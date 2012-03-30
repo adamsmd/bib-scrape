@@ -23,7 +23,7 @@ my ($number, $mode) = (undef, undef);
 my $tag;
 my ($latex, $ams);
 
-my ($TEST_TEX, $COMPARE, $MAKE_MODULE) = (0, 1, 0);
+my ($TEST_TEX, $COMPARE, $MAKE_MODULE) = (1, 0, 0);
 
 my %codes;
 
@@ -31,15 +31,6 @@ my %decomp1;
 my %decomp2;
 
 parseUnicodeData();
-
-#for (0x1e00 .. 0x1eff) {
-#    my $x = decomp($_);
-#    if (chr($_) ne $x and not grep {$x == $_} (0) {
-#        printf "%04x %s %s\n", $_, encode_utf8(chr($_)), $x;
-#    }
-#}
-
-#exit 1;
 
 my $p = XML::Parser->new(Style => 'Stream', Pkg => 'main');
 $p->parsefile('-');
@@ -59,53 +50,104 @@ $codes{0x219c} = '\ensuremath{\arrowwaveleft}'; # Wrong: \arrowwaveright
 $codes{0x2244} = '\ensuremath{\nsimeq}'; # Wrong: \nsime
 delete $codes{0x03d0}; # Wrong: \Pisymbol{ppi022}{87}
 
-
 ascii();
-#latin();
-#latinA();
+latin1();
 greek();
 letters();
 
-
+# \i
 for (0x00c0 .. 0x24f, 0x1e00 .. 0x1eff) {
     my $x = decomp($_);
     #print "$_ $codes{0+$_}\n";
-    if ($x ne chr($_) and $_ != 0x01ee and $_ != 0x01ef and $_ != 0x19eb) {
+    if ($x ne chr($_) and $_ != 0x01ee and $_ != 0x01ef and $_ != 0x1e9b) {
         $codes{$_} = $x;
     } else { delete $codes{$_}; }
 }
 
-########################################
-# Taken from TeX::Encode 1.3
-$codes{0x2070} = '\ensuremath{^0}';
-$codes{0x2071} = '\ensuremath{^i}';
-$codes{0x2074} = '\ensuremath{^4}';
-$codes{0x2075} = '\ensuremath{^5}';
-$codes{0x2076} = '\ensuremath{^6}';
-$codes{0x2077} = '\ensuremath{^7}';
-$codes{0x2078} = '\ensuremath{^8}';
-$codes{0x2079} = '\ensuremath{^9}';
-$codes{0x207a} = '\ensuremath{^+}';
-$codes{0x207b} = '\ensuremath{^-}';
-$codes{0x207c} = '\ensuremath{^=}';
-$codes{0x207d} = '\ensuremath{^(}';
-$codes{0x207e} = '\ensuremath{^)}';
-$codes{0x207f} = '\ensuremath{^n}';
-$codes{0x2080} = '\ensuremath{_0}';
-$codes{0x2081} = '\ensuremath{_1}';
-$codes{0x2082} = '\ensuremath{_2}';
-$codes{0x2083} = '\ensuremath{_3}';
-$codes{0x2084} = '\ensuremath{_4}';
-$codes{0x2085} = '\ensuremath{_5}';
-$codes{0x2086} = '\ensuremath{_6}';
-$codes{0x2087} = '\ensuremath{_7}';
-$codes{0x2088} = '\ensuremath{_8}';
-$codes{0x2089} = '\ensuremath{_9}';
-$codes{0x208a} = '\ensuremath{_+}';
-$codes{0x208b} = '\ensuremath{_-}';
-$codes{0x208c} = '\ensuremath{_=}';
-$codes{0x208d} = '\ensuremath{_(}';
-$codes{0x208e} = '\ensuremath{_)}';
+for (0x1f00 .. 0x1fff) {
+    my $x = greekDecomp($_);
+    if ($x ne 'RES' and $x ne 'TODO') {
+        $codes{$_} = $x;
+    } else { delete $codes{$_} }
+}
+
+# Super and subscripts
+set_codes(0x2070,
+          (map { "\\textsuperscript{$_}" } qw[0 i]),
+          qw[_ _],
+          (map { "\\textsuperscript{$_}" } qw[4 5 6 7 8 9 + - = ( ) n]),
+          (map { "\\textsubscript{$_}" } qw[0 1 2 3 4 5 6 7 8 9 + - = ( )]),
+          qw[_],
+          (map { "\\textsubscript{$_}" } qw[a e o x \textschwa h k l m n p s t]));
+
+
+## IPA extensions
+#025b X{\ensuremath{\varepsilon}}X
+#
+#0261 X{g}X
+#
+#0278 X{\ensuremath{\phi}}X
+#
+#029e X{\textturnk}X
+#
+## Spacing modifiers
+#
+#02bc X{\rasp}X
+#
+#02c6 X{\^{}}X
+#
+#02c7 X{\textasciicaron}X
+#
+#02d8 X{\textasciibreve}X
+#
+#02d9 X{\textperiodcentered}X
+#
+#02da X{\r{}}X
+#
+#02db X{\k{}}X
+#
+#02dc X{\~{}}X
+#
+#02dd X{\H{}}X
+#
+#02e5 X{\tone{55}}X
+#
+#02e6 X{\tone{44}}X
+#
+#02e7 X{\tone{33}}X
+#
+#02e8 X{\tone{22}}X
+#
+#02e9 X{\tone{11}}X
+#
+## Diacritical marks
+#
+#0300 X{\`{}}X
+#
+#0301 X{\'{}}X
+#
+#0302 X{\^{}}X
+#
+#0303 X{\~{}}X
+#
+#0304 X{\={}}X
+#_
+#0306 X{\u{}}X
+#
+#0307 X{\.{}}X
+#
+#0308 X{\"{}}X
+#_
+#030a X{\r{}}X
+#
+#030b X{\H{}}X
+#
+#030c X{\v{}}X
+#__
+#0327 X{\c{}}X
+#
+#0328 X{\k{}}X
+
 
 for my $key (keys %codes) {
     $_ = $codes{$key};
@@ -133,7 +175,7 @@ if ($TEST_TEX) {
 #    %\usepackage{stmaryrd}
 #    \usepackage{mathdesign}
 
-    start($main, qw({amssymb} {amsmath} {mathrsfs} {mathabx} {shuffle} {textcomp}));
+    start($main, qw({amssymb} {amsmath} {fixltx2e} {mathrsfs} {mathabx} {shuffle} {textcomp} {tipa}));
     start($ipa, qw({amssymb} {combelow} {textcomp} [tone]{tipa} {tipx})); # combelow is for \cb
     start($greek, qw({amssymb} [greek,english]{babel} {teubner})); # amssymb is for \backepsilon and \varkappa
     start($mn, qw({MnSymbol}));
@@ -148,15 +190,31 @@ if ($TEST_TEX) {
 #textsubbreve
 
     for (sort {$a <=> $b} keys %codes) {
-        my $file = ($_ >= 0x0370 && $_ <= 0x03ff ? $greek :
-                    $_ >= 0x0100 && $_ <= 0x1fff ? $ipa : # General scripts area
-                    $_ >= 0x2c00 && $_ <= 0x2dff ? $ipa : # General scripts area
-                    # 2000-2bff, 2e00-2e7f # Symbols and punctuation
-                    # 3000-3030 # CJK punctuation
-                    $_ == 0x2212 || $_ == 0x2a03 ? $mn :
-                    $_ >= 0x2400 && $_ <= 0x27bf ? $ding :
-                    $_ >= 0x1d400 && $_ <= 0x1d7ff ? $letters :
-                    $main);
+        my $file = (
+            #  0000.. 007f ascii
+            #  0080.. 009f (control)
+            #  00a0.. 00bf latin1
+            #  00c0.. 024f decomp
+            #  0250.. 036f (ipa)
+            #  0370.. 03ff greek
+            #  0400.. 1dff (empty (hebrew?) (arabic?))
+            #  1e00.. 1eff decomp
+            #  1f00.. 1fff greek decomp
+            #  2000.. ffff (???)
+            #   2400.. 27bf ding
+            #   301a.. 301b open brackets
+            #   fb00.. fb04 *ffil
+            # 1d400..1d7ff letters
+
+            $_ >= 0x0370 && $_ <= 0x03ff ? $greek :
+            $_ >= 0x0100 && $_ <= 0x1eff ? $ipa : # General scripts area
+            $_ >= 0x1f00 && $_ <= 0x1fff ? $greek :
+            # 2000-2bff, 2e00-2e7f # Symbols and punctuation
+            # 3000-3030 # CJK punctuation
+            $_ == 0x2212 || $_ == 0x2a03 ? $mn :
+            $_ >= 0x2400 && $_ <= 0x27bf ? $ding :
+            $_ >=0x1d400 && $_ <=0x1d7ff ? $letters :
+            $main);
 
         print $file sprintf("%04x X{%s}X\n\n", $_, $codes{$_});
 
@@ -332,6 +390,76 @@ sub Text {
     $ams = $_ if $tag eq '<AMS>';
 }
 
+sub greekDecomp {
+    my ($char) = @_;
+
+    my @letters = qw(
+_    _    _    _    _    _    _    _    _    _    _    _    _    _    _    _    
+_    _    _    _    '    "'   'A   _    'E   'H   'I   _    'O   _    'Y   'W    
+"'i  A    B    G    D    E    Z    H    J    I    K    L    M    N    X    O    
+P    R    _    S    T    U    F    Q    Y    W    "I   "U   'a   'e   'h   'i   
+"'u  a    b    g    d    e    z    h    j    i    k    l    m    n    x    o    
+p    r    c    s    t    u    f    q    y    w    "i   "u   'o   'u   'w   _
+
+_                      \ensuremath{\vartheta} _                     _
+"\ensuremath{\Upsilon} \ensuremath{\phi}      \ensuremath{\varpi}   _
+\Koppa                 \coppa                 \Stigma               \stigma
+\Digamma               \digamma               _                     \koppa
+
+\Sampi                 \sampi                 _                     _
+_                      _                      _                     _
+_                      _                      _                     _
+_                      _                      _                     _
+
+\ensuremath{\varkappa} \ensuremath{\varrho}   _                     _
+\ensuremath{\Theta}    \ensuremath{\epsilon}  \ensuremath{\backepsilon} _
+_                      _                      _                     _
+_                      _                      _                     _
+);
+
+    if (grep { $char - 0x1f00 == hex($_) }
+        qw(16 17 1e 1f 46 47 4e 4f 58 5a 5c 5e 7e 7f b5 c5 d4 d5 dc f0 f1 f5 ff)) {
+        return "RES";
+    } elsif ($char == 0x1fc0 or $char == 0x1fc1 or
+        $char == 0x1fbd or $char == 0x1fbe or $char == 0x1fbf or
+        $char == 0x1fcd or $char == 0x1fce or $char == 0x1fcf or
+        $char == 0x1fdd or $char == 0x1fde or $char == 0x1fdf or
+        $char == 0x1fed or $char == 0x1fee or $char == 0x1fef or
+        $char == 0x1ffd or $char == 0x1ffe) { return "TODO"
+    } elsif (0x0370 <= $char && $char <= 0x03ff) {
+        return $codes{$char};
+    } elsif (exists $decomp2{$char}) {
+        my $x = greekDecomp($decomp1{$char});
+        if ($decomp2{$char} == 0x0300 and $x =~ m[^\\textgreek{(.*)}$]) {
+            return "\\textgreek{`$1}";
+        } elsif ($decomp2{$char} == 0x0301 and $x =~ m[^\\textgreek{(.*)}$]) {
+            return "\\textgreek{'$1}";
+        } elsif ($decomp2{$char} == 0x0304 and $x =~ m[^\\textgreek{(.*)}$]) {
+            return "\\textgreek{\\={$1}}";
+        } elsif ($decomp2{$char} == 0x0306 and $x =~ m[^\\textgreek{(.*)}$]) {
+            return "\\textgreek{\\u{$1}}";
+        } elsif ($decomp2{$char} == 0x0308 and $x =~ m[^\\textgreek{(.*)}$]) {
+            return "\\textgreek{\"$1}";
+        } elsif ($decomp2{$char} == 0x0313 and $x =~ m[^\\textgreek{(.*)}$]) {
+            return "\\textgreek{>$1}";
+        } elsif ($decomp2{$char} == 0x0314 and $x =~ m[^\\textgreek{(.*)}$]) {
+            return "\\textgreek{<$1}";
+        } elsif ($decomp2{$char} == 0x0342 and $x =~ m[^\\textgreek{(.*)}$]) {
+            return "\\textgreek{~$1}";
+        } elsif ($decomp2{$char} == 0x0345 and $x =~ m[^\\textgreek{(.*)}$]) {
+            return "\\textgreek{$1|}";
+        } else {
+            printf "ERROR: %04x %04x %04x %s\n", $char, $decomp1{$char}, $decomp2{$char}, $x;
+            exit 1;
+        }
+    } elsif (exists $decomp1{$char}) { return greekDecomp($decomp1{$char});
+    } else {
+        printf "ERROR: %04x %04x %04x\n", $char, $decomp1{$char}, $decomp2{$char};
+        return "_";
+    }
+    
+}
+
 sub greek {
 #0   1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
     my @letters = qw(
@@ -464,7 +592,6 @@ sub ascii {
     #set_codes(0x7c, qw(\textbar));
     set_codes(0x7e, qw(\}));
     set_codes(0x7f, qw(\~{}));
-
 }
 
 sub latin1 {
@@ -503,86 +630,20 @@ sub latin1 {
 \textonehalf
 \textthreequarters
 ?`
-
-\`{A}
-\'{A}
-\^{A}
-\~{A}
-\"{A}
-\AA
-\AE
-\c{C}
-\`{E}
-\'{E}
-\^{E}
-\"{E}
-\`{I}
-\'{I}
-\^{I}
-\"{I}
-
-\DH
-\~{N}
-\`{O}
-\'{O}
-\^{O}
-\~{O}
-\"{O}
-\texttimes
-\O
-\`{U}
-\'{U}
-\^{U}
-\"{U}
-\'{Y}
-\TH
-\ss
-
-\`{a}
-\'{a}
-\^{a}
-\~{a}
-\"{a}
-\aa
-\ae
-\c{c}
-\`{e}
-\'{e}
-\^{e}
-\"{e}
-\`{i}
-\'{i}
-\^{i}
-\"{i}
-
-\dh
-\~{n}
-\`{o}
-\'{o}
-\^{o}
-\~{o}
-\"{o}
-\textdiv
-\o
-\`{u}
-\'{u}
-\^{u}
-\"{u}
-\'{y}
-\th
-\"{y}
 ));
 }
 
 sub parseUnicodeData {
     my $fh = IO::File->new("UnicodeData.txt", 'r');
     while (<$fh>) {
-        my ($code, $dummy, $decomp1, $decomp2) = m/^([0-9A-F]+);([^;]*;){4}([0-9A-F]+) ([0-9A-F]+);/;
+        my ($code, $dummy, $decomp1, $dummy2, $decomp2) = m/^([0-9A-F]+);([^;]*;){4}([0-9A-F]+)( ([0-9A-F]+))?;/;
         if (defined $decomp2) {
             #print $_, "\n";
             #printf "%04x %04x %04x\n", hex($code), hex($decomp1), hex($decomp2);
-            $decomp1{hex($code)} = hex($decomp1);
             $decomp2{hex($code)} = hex($decomp2);
+        }
+        if (defined $decomp1) {
+            $decomp1{hex($code)} = hex($decomp1);
         }
     }
 }
@@ -599,7 +660,7 @@ sub decomp {
 __ textroundcap __ __ __ __ __ __
 __ __ __ __ __ __ __ __
 
-__ __ __ d  textsubumlaut textsubring   cb c 
+__ __ __ d  textsubumlaut textsubring   cb           c 
 k  __ __ __ __            textsubcircum textsubbreve __
 
 textsubtilde b  __ __ __ __ __ __
@@ -644,5 +705,7 @@ __ __ __ __ __ __ __ __
         return $special{$char};
     } elsif (exists $decomp2{$char}) {
         return "\\$accents[$decomp2{$char}-0x300]\{" . decomp($decomp1{$char}) . "}";
+    } elsif (exists $codes{$char}) {
+        return $codes{$char};
     } else { return chr($char); }
 }
