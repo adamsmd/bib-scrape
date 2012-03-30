@@ -25,6 +25,29 @@ my ($latex, $ams);
 
 my ($TEST_TEX, $COMPARE, $MAKE_MODULE) = (1, 0, 0);
 
+my @accents = qw(
+`  '  ^  ~  =  __ u  .
+"  h  r  H  v  |  U  G
+
+__ textroundcap __ __ __ __ __ __
+__ __ __ __ __ __ __ __
+
+__ __ __ d  textsubumlaut textsubring   cb           c 
+k  __ __ __ __            textsubcircum textsubbreve __
+
+textsubtilde b  __ __ __ __ __ __
+__ __ __ __ __ __ __ __
+
+__ __ __ __ __ __ __ __
+__ __ __ __ __ __ __ __
+
+__ __ __ __ __ __ __ __
+__ __ __ __ __ __ __ __
+
+__ __ __ __ __ __ __ __
+__ __ __ __ __ __ __ __
+);
+
 my %codes;
 
 my %decomp1;
@@ -37,6 +60,10 @@ $p->parsefile('-');
 
 $codes{0x00ad} = '\-'; # Don't want extra {} at the end
 $codes{0x0192} = '\textflorin'; # Wrong: \ensuremath{f}
+$codes{0x0195} = '\texthvlig'; # Missing
+$codes{0x019e} = '\textnrleg'; # Missing
+#$codes{0x01aa} = '\ensuremath{\eth}'; # Wrong
+$codes{0x01c2} = '\textdoublepipe'; # Missing
 $codes{0x0237} = '\j'; # Missing
 $codes{0x02c6} = '\^{}'; # Missing
 $codes{0x02dc} = '\~{}'; # Wrong: \texttildelow
@@ -54,6 +81,12 @@ ascii();
 latin1();
 greek();
 letters();
+ding();
+
+for (0x0300 .. 0x036f) {
+    set_codes($_, ($accents[$_-0x300] ne '__' ?
+                   "\\$accents[$_-0x300]\{\}" : '_'));
+}
 
 # \i
 for (0x00c0 .. 0x24f, 0x1e00 .. 0x1eff) {
@@ -120,34 +153,6 @@ set_codes(0x2070,
 #
 #02e9 X{\tone{11}}X
 #
-## Diacritical marks
-#
-#0300 X{\`{}}X
-#
-#0301 X{\'{}}X
-#
-#0302 X{\^{}}X
-#
-#0303 X{\~{}}X
-#
-#0304 X{\={}}X
-#_
-#0306 X{\u{}}X
-#
-#0307 X{\.{}}X
-#
-#0308 X{\"{}}X
-#_
-#030a X{\r{}}X
-#
-#030b X{\H{}}X
-#
-#030c X{\v{}}X
-#__
-#0327 X{\c{}}X
-#
-#0328 X{\k{}}X
-
 
 for my $key (keys %codes) {
     $_ = $codes{$key};
@@ -163,8 +168,8 @@ sub start {
 }
 
 if ($TEST_TEX) {
-    my ($main, $ipa, $greek, $mn, $ding, $letters) =
-        map { IO::File->new("test/$_.tex", 'w') } qw(main ipa greek mn ding letters);
+    my ($latin, $main, $greek, $mn, $ding, $letters) =
+        map { IO::File->new("test/$_.tex", 'w') } qw(latin main greek mn ding letters);
 
 #    %\usepackage{cite}
 #    %\usepackage{amsfonts}
@@ -175,45 +180,62 @@ if ($TEST_TEX) {
 #    %\usepackage{stmaryrd}
 #    \usepackage{mathdesign}
 
+    start($latin, qw({textcomp} {tipx}));
     start($main, qw({amssymb} {amsmath} {fixltx2e} {mathrsfs} {mathabx} {shuffle} {textcomp} {tipa}));
-    start($ipa, qw({amssymb} {combelow} {textcomp} [tone]{tipa} {tipx})); # combelow is for \cb
     start($greek, qw({amssymb} [greek,english]{babel} {teubner})); # amssymb is for \backepsilon and \varkappa
     start($mn, qw({MnSymbol}));
     start($ding, qw({amssymb} {pifont} {wasysym}));
     start($letters, qw({amsmath} {amssymb} {bbold} {mathrsfs} {sansmath}));
 
-    print $ipa "\\newcommand{\\C}{\\textdoublegrave}\n";
-    print $ipa "\\newcommand{\\f}{\\textroundcap}\n";
-    print $ipa "\\newcommand{\\D}{\\textsubring}\n";
-    print $ipa "\\newcommand{\\V}{\\textsubcircum}\n";
-    print $ipa "\\newcommand{\\T}{\\textsubtilde}\n";
-#textsubbreve
+    print $latin "\\renewcommand{\\|}{} % \\usepackage{fc}\n";
+    print $latin "\\newcommand{\\G}{} % \\usepackage{fc}\n";
+    print $latin "\\newcommand{\\U}{} % \\usepackage{fc}\n";
+    print $latin "\\newcommand{\\h}{} % \\usepackage{vntex}\n";
+    print $latin "\\newcommand{\\OHORN}{} % \\usepackage{vntex}\n";
+    print $latin "\\newcommand{\\ohorn}{} % \\usepackage{vntex}\n";
+    print $latin "\\newcommand{\\UHORN}{} % \\usepackage{vntex}\n";
+    print $latin "\\newcommand{\\uhorn}{} % \\usepackage{vntex}\n";
+    print $latin "\\newcommand{\\textsubbreve}{} % DOES NOT EXIST\n";
+    print $latin "\\newcommand{\\cb}{} % \\usepackage{combelow}\n";
 
     for (sort {$a <=> $b} keys %codes) {
         my $file = (
-            #  0000.. 007f ascii
-            #  0080.. 009f (control)
-            #  00a0.. 00bf latin1
-            #  00c0.. 024f decomp
-            #  0250.. 036f (ipa)
-            #  0370.. 03ff greek
-            #  0400.. 1dff (empty (hebrew?) (arabic?))
-            #  1e00.. 1eff decomp
-            #  1f00.. 1fff greek decomp
+            $_ >= 0x0000 && $_ <= 0x036f ? $latin :
+              #  0000.. 007f ascii
+              #  0080.. 009f [omitted: control]
+              #  00a0.. 00bf latin1
+              #  00c0.. 024f decomp
+              #  0250.. 02ff [omitted: ipa]
+              #  0300.. 036f accents
+            $_ >= 0x0370 && $_ <= 0x03ff ? $greek :
+              #  0370.. 03ff greek
+            $_ >= 0x0400 && $_ <= 0x01df ? undef :
+              #  0400.. 1dff [omitted: hebrew, arabic, etc.]
+            $_ >= 0x1e00 && $_ <= 0x1eff ? $latin :
+              #  1e00.. 1eff decomp
+            $_ >= 0x1f00 && $_ <= 0x1fff ? $greek :
+              #  1f00.. 1fff greek decomp
             #  2000.. ffff (???)
             #   2400.. 27bf ding
+            #     2400 control
+            #     2460 digits
+            #     2500 box drawing
+            #     25a0 shapes
+            #     2600 misc
+            #     2700 ding
+            #       33 -> 01..60 [05,0A,0B,28,4c,4e,53,54,55,57,5f,60,68-75,95,96,97,b0,bf]
+            #             13 [\checkmark]
+#
+            #       
             #   301a.. 301b open brackets
             #   fb00.. fb04 *ffil
-            # 1d400..1d7ff letters
+            $_ >=0x1d400 && $_ <=0x1d7ff ? $letters :
+              # 1d400..1d7ff letters
 
-            $_ >= 0x0370 && $_ <= 0x03ff ? $greek :
-            $_ >= 0x0100 && $_ <= 0x1eff ? $ipa : # General scripts area
-            $_ >= 0x1f00 && $_ <= 0x1fff ? $greek :
             # 2000-2bff, 2e00-2e7f # Symbols and punctuation
             # 3000-3030 # CJK punctuation
             $_ == 0x2212 || $_ == 0x2a03 ? $mn :
             $_ >= 0x2400 && $_ <= 0x27bf ? $ding :
-            $_ >=0x1d400 && $_ <=0x1d7ff ? $letters :
             $main);
 
         print $file sprintf("%04x X{%s}X\n\n", $_, $codes{$_});
@@ -223,7 +245,7 @@ if ($TEST_TEX) {
 
     }
 
-    print $_ "\\end{document}\n" for ($main, $ipa, $greek, $mn, $ding, $letters);
+    print $_ "\\end{document}\n" for ($latin, $main, $greek, $mn, $ding, $letters);
 }
 
 if ($COMPARE) {
@@ -309,8 +331,8 @@ sub StartTag {
     $tag = $_;
 }
 
-sub latex { $codes{0+$number} = $latex; }
-sub ams   { $codes{0+$number} = $ams;   }
+sub latex { if ($number >= 0x2000 and $number <= 0xffff) { $codes{0+$number} = $latex; } }
+sub ams   { if ($number >= 0x2000 and $number <= 0xffff) { $codes{0+$number} = $ams;   } }
 
 sub EndTag {
   if ($_ eq '</character>' and $number !~ /-/) {
@@ -393,30 +415,6 @@ sub Text {
 sub greekDecomp {
     my ($char) = @_;
 
-    my @letters = qw(
-_    _    _    _    _    _    _    _    _    _    _    _    _    _    _    _    
-_    _    _    _    '    "'   'A   _    'E   'H   'I   _    'O   _    'Y   'W    
-"'i  A    B    G    D    E    Z    H    J    I    K    L    M    N    X    O    
-P    R    _    S    T    U    F    Q    Y    W    "I   "U   'a   'e   'h   'i   
-"'u  a    b    g    d    e    z    h    j    i    k    l    m    n    x    o    
-p    r    c    s    t    u    f    q    y    w    "i   "u   'o   'u   'w   _
-
-_                      \ensuremath{\vartheta} _                     _
-"\ensuremath{\Upsilon} \ensuremath{\phi}      \ensuremath{\varpi}   _
-\Koppa                 \coppa                 \Stigma               \stigma
-\Digamma               \digamma               _                     \koppa
-
-\Sampi                 \sampi                 _                     _
-_                      _                      _                     _
-_                      _                      _                     _
-_                      _                      _                     _
-
-\ensuremath{\varkappa} \ensuremath{\varrho}   _                     _
-\ensuremath{\Theta}    \ensuremath{\epsilon}  \ensuremath{\backepsilon} _
-_                      _                      _                     _
-_                      _                      _                     _
-);
-
     if (grep { $char - 0x1f00 == hex($_) }
         qw(16 17 1e 1f 46 47 4e 4f 58 5a 5c 5e 7e 7f b5 c5 d4 d5 dc f0 f1 f5 ff)) {
         return "RES";
@@ -425,7 +423,8 @@ _                      _                      _                     _
         $char == 0x1fcd or $char == 0x1fce or $char == 0x1fcf or
         $char == 0x1fdd or $char == 0x1fde or $char == 0x1fdf or
         $char == 0x1fed or $char == 0x1fee or $char == 0x1fef or
-        $char == 0x1ffd or $char == 0x1ffe) { return "TODO"
+        $char == 0x1ffd or $char == 0x1ffe) {
+        return "TODO";
     } elsif (0x0370 <= $char && $char <= 0x03ff) {
         return $codes{$char};
     } elsif (exists $decomp2{$char}) {
@@ -568,8 +567,29 @@ sub ding {
 #
 #    2500 .. 259f pmboxdraw
 
+    for my $char (0x2700 .. 0x27bf) {
+        if (grep { $char == hex($_) } qw(
+            2700                     2705                     270a 270b
+                                                    2728
+                                                                        274c      274e
+                           2753 2754 2755      2757                                    275f
+            2760                                    2768 2769 276a 276b 276c 276d 276e 276f
+            2770 2771 2772 2773 2774 2775
+                                     2795 2796 2797
+            27b0                                                                       27bf)) {
+            set_codes($char, '_');
+        } else {
+            if ($char >= 0x2760) {
+                set_codes($char, "\\ding{" . (160 - 0x2760 + $char) . "}");
+            } else {
+                set_codes($char, "\\ding{" . (32 - 0x2700 + $char) . "}");
+            }
+        }
 
+# 2700 ding
+#   33 -> 01..60 [05,0A,0B,28,4c,4e,53,54,55,57,5f,60,68-75,95,96,97,b0,bf]
 
+    }
 }
 
 sub set_codes {
@@ -651,23 +671,6 @@ sub parseUnicodeData {
 sub decomp {
     my ($char) = @_;
 
-    #printf "char=%04x\n", $char;
-
-    my @accents = qw(
-`  '  ^  ~  =  __ u  .
-"  h  r  H  v  |  U  G
-
-__ textroundcap __ __ __ __ __ __
-__ __ __ __ __ __ __ __
-
-__ __ __ d  textsubumlaut textsubring   cb           c 
-k  __ __ __ __            textsubcircum textsubbreve __
-
-textsubtilde b  __ __ __ __ __ __
-__ __ __ __ __ __ __ __
-);
-
-# 17f .. 1cc
     my %special = (
         0x00c5, '\AA',
         0x00c6, '\AE',
@@ -682,7 +685,6 @@ __ __ __ __ __ __ __ __
         0x00f7, '\textdiv',
         0x00f8, '\o',
         0x00fe, '\th',
-
         0x0110, '\DJ',
         0x0111, '\dj',
         0x0131, '\i',
