@@ -55,8 +55,8 @@ my %decomp2;
 
 parseUnicodeData();
 
-my $p = XML::Parser->new(Style => 'Stream', Pkg => 'main');
-$p->parsefile('-');
+#my $p = XML::Parser->new(Style => 'Stream', Pkg => 'main');
+#$p->parsefile('-');
 
 $codes{0x00ad} = '\-'; # Don't want extra {} at the end
 $codes{0x0192} = '\textflorin'; # Wrong: \ensuremath{f}
@@ -77,11 +77,19 @@ $codes{0x219c} = '\ensuremath{\arrowwaveleft}'; # Wrong: \arrowwaveright
 $codes{0x2244} = '\ensuremath{\nsimeq}'; # Wrong: \nsime
 delete $codes{0x03d0}; # Wrong: \Pisymbol{ppi022}{87}
 
+$codes{0xfb00} = 'ff';
+$codes{0xfb01} = 'fi';
+$codes{0xfb02} = 'fl';
+$codes{0xfb03} = 'ffi';
+$codes{0xfb04} = 'ffl';
+
 ascii();
 latin1();
 greek();
 letters();
 ding();
+shapes();
+other();
 
 for (0x0300 .. 0x036f) {
     set_codes($_, ($accents[$_-0x300] ne '__' ?
@@ -182,9 +190,21 @@ if ($TEST_TEX) {
 
     start($latin, qw({textcomp} {tipx}));
     start($main, qw({amssymb} {amsmath} {fixltx2e} {mathrsfs} {mathabx} {shuffle} {textcomp} {tipa}));
+#\usepackage{amssymb}
+#\usepackage{amsmath}
+#\usepackage{textcomp}
+#\usepackage{stmaryrd}
+#\usepackage{xfrac}
+#\usepackage{txfonts}
+#\usepackage{mathdots}
+#\usepackage{wasysym}
+#% \usepackage{mathabx} Causes conflicts
+#\usepackage{mathbbol}
+#\usepackage{shuffle}
+
     start($greek, qw({amssymb} [greek,english]{babel} {teubner})); # amssymb is for \backepsilon and \varkappa
     start($mn, qw({MnSymbol}));
-    start($ding, qw({amssymb} {pifont} {wasysym}));
+    start($ding, qw({amssymb} {amsmath} {pifont} {pxfonts} {skak} {wasysym} {xfrac}));
     start($letters, qw({amsmath} {amssymb} {bbold} {mathrsfs} {sansmath}));
 
     print $latin "\\renewcommand{\\|}{} % \\usepackage{fc}\n";
@@ -234,7 +254,7 @@ if ($TEST_TEX) {
 
             # 2000-2bff, 2e00-2e7f # Symbols and punctuation
             # 3000-3030 # CJK punctuation
-            $_ == 0x2212 || $_ == 0x2a03 ? $mn :
+            #$_ == 0x2212 || $_ == 0x2a03 ? $mn :
             $_ >= 0x2400 && $_ <= 0x27bf ? $ding :
             $main);
 
@@ -260,7 +280,6 @@ if ($COMPARE) {
         my $other2 = $TeXEncode::LATEX_Escapes{$str};
         $other1 =~ s[^\$(.*)\$$][\\ensuremath{$1}] if defined $other1;
         $other2 =~ s[^\$(.*)\$$][\\ensuremath{$1}] if defined $other2;
-        if (defined $other1) {
         unless (defined $self and defined $other1 and $other1 eq $self) {
             printf("%04x %s", $number, encode_utf8(chr($number)));
             # XML is better than XML.old
@@ -272,7 +291,6 @@ if ($COMPARE) {
             print(" ($other1)") if defined $other1;
             print(" [$self]") if defined $self;
             print("\n");
-        }
         }
     }
 }
@@ -382,7 +400,7 @@ sub cleanCode {
     s[\\mbox{\\texteuro}][\\texteuro];
     s[\\mathmit\b][\\mathit];
 
-    s[^(\\.)$][$1\{\}]g; # Ensure that single macros that can take arguments already have their arguments
+    s[^(\\[^\\])$][$1\{\}]g; # Ensure that single macros that can take arguments already have their arguments
     s[{(\\d+dot)}][{$1\{\}}]g;
 
     s[^(\\\W){(\w)}$][$1$2]g; # translate "\'{x}" to "\'x"
@@ -558,26 +576,68 @@ sub letters {
 
 sub ding {
 
-#    2423 X{\textvisiblespace}X;
-#
+    set_codes(0x2423, qw(\textvisiblespace));
 #    2460 \ding{172} (1..9)
-#    2468
-#
-#        24B6 \textcircled{A} .. Z a .. z
-#
-#    2500 .. 259f pmboxdraw
+    for my $char (0x2460 .. 0x2469) {
+        set_codes($char, "\\ding{" . (172 - 0x2460 + $char) . "}");
+    }
+
+    for my $char (0x24b6 .. 0x24cf) {
+        set_codes($char, "\\textcircled{" . chr(ord('A') - 0x24b6 + $char) . "}");
+    }
+    for my $char (0x24d0 .. 0x24e9) {
+        set_codes($char, "\\textcircled{" . chr(ord('a') - 0x24d0 + $char) . "}");
+    }
+    set_codes(0x24ea, "\\textcircled{0}");
+    set_codes(0x24c5, "\\textcircledP");
+    set_codes(0x24c7, "\\circledR");
+
+# TODO: 2500 .. 259f pmboxdraw
+# TODO: 25a0 .. box drawing
+
+    my %alt = map { hex($_) } qw(2700 0000
+                                 2705 260e
+                                 270a 261b
+                                 270b 261e
+                                 2728 2605
+                                 274c 25cf
+                                 274e 25a0
+                                 2753 25b2
+                                 2754 25bc
+                                 2755 25c6
+                                 2757 25d7
+                                 275f 0000
+                                 2760 0000
+                                 2768 0000
+                                 2769 2666
+                                 276a 2665
+                                 276b 0000
+                                 276c 0000
+                                 276d 0000
+                                 276e 0000
+                                 276f 0000
+                                 2770 0000
+                                 2771 0000
+                                 2772 0000
+                                 2773 0000
+                                 2774 0000
+                                 2775 0000
+                                 2795 2192
+                                 2796 2194
+                                 2797 2195
+                                 27b0 0000
+                                 27bf 0000);
+        
+# NOTE: Unicode 6.0 fails to list 25d7, 2665 and 2666
 
     for my $char (0x2700 .. 0x27bf) {
-        if (grep { $char == hex($_) } qw(
-            2700                     2705                     270a 270b
-                                                    2728
-                                                                        274c      274e
-                           2753 2754 2755      2757                                    275f
-            2760                                    2768 2769 276a 276b 276c 276d 276e 276f
-            2770 2771 2772 2773 2774 2775
-                                     2795 2796 2797
-            27b0                                                                       27bf)) {
+        if (exists $alt{$char}) {
             set_codes($char, '_');
+            set_codes($alt{$char},
+                      ($alt{$char} == 0 ? '_' :
+                       $char >= 0x2760 ?
+                       "\\ding{" . (160 - 0x2760 + $char) . "}" :
+                       "\\ding{" . (32 - 0x2700 + $char) . "}"));
         } else {
             if ($char >= 0x2760) {
                 set_codes($char, "\\ding{" . (160 - 0x2760 + $char) . "}");
@@ -585,11 +645,38 @@ sub ding {
                 set_codes($char, "\\ding{" . (32 - 0x2700 + $char) . "}");
             }
         }
-
-# 2700 ding
-#   33 -> 01..60 [05,0A,0B,28,4c,4e,53,54,55,57,5f,60,68-75,95,96,97,b0,bf]
-
     }
+}
+
+sub shapes {
+    set_codes(0x25a0, qw(\ensuremath{\blacksquare} \ensuremath{\square}));
+    set_codes(0x25b2, qw(\ensuremath{\blacktriangle} \ensuremath{\vartriangle}));
+    set_codes(0x25b6, qw(\ensuremath{\blacktriangleright} \ensuremath{\vartriangleright})); #RHD \rhd));
+    set_codes(0x25bc, qw(\ensuremath{\blacktriangledown} \ensuremath{\triangledown}));
+    set_codes(0x25c0, qw(\ensuremath{\blacktriangleleft} \ensuremath{\vartriangleright})); #\LHD \lhd));
+    set_codes(0x25ca, qw(\ensuremath{\lozenge}));
+    set_codes(0x25e6, qw(\textopenbullet));
+    set_codes(0x25cf, qw(\CIRCLE \LEFTcircle \RIGHTcircle));
+    set_codes(0x25d6, qw(\LEFTCIRCLE \RIGHTCIRCLE));
+    set_codes(0x25ef, qw(\textbigcircle));
+
+
+    set_codes(0x2605, qw(\ensuremath{\bigstar}));
+    set_codes(0x2609, qw(\astrosun));
+    set_codes(0x2639, qw(\frownie \smiley \blacksmiley \sun));
+    set_codes(0x263d, qw(\rightmoon \leftmoon));
+    set_codes(0x263f, qw(\mercury \venus \earth \mars \jupiter \saturn _ \neptune \pluto));
+    set_codes(0x2648, qw(\aries \taurus \gemini \cancer \leo \virgo \libra
+                         \scorpio \sagittarius \capricornus \aquarius \pisces));
+    set_codes(0x2654, qw(\symking \symqueen \symrook \symbishop \symknight \sympawn));
+    set_codes(0x2660, qw(\ensuremath{\spadesuit} \ensuremath{\heartsuit}
+                         \ensuremath{\diamondsuit} \ensuremath{\clubsuit}
+                         \ensuremath{\varspadesuit} \ensuremath{\varheartsuit}
+                         \ensuremath{\vardiamondsuit} \ensuremath{\varclubsuit}));
+
+    set_codes(0x2669, qw(\quarternote \eighthnote \twonotes _
+                         \ensuremath{\flat} \ensuremath{\natural} \ensuremath{\sharp}));
+    set_codes(0x26e2, qw(\uranus));
 }
 
 sub set_codes {
@@ -710,4 +797,380 @@ sub decomp {
     } elsif (exists $codes{$char}) {
         return $codes{$char};
     } else { return chr($char); }
+}
+
+sub other {
+
+# General Punctuation
+    set_codes(0x2000, qw(
+\enskip \quad \enspace \quad
+\thickspace \medspace \hspace{0.166em} \hphantom{0}
+\hphantom{.} \thinspace \ensuremath{\mkern1mu} \hspace{0em}
+_ _ _ _
+
+- \mbox{-} _ --
+--- --- \ensuremath{\Vert} _
+\textquoteleft \textquoteright \quotesinglbase _
+\textquotedblleft \textquotedblright \quotedblbase _
+
+\dag \ddag \textbullet _
+. .. \ldots \textperiodcentered
+\\\\ \par _ _
+_ _ _ _
+
+\textperthousand \textpertenthousand \ensuremath{^{\prime}} \ensuremath{^{\prime\prime}}
+\ensuremath{^{\prime\prime\prime}} \ensuremath{^{\backprime}} \ensuremath{^{\backprime\backprime}} \ensuremath{^{\backprime\backprime\backprime}}
+_ \guilsinglleft \guilsinglright \textreferencemark
+{!!} \textinterrobang _ _
+));
+
+    set_codes(0x2050, qw(
+_ _ _ _
+_ _ _ \ensuremath{^{\prime\prime\prime\prime}}
+_ _ _ _
+_ _ _ \ensuremath{\mkern4mu}
+
+{} _ _ _));
+
+# Currency Symbols
+    set_codes(0x20a0, qw(
+_ \textcolonmonetary _ _
+  \textlira _ \textnaira _
+_ \textwon  _ \textdong
+\texteuro _ _ _
+
+_ \textpeso \textguarani _
+));
+
+# 20db \ensuremath{\dddot{}}
+# 20dc \ensuremath{\ddddot{}}
+# 23bd \obar
+# 23b0 \lmoustache
+# 2571 \diagup
+# \textblank
+
+#\def\mathscr{}
+#\def\Pfund{}
+#\def\fax{}
+
+# Combining diacriticals for symbols
+    set_codes(0x2100, qw(
+_ _ \ensuremath{\mathbb{C}} \textcelsius
+_ _ _ _
+_ \textdegree{}F \ensuremath{\mathscr{g}} \ensuremath{\mathscr{H}}
+\ensuremath{\mathfrak{H}} \ensuremath{\mathbb{H}} \ensuremath{h} \ensuremath{\hslash}
+
+\ensuremath{\mathscr{I}} \ensuremath{\Im} \ensuremath{\mathscr{L}} \ensuremath{\ell}
+\Pfund \ensuremath{\mathbb{N}} \textnumero \textcircledP
+\ensuremath{\wp} \ensuremath{\mathbb{P}} \ensuremath{\mathbb{Q}} \ensuremath{\mathscr{R}}
+\ensuremath{\Re} \ensuremath{\mathbb{R}} \textrecipe _
+
+\textservicemark _ \texttrademark _
+\ensuremath{\mathbb{Z}} _ \textohm \textmho
+\ensuremath{\mathfrak{Z}} _ K \AA
+\ensuremath{\mathscr{B}} \ensuremath{\mathfrak{C}} \textestimated \ensuremath{\mathscr{e}}
+
+\ensuremath{\mathscr{E}} \ensuremath{\mathscr{F}} _ \ensuremath{\mathscr{M}}
+\ensuremath{\mathscr{o}} \ensuremath{\aleph} \ensuremath{\beth} \ensuremath{\gimel}
+\ensuremath{\daleth} _ _ \fax
+\ensuremath{\mathbb{\pi}} \ensuremath{\mathbb{\gamma}} \ensuremath{\mathbb{\Gamma}} \ensuremath{\mathbb{\Pi}}
+
+\ensuremath{\mathbb{\sum}} \ensuremath{\Game} _ _
+_ \ensuremath{\mathbb{D}} \ensuremath{\mathbb{d}} \ensuremath{\mathbb{e}}
+\ensuremath{\mathbb{i}} \ensuremath{\mathbb{j}} _ _
+));
+
+# Number forms
+    set_codes(0x2150, qw(
+\sfrac{1}{7} \sfrac{1}{9} \sfrac{1}{10} \sfrac{1}{3}
+\sfrac{2}{3} \sfrac{1}{5} \sfrac{2}{5} \sfrac{3}{5}
+\sfrac{4}{5} \sfrac{1}{6} \sfrac{5}{6} \sfrac{1}{8}
+\sfrac{3}{8} \sfrac{5}{8} \sfrac{7}{8} \sfrac{1}{}
+
+I II III IV V VI VII VIII IX X XI XII L C D M
+
+i ii iii iv v vi vii viii ix x xi xii l c d m
+));
+    set_codes(0x2189, qw(\sfrac{0}{3}));
+
+# Arrows
+    set_codes(0x2190, qw(
+\ensuremath{\leftarrow} \ensuremath{\uparrow} \ensuremath{\rightarrow} \ensuremath{\downarrow}
+\ensuremath{\leftrightarrow} \ensuremath{\updownarrow} \ensuremath{\nwarrow} \ensuremath{\nearrow}
+\ensuremath{\searrow} \ensuremath{\swarrow} \ensuremath{\nleftarrow} \ensuremath{\nrightarrow} 
+_ _ \ensuremath{\twoheadleftarrow} _
+
+\ensuremath{\twoheadrightarrow} _ \ensuremath{\leftarrowtail} \ensuremath{\rightarrowtail}
+\ensuremath{\mapsfrom} _ \ensuremath{\mapsto} _
+_ \ensuremath{\hookleftarrow} \ensuremath{\hookrightarrow} \ensuremath{\looparrowleft}
+\ensuremath{\looparrowright} \ensuremath{\leftrightsquigarrow} \ensuremath{\nleftrightarrow} \ensuremath{\lightning}
+
+\ensuremath{\Lsh} \ensuremath{\Rsh} _ _
+_ _ \ensuremath{\curvearrowleft} \ensuremath{\curvearrowright}
+_ _ \ensuremath{\circlearrowleft} \ensuremath{\circlearrowright}
+\ensuremath{\leftharpoonup} \ensuremath{\leftharpoondown} \ensuremath{\upharpoonright} \ensuremath{\upharpoonleft}
+
+\ensuremath{\rightharpoonup} \ensuremath{\rightharpoondown} \ensuremath{\downharpoonright} \ensuremath{\downharpoonleft}
+\ensuremath{\rightleftarrows} _ \ensuremath{\leftrightarrows} \ensuremath{\leftleftarrows}
+\ensuremath{\upuparrows} \ensuremath{\rightrightarrows} \ensuremath{\downdownarrows} \ensuremath{\leftrightharpoons}
+\ensuremath{\rightleftharpoons} \ensuremath{\nLeftarrow} \ensuremath{\nLeftrightarrow} \ensuremath{\nRightarrow}
+
+\ensuremath{\Leftarrow} \ensuremath{\Uparrow} \ensuremath{\Rightarrow} \ensuremath{\Downarrow}
+\ensuremath{\Leftrightarrow} \ensuremath{\Updownarrow} \ensuremath{\Nwarrow} \ensuremath{\Nearrow}
+\ensuremath{\Searrow} \ensuremath{\Swarrow} \ensuremath{\Lleftarrow} \ensuremath{\Rrightarrow}
+\ensuremath{\leftsquigarrow} \ensuremath{\rightsquigarrow} _ _
+
+\ensuremath{\dashleftarrow} \ensuremath{\dashrightarrow} _ _
+));
+    set_codes(0x21fc, qw(
+_ \ensuremath{\leftarrowtriangle} \ensuremath{\rightarrowtriangle} \ensuremath{\leftrightarrowtriangle}));
+
+# Math operators
+    set_codes(0x2200, qw(
+\ensuremath{\forall} \ensuremath{\complement} \ensuremath{\partial} \ensuremath{\exists}
+\ensuremath{\nexists} \ensuremath{\varnothing} \ensuremath{\Delta} \ensuremath{\nabla}
+\ensuremath{\in} \ensuremath{\notin} _ \ensuremath{\ni}
+\ensuremath{\notni} _ \ensuremath{\Box} \ensuremath{\prod}
+
+\ensuremath{\coprod} \ensuremath{\sum} \ensuremath{-} \ensuremath{\mp}
+\ensuremath{\dotplus} \ensuremath{/} \ensuremath{\setminus} \ensuremath{\ast}
+\ensuremath{\circ} \ensuremath{\bullet} \ensuremath{\surd} \ensuremath{\sqrt[3]{}}
+\ensuremath{\sqrt[4]{}} \ensuremath{\propto} \ensuremath{\infty} _
+
+\ensuremath{\angle} \ensuremath{\measuredangle} \ensuremath{\sphericalangle} \ensuremath{\mid}
+\ensuremath{\nmid} \ensuremath{\parallel} \ensuremath{\nparallel} \ensuremath{\wedge}
+\ensuremath{\vee} \ensuremath{\cap} \ensuremath{\cup} \ensuremath{\int}
+\ensuremath{\iint} \ensuremath{\iiint} \ensuremath{\oint} \ensuremath{\oiint}
+
+\ensuremath{\oiiint} _ \ensuremath{\ointclockwise} \ensuremath{\ointctrclockwise}
+\ensuremath{\therefore} \ensuremath{\because} \ensuremath{\mathrel{:}} \ensuremath{\mathrel{::}}
+\ensuremath{\dot{-}} \ensuremath{\eqcolon} _ _
+\ensuremath{\sim} \ensuremath{\backsim} _ _
+
+\ensuremath{\wr} \ensuremath{\nsim} \ensuremath{\eqsim} \ensuremath{\simeq}
+\ensuremath{\nsimeq} \ensuremath{\cong} _ \ensuremath{\ncong}
+\ensuremath{\approx} \ensuremath{\napprox} \ensuremath{\approxeq} _
+_ \ensuremath{\asymp} \ensuremath{\Bumpeq} \ensuremath{\bumpeq}
+
+\ensuremath{\doteq} \ensuremath{\doteqdot} \ensuremath{\fallingdotseq} \ensuremath{\risingdotseq}
+\ensuremath{\coloneq} \ensuremath{\eqcolon} \ensuremath{\eqcirc} \ensuremath{\circeq}
+_ _ _ _
+\ensuremath{\triangleq} _ _ _
+
+\ensuremath{\ne} \ensuremath{\equiv} \ensuremath{\nequiv} _
+\ensuremath{\leq} \ensuremath{\geq} \ensuremath{\leqq} \ensuremath{\geqq}
+\ensuremath{\lneqq} \ensuremath{\gneqq} \ensuremath{\ll} \ensuremath{\gg}
+\ensuremath{\between} \ensuremath{\not\asymp} \ensuremath{\nless} \ensuremath{\ngtr}
+
+\ensuremath{\nleq} \ensuremath{\ngeq} \ensuremath{\lesssim} \ensuremath{\gtrsim}
+\ensuremath{\nlesssim} \ensuremath{\ngtrsim} \ensuremath{\lessgtr} \ensuremath{\gtrless}
+\ensuremath{\ngtrless} \ensuremath{\nlessgtr} \ensuremath{\prec} \ensuremath{\succ}
+\ensuremath{\preccurlyeq} \ensuremath{\succcurlyeq} \ensuremath{\precsim} \ensuremath{\succsim}
+
+\ensuremath{\nprec} \ensuremath{\nsucc} \ensuremath{\subset} \ensuremath{\supset}
+\ensuremath{\nsubset} \ensuremath{\nsupset} \ensuremath{\subseteq} \ensuremath{\supseteq}
+\ensuremath{\nsubseteq} \ensuremath{\nsupseteq} \ensuremath{\subsetneq} \ensuremath{\supsetneq}
+_ _ \ensuremath{\uplus} \ensuremath{\sqsubset}
+
+\ensuremath{\sqsupset} \ensuremath{\sqsubseteq} \ensuremath{\sqsupseteq} \ensuremath{\sqcap}
+\ensuremath{\sqcup} \ensuremath{\oplus} \ensuremath{\ominus} \ensuremath{\otimes}
+\ensuremath{\oslash} \ensuremath{\odot} \ensuremath{\circledcirc} \ensuremath{\circledast}
+_ \ensuremath{\circleddash} \ensuremath{\boxplus} \ensuremath{\boxminus}
+
+\ensuremath{\boxtimes} \ensuremath{\boxdot} \ensuremath{\vdash} \ensuremath{\dashv}
+\ensuremath{\top} \ensuremath{\bot} _ _
+\ensuremath{\vDash} \ensuremath{\Vdash} \ensuremath{\Vvdash} \ensuremath{\VDash}
+\ensuremath{\nvdash} \ensuremath{\nvDash} \ensuremath{\nVdash} \ensuremath{\nVDash}
+
+_ _ \ensuremath{\vartriangleleft} \ensuremath{\vartriangleright}
+\ensuremath{\trianglelefteq} \ensuremath{\trianglerighteq} \ensuremath{\multimapdotbothA} \ensuremath{\multimapdotbothB}
+\ensuremath{\multimap} _ \ensuremath{\intercal} \ensuremath{\veebar}
+\ensuremath{\barwedge} \ensuremath{\overline{\vee}} _ _
+
+\ensuremath{\bigwedge} \ensuremath{\bigvee} \ensuremath{\bigcap} \ensuremath{\bigcup}
+\ensuremath{\diamond} \ensuremath{\cdot} \ensuremath{\star} \ensuremath{\divideontimes}
+\ensuremath{\bowtie} \ensuremath{\ltimes} \ensuremath{\rtimes} \ensuremath{\leftthreetimes}
+\ensuremath{\rightthreetimes} \ensuremath{\backsimeq} \ensuremath{\curlyvee} \ensuremath{\curlywedge}
+
+\ensuremath{\Subset} \ensuremath{\Supset} \ensuremath{\Cap} \ensuremath{\Cup}
+\ensuremath{\pitchfork} _ \ensuremath{\lessdot} \ensuremath{\gtrdot} 
+\ensuremath{\lll} \ensuremath{\ggg} \ensuremath{\lesseqgtr} \ensuremath{\gtreqless}
+_ _ \ensuremath{\curlyeqprec} \ensuremath{\curlyeqsucc}
+
+\ensuremath{\not\curlyeqprec} \ensuremath{\not\curlyeqsucc} \ensuremath{\not\sqsubseteq} \ensuremath{\not\sqsupseteq}
+_ _ \ensuremath{\lnsim} \ensuremath{\gnsim}
+\ensuremath{\precnsim} \ensuremath{\succnsim} \ensuremath{\ntriangleleft} \ensuremath{\ntriangleright}
+\ensuremath{\ntrianglelefteq} \ensuremath{\ntrianglerighteq} \ensuremath{\vdots} \ensuremath{\cdots}
+
+\ensuremath{\iddots} \ensuremath{\ddots} _ _
+_ \ensuremath{\dot{\in}} \ensuremath{\overline{\in}} _
+\ensuremath{\underline{\in}} _ _ _
+_ \ensuremath{\overline{\ni}} _ _
+));
+
+# Misc Technical
+    set_codes(0x2300, qw(
+\ensuremath{\diameter} _ _ _
+_ \ensuremath{\barwedge} \ensuremath{\doublebarwedge} _
+\ensuremath{\lceil} \ensuremath{\rceil} \ensuremath{\lfloor} \ensuremath{\rfloor}
+_ _ _ _
+
+\ensuremath{\invneg} \ensuremath{\wasylozenge} _ _
+_ \ensuremath{\recorder} _ _
+_ _ _ _
+\ensuremath{\ulcorner} \ensuremath{\urcorner} \ensuremath{\llcorner} \ensuremath{\lrcorner}
+
+_ _ \ensuremath{\frown} \ensuremath{\smile}
+_ _ _ _
+_ \ensuremath{\langle} \ensuremath{\rangle} _
+_ _ _ _
+));
+
+# \usepackage{metre}
+    set_codes(0x23d0, qw(
+_
+\metra{\b}
+\metra{\mb}
+\metra{\bm}
+\metra{\mbb}
+\metra{\bbm}
+\metra{\bb}
+\metra{\tsbm}
+\metra{\tsmm}
+\metra{\ps}));
+
+# 2500 Box drawing (and shapes)
+# 2600 Misc shapes
+
+# 27c0 Misc math
+
+    set_codes(0x27e4, qw(
+_ _ \textlbrackdbl \textrbrackdbl
+\ensuremath{\langle} \ensuremath{\rangle} _ _));
+
+# 27f0 Suplemental arrows
+    set_codes(0x27f0, qw(
+_ _ _ _
+_ \ensuremath{\longleftarrow} \ensuremath{\longrightarrow} \ensuremath{\longleftrightarrow}
+\ensuremath{\Longleftarrow} \ensuremath{\Longrightarrow} \ensuremath{\Longleftrightarrow} \ensuremath{\longmapsfrom}
+\ensuremath{\longmapsto} \ensuremath{\Longmapsfrom} \ensuremath{\Longmapsto} _));
+
+
+# 2900 Suplemental arrows
+    set_codes(0x2904, qw(_ \ensuremath{\Mapsfrom} \ensuremath{\Mapsto} _));
+
+    set_codes(0x2930, qw(_ _ _ \ensuremath{\leadsto}));
+    set_codes(0x2940, qw(\ensuremath{\circlearrowleft} \ensuremath{\circlearrowright} _ _));
+
+    set_codes(0x297c, qw(\ensuremath{\strictfi} \ensuremath{\strictif} _ _));
+
+    set_codes(0x2984, qw(_ \ensuremath{\Lparen} \ensuremath{\Rparen} _));
+
+    set_codes(0x29b0, qw(_ \ensuremath{\bar{\varnothing}} _ \ensuremath{\vec{\varnothing}}));
+    set_codes(0x29b4, qw(_ _ \ensuremath{\obar} _));
+    set_codes(0x29b8, qw(\ensuremath{\obslash} _ _ _));
+
+    set_codes(0x29c0, qw(\ensuremath{\olessthan} \ensuremath{\ogreaterthan} _ _));
+    set_codes(0x29c4, qw(\ensuremath{\boxslash} \ensuremath{\boxbslash} \ensuremath{\boxast} \ensuremath{\boxcircle}));
+    set_codes(0x29c8, qw(\ensuremath{\boxbox} _ _ _));
+
+    set_codes(0x29dc, qw(_ _ _ \ensuremath{\multimapboth}));
+
+    set_codes(0x29e0, qw(_ _ \ensuremath{\shuffle} _));
+    set_codes(0x29e8, qw(_ _ _ \ensuremath{\blacklozenge}));
+
+    set_codes(0x29f4, qw(_ \ensuremath{\setminus} \ensuremath{\bar{/}} _));
+    set_codes(0x29f8, qw(\ensuremath{\big{/}} _ _ _));
+
+
+# Suplemental math operators
+    set_codes(0x2a00, qw(
+\ensuremath{\bigodot} \ensuremath{\bigoplus} \ensuremath{\bigotimes} _
+\ensuremath{\biguplus} \ensuremath{\bigsqcap} \ensuremath{\bigsqcup} _
+_ \ensuremath{\varprod} _ _
+\ensuremath{\iiiint} _ _ \ensuremath{\fint}
+
+_ _ _ _
+_ _ \ensuremath{\sqint} _
+_ _ _ \ensuremath{\overline{\int}}
+\ensuremath{\underline{\int}} \ensuremath{\Join} \ensuremath{\lhd} \ensuremath{\fatsemi}
+
+_ _ _ \ensuremath{\hat{+}}
+\ensuremath{\tilde{+}} _ _ \ensuremath{+_2}
+_ _ _ _
+_ _ _ _
+
+\ensuremath{\dot{\times}} \ensuremath{\underline{\times}} _ _
+_ _ _ _
+_ _ _ _
+_ _ _ \ensuremath{\amalg}
+
+_ _ \ensuremath{\bar{\cup}} \ensuremath{\bar{\cap}}
+_ _ _ _
+_ _ _ _
+_ _ _ _
+
+_ \ensuremath{\dot{\wedge}} \ensuremath{\dot{\vee}} _
+_ _ _ _
+_ _ _ _
+_ _ \ensuremath{\doublebarwedge} \ensuremath{\underline{\wedge}}
+
+_ _ _ _
+_ _ _ _
+_ _ _ _
+_ \ensuremath{\dot{\cong}} _ \ensuremath{\hat{\approx}}
+
+_ _ _ _
+\ensuremath{\Coloneqq} _ _ _
+_ _ _ _
+_ \ensuremath{\leqslant} \ensuremath{\geqslant} _
+
+_ _ _ _
+_ \ensuremath{\lessapprox} \ensuremath{\gtrapprox} \ensuremath{\lneq}
+\ensuremath{\gneq} \ensuremath{\lnapprox} \ensuremath{\gnapprox} \ensuremath{\lesseqqgtr}
+\ensuremath{\gtreqqless} _ _ _
+
+_ _ _ _
+_ \ensuremath{\eqslantless} \ensuremath{\eqslantgtr} _
+_ _ _ _
+_ _ _ _
+
+_ _ _ \ensuremath{\underline{\ll}}
+_ _ \ensuremath{\leftslice} \ensuremath{\rightslice}
+_ _ _ _
+_ _ _ \ensuremath{\preceq}
+
+
+\ensuremath{\succeq} _ _ \ensuremath{\preceqq}
+\ensuremath{\succeqq} \ensuremath{\precneqq} \ensuremath{\succneqq} \ensuremath{\precapprox}
+\ensuremath{\succapprox} \ensuremath{\precnapprox} \ensuremath{\succnapprox} _
+_ _ _ _
+
+_ _ _ \ensuremath{\dot{\subseteq}}
+\ensuremath{\dot{\supseteq}} \ensuremath{\subseteqq} \ensuremath{\supseteqq} _
+_ _ _ \ensuremath{\subsetneqq}
+\ensuremath{\supsetneqq} _ _ _
+
+_ _ _ _
+_ _ _ _
+_ _ _ _
+_ _ _ _
+
+_ _ _ _
+_ _ _ _
+_ _ _ \ensuremath{\Perp}
+_ _ _ _
+
+_ _ _ _
+\ensuremath{\interleave} _ _ _
+_ _ _ _
+\ensuremath{\biginterleave} \ensuremath{\sslash} \ensuremath{\talloblong} _
+));
+
+   set_codes(0x2e18, qw(\textinterrobangdown));
+   set_codes(0x2e1a, qw(\"{-}));
+   set_codes(0x2e1e, qw(\ensuremath{\dot{\sim}}));
+
+   set_codes(0xfb00, qw(ff fi fl ffi ffl));
+
 }
