@@ -19,10 +19,10 @@ use TeX::Encode;
 #use XML::Parser;
 use List::MoreUtils qw(uniq);
 
-my ($TEST_TEX, $COMPARE, $MAKE_MODULE) = (0, 1, 0);
+my ($TEST_TEX, $COMPARE, $MAKE_MODULE) = (0, 0, 1);
 
 my %codes;
-my %combining_class;
+my %ccc;
 
 my %decomp1;
 my %decomp2;
@@ -75,7 +75,7 @@ sub parseUnicodeData {
         my @fields = split ';', $_;
         my $code = hex($fields[0]);
         my ($decomp1, $dummy, $decomp2) = $fields[5] =~ m/^([0-9A-F]+)( ([0-9A-F]+))?/;
-        $combining_class{$code} = $fields[3];
+        $ccc{$code} = $fields[3];
         $decomp1{$code} = hex($decomp1) if defined $decomp1;
         $decomp2{$code} = hex($decomp2) if defined $decomp2;
     }
@@ -98,7 +98,7 @@ sub set_codes {
 #}
 
 #for my $num (sort {$a <=> $b} keys %codes) {
-#    printf("%04x %s %s\n", $num, encode_utf8(chr($num)), $codes{$num}) if exists $combining_class{$num} and $combining_class{$num} != 0;
+#    printf("%04x %s %s\n", $num, encode_utf8(chr($num)), $codes{$num}) if exists $ccc{$num} and $ccc{$num} != 0;
 #    
 #}
 
@@ -216,20 +216,56 @@ package TeX::Unicode;
 use warnings;
 use strict;
 
+use Carp;
 use Exporter qw(import);
 
 our @EXPORT = qw(unicode2tex);
 our @EXPORT_OK = qw();
 
 my %CODES;
+my %CCC;
+
+#sub unicode2tex_old {
+#    my ($str) =  @_;
+#    $str =~ s[([^\x00-\x80])][\{@{[$CODES{$1} or
+#         warn "Unknown Unicode charater: $1 ", sprintf("0x%x", ord($1)) and
+#         $1]}\}]g;
+#    return $str;
+#}
 
 sub unicode2tex {
-    my ($str) =  @_;
-    $str =~ s[([^\x00-\x80])][\{@{[$CODES{$1} or
-         warn "Unknown Unicode charater: $1 ", sprintf("0x%x", ord($1)) and
-         $1]}\}]g;
-    return $str;
+    my ($str) = @_;
+    my @out;
+    for (unpack("U*", $str)) {
+        if (exists $CODES{$_}) {
+            if (exists $CCC{$_}) {
+                my $old = pop @out;
+                ($old = '{}',
+                 carp sprintf 'Combining character at start of string:  %s (U+%04x)', chr($_), $_)
+                    if not defined $old;
+                my $new = $CODES{$_};
+                $new =~ s[\{\}][$old];
+                push @out, "{$new}";
+            } else {
+                push @out, "{$CODES{$_}}";
+            }
+        } else {
+            carp sprintf "Unknown Unicode character: %s (U+x%04x)", chr($_), $_
+                if $_ >= 0x80;
+            push @out, chr($_);
+        }
+    }
+
+    return join('', @out);
 }
+
+%CCC = (
+EOT
+    for (sort {$a <=> $b} keys %ccc) {
+        printf("    0x%04x => %d,\n", $_, $ccc{$_}) if exists $codes{$_} and $ccc{$_} != 0;
+    }
+    print <<'EOT';
+    );
 
 %CODES = (
 EOT
@@ -237,7 +273,7 @@ EOT
         my $x = $codes{$_};
         $x =~ s[\\][\\\\]g;
         $x =~ s['][\\']g;
-        print sprintf("    0x%04x => '%s',\n", $_, $x);
+        printf("    0x%04x => '%s',\n", $_, $x);
     }
     print <<'EOT';
     );
@@ -296,233 +332,6 @@ sub decomp {
         }
     } elsif (exists $decomp1{$char}) { return decomp($decomp1{$char});
     } else { return chr($char); }    
-}
-
-sub accents {
-    my @accents = qw(
-    `  '  ^  ~  =  __ u  .
-    "  h  r  H  v  |  U  G
-    
-    __ textroundcap __ __ __ __ __ __
-    __ __ __ __ __ __ __ __
-    
-    __ __           __ d  textsubumlaut textsubring   cb           c 
-    k  textsyllabic __ __ __            textsubcircum textsubbreve __
-    
-    textsubtilde b  __ __ __ __ __ __
-    __ __ __ __ __ __ __ __
-    
-    __ __ __ __ __ __ __ __
-    __ __ __ __ __ __ __ __
-    
-    __ __ __ __ __ __ __ __
-    __ __ __ __ __ __ __ __
-    
-    __ __ __ __ __ __ __ __
-    __ __ __ __ __ __ __ __
-    );
-    
-    # Accents
-    for (0x0300 .. 0x036f) {
-        set_codes($_, ($accents[$_-0x300] ne '__' ?
-                       "\\$accents[$_-0x300]\{\}" : '_'));
-    }
-    set_codes(0x20db, qw(\ensuremath{\dddot{}} \ensuremath{\ddddot{}}));
-}
-
-sub greek {
-#0   1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
-    my @letters = qw(
-_    _    _    _    _    _    _    _    _    _    _    _    _    _    _    _    
-_    _    _    _    '    "'   'A   _    'E   'H   'I   _    'O   _    'Y   'W    
-"'i  A    B    G    D    E    Z    H    J    I    K    L    M    N    X    O    
-P    R    _    S    T    U    F    Q    Y    W    "I   "U   'a   'e   'h   'i   
-"'u  a    b    g    d    e    z    h    j    i    k    l    m    n    x    o    
-p    r    c    s    t    u    f    q    y    w    "i   "u   'o   'u   'w   _
-
-_                      \ensuremath{\vartheta} _                     _
-"\ensuremath{\Upsilon} \ensuremath{\phi}      \ensuremath{\varpi}   _
-\Koppa                 \coppa                 \Stigma               \stigma
-\Digamma               \digamma               _                     \koppa
-
-\Sampi                 \sampi                 _                     _
-_                      _                      _                     _
-_                      _                      _                     _
-_                      _                      _                     _
-
-\ensuremath{\varkappa} \ensuremath{\varrho}   _                     _
-\ensuremath{\Theta}    \ensuremath{\epsilon}  \ensuremath{\backepsilon} _
-_                      _                      _                     _
-_                      _                      _                     _
-);
-    for my $i (0 .. $#letters) {
-        if ($letters[$i] =~ /^_$/) { delete $codes{0x0370 + $i} }
-        else {
-            $codes{0x0370 + $i} = ($letters[$i] =~ /^\\ensuremath/ ?
-                                   $letters[$i] : "\\textgreek{$letters[$i]}");
-        }
-    }
-}
-
-sub math_alpha {
-    my $char = 0x1d400;
-    my @latin = map {chr($_)} (0x41 .. 0x5a, 0x61 .. 0x7a);
-    my @greek = qw(A B \Gamma \Delta E Z H \Theta I K \Lambda M N \Xi
-                   O \Pi R \varTheta \Sigma T \Upsilon \Phi X \Psi \Omega \nabla
-                   \alpha \beta \gamma \delta \varepsilon \zeta \eta
-                   \theta \iota \kappa \lambda \mu \nu \xi o \pi \rho
-                   \varsigma \sigma \tau \upsilon \varphi \chi \psi \omega
-                   \partial \varepsilon \vartheta \varkappa \phi \varrho \varpi);
-    my @digits = qw(0 1 2 3 4 5 6 7 8 9);
-
-    for my $tex (qw(\ensuremath{\mathbf{_}}
-                    \ensuremath{\mathit{_}}
-                    \ensuremath{\boldsymbol{_}}
-                    \ensuremath{\mathscr{_}}
-                    \ensuremath{\mathbfscr{_}}
-                    \ensuremath{\mathfrak{_}}
-                    \ensuremath{\mathbb{_}}
-                    \ensuremath{\mathbffrak{_}}
-                    \ensuremath{\mathsf{_}}
-                    \ensuremath{\mathsfbf{_}}
-                    \ensuremath{\mathsfsl{_}}
-                    \ensuremath{\mathsfbfsl{_}}
-                    \ensuremath{\mathtt{_}}
-                   )) {
-        for (@latin) {
-            ($codes{$char++} = $tex) =~ s/_/$_/g;
-        }
-    }
-
-    $codes{$char++} = qw(\ensuremath{\imath});
-    $codes{$char++} = qw(\ensuremath{\jmath});
-    delete $codes{$char++}; # Reserved
-    delete $codes{$char++}; # Reserved
-
-    for my $tex (qw(\ensuremath{\mathbf{_}}
-                    \ensuremath{\mathit{_}}
-                    \ensuremath{\boldsymbol{_}}
-                    \ensuremath{\mathsf{_}}
-                    \ensuremath{\mathsfbfsl{_}}
-                   )) {
-        for (@greek) {
-            ($codes{$char++} = $tex) =~ s/_/$_/g;
-        }
-    }
-
-    $codes{$char++} = qw(\ensuremath{\mathbf{\digamma}});
-    delete $codes{$char++}; # Small digamma
-    delete $codes{$char++}; # Reserved
-    delete $codes{$char++}; # Reserved
-
-    for my $tex (qw(\textbf{_}
-                    \textbb{_}
-                    \textsf{_}
-                    \textsf{\textbf{_}}
-                    \texttt{_}
-                   )) {
-        for (@digits) {
-            ($codes{$char++} = $tex) =~ s/_/$_/g;
-        }
-    }
-}
-
-sub ding {
-    # Circled 1..9, A-Z, a-z
-    set_codes($_, "\\ding{" . (172 - 0x2460 + $_) . "}") for (0x2460 .. 0x2469);
-    set_codes($_, "\\textcircled{" . chr(ord('A') - 0x24b6 + $_) . "}") for (0x24b6 .. 0x24cf);
-    set_codes($_, "\\textcircled{" . chr(ord('a') - 0x24d0 + $_) . "}") for (0x24d0 .. 0x24e9);
-
-    my %alt = map { hex($_) } qw(2700 0000
-                                 2705 260e
-                                 270a 261b
-                                 270b 261e
-                                 2728 2605
-                                 274c 25cf
-                                 274e 25a0
-                                 2753 25b2
-                                 2754 25bc
-                                 2755 25c6
-                                 2757 25d7
-                                 275f 0000
-                                 2760 0000
-                                 2768 0000
-                                 2769 2666
-                                 276a 2665
-                                 276b 0000
-                                 276c 0000
-                                 276d 0000
-                                 276e 0000
-                                 276f 0000
-                                 2770 0000
-                                 2771 0000
-                                 2772 0000
-                                 2773 0000
-                                 2774 0000
-                                 2775 0000
-                                 2795 2192
-                                 2796 2194
-                                 2797 2195
-                                 27b0 0000
-                                 27bf 0000);
-        
-# NOTE: Unicode 6.0 fails to list 25d7, 2665 and 2666
-
-    for my $char (0x2700 .. 0x27bf) {
-        if (exists $alt{$char}) {
-            set_codes($char, '_');
-            set_codes($alt{$char},
-                      ($alt{$char} == 0 ? '_' :
-                       $char >= 0x2760 ?
-                       "\\ding{" . (160 - 0x2760 + $char) . "}" :
-                       "\\ding{" . (32 - 0x2700 + $char) . "}"));
-        } else {
-            if ($char >= 0x2760) {
-                set_codes($char, "\\ding{" . (160 - 0x2760 + $char) . "}");
-            } else {
-                set_codes($char, "\\ding{" . (32 - 0x2700 + $char) . "}");
-            }
-        }
-    }
-
-# These may override the \ding{} and \textcircled{} codes
-    set_codes(0x2422, qw(\textblank));
-    set_codes(0x2423, qw(\textvisiblespace));
-    set_codes(0x24ea, "\\textcircled{0}");
-    set_codes(0x24c5, "\\textcircledP");
-    set_codes(0x24c7, "\\circledR");
-
-# TODO: 2500 .. 259f pmboxdraw
-# 2571 \diagup
-# TODO: 25a0 .. box drawing
-
-    set_codes(0x25a0, qw(\ensuremath{\blacksquare} \ensuremath{\square}));
-    set_codes(0x25b2, qw(\ensuremath{\blacktriangle} \ensuremath{\vartriangle}));
-    set_codes(0x25b6, qw(\ensuremath{\blacktriangleright} \ensuremath{\vartriangleright})); #RHD \rhd));
-    set_codes(0x25bc, qw(\ensuremath{\blacktriangledown} \ensuremath{\triangledown}));
-    set_codes(0x25c0, qw(\ensuremath{\blacktriangleleft} \ensuremath{\vartriangleright})); #\LHD \lhd));
-    set_codes(0x25ca, qw(\ensuremath{\lozenge}));
-    set_codes(0x25e6, qw(\textopenbullet));
-    set_codes(0x25cf, qw(\CIRCLE \LEFTcircle \RIGHTcircle));
-    set_codes(0x25d6, qw(\LEFTCIRCLE \RIGHTCIRCLE));
-    set_codes(0x25ef, qw(\textbigcircle));
-
-    set_codes(0x2605, qw(\ensuremath{\bigstar}));
-    set_codes(0x2609, qw(\astrosun));
-    set_codes(0x2639, qw(\frownie \smiley \blacksmiley \sun));
-    set_codes(0x263d, qw(\rightmoon \leftmoon));
-    set_codes(0x263f, qw(\mercury \venus \earth \mars \jupiter \saturn _ \neptune \pluto));
-    set_codes(0x2648, qw(\aries \taurus \gemini \cancer \leo \virgo \libra
-                         \scorpio \sagittarius \capricornus \aquarius \pisces));
-    set_codes(0x2654, qw(\symking \symqueen \symrook \symbishop \symknight \sympawn));
-    set_codes(0x2660, qw(\ensuremath{\spadesuit} \ensuremath{\heartsuit}
-                         \ensuremath{\diamondsuit} \ensuremath{\clubsuit}
-                         \ensuremath{\varspadesuit} \ensuremath{\varheartsuit}
-                         \ensuremath{\vardiamondsuit} \ensuremath{\varclubsuit}));
-
-    set_codes(0x2669, qw(\quarternote \eighthnote \twonotes _
-                         \ensuremath{\flat} \ensuremath{\natural} \ensuremath{\sharp}));
-    set_codes(0x26e2, qw(\uranus));
 }
 
 sub ascii {
@@ -625,6 +434,233 @@ sub latin_extended {
     set_codes(0x02bc, qw('));
     set_codes(0x02c6, qw(\^{} \v{} \|{} \={} \'{} \`{} \textsyllabic{} \b{}));
     set_codes(0x02d8, qw(\u{} \.{} \r{} \k{} \~{} \H{}));
+}
+
+sub accents {
+    my @accents = qw(
+    `  '  ^  ~  =  __ u  .
+    "  h  r  H  v  |  U  G
+    
+    __ textroundcap __ __ __ __ __ __
+    __ __ __ __ __ __ __ __
+    
+    __ __           __ d  textsubumlaut textsubring   cb           c 
+    k  textsyllabic __ __ __            textsubcircum textsubbreve __
+    
+    textsubtilde b  __ __ __ __ __ __
+    __ __ __ __ __ __ __ __
+    
+    __ __ __ __ __ __ __ __
+    __ __ __ __ __ __ __ __
+    
+    __ __ __ __ __ __ __ __
+    __ __ __ __ __ __ __ __
+    
+    __ __ __ __ __ __ __ __
+    __ __ __ __ __ __ __ __
+    );
+    
+    # Accents
+    for (0x0300 .. 0x036f) {
+        set_codes($_, ($accents[$_-0x300] ne '__' ?
+                       "\\$accents[$_-0x300]\{\}" : '_'));
+    }
+    set_codes(0x20db, qw(\ensuremath{\dddot{}} \ensuremath{\ddddot{}}));
+}
+
+sub greek {
+#0   1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
+    my @letters = qw(
+_    _    _    _    _    _    _    _    _    _    _    _    _    _    _    _    
+_    _    _    _    '    "'   'A   _    'E   'H   'I   _    'O   _    'Y   'W    
+"'i  A    B    G    D    E    Z    H    J    I    K    L    M    N    X    O    
+P    R    _    S    T    U    F    Q    Y    W    "I   "U   'a   'e   'h   'i   
+"'u  a    b    g    d    e    z    h    j    i    k    l    m    n    x    o    
+p    r    c    s    t    u    f    q    y    w    "i   "u   'o   'u   'w   _
+
+_                      \ensuremath{\vartheta} _                     _
+"\ensuremath{\Upsilon} \ensuremath{\phi}      \ensuremath{\varpi}   _
+\Koppa                 \coppa                 \Stigma               \stigma
+\Digamma               \digamma               _                     \koppa
+
+\Sampi                 \sampi                 _                     _
+_                      _                      _                     _
+_                      _                      _                     _
+_                      _                      _                     _
+
+\ensuremath{\varkappa} \ensuremath{\varrho}   _                     _
+\ensuremath{\Theta}    \ensuremath{\epsilon}  \ensuremath{\backepsilon} _
+_                      _                      _                     _
+_                      _                      _                     _
+);
+    for my $i (0 .. $#letters) {
+        if ($letters[$i] =~ /^_$/) { delete $codes{0x0370 + $i} }
+        else {
+            $codes{0x0370 + $i} = ($letters[$i] =~ /^\\ensuremath/ ?
+                                   $letters[$i] : "\\textgreek{$letters[$i]}");
+        }
+    }
+}
+
+sub ding {
+    # Circled 1..9, A-Z, a-z
+    set_codes($_, "\\ding{" . (172 - 0x2460 + $_) . "}") for (0x2460 .. 0x2469);
+    set_codes($_, "\\textcircled{" . chr(ord('A') - 0x24b6 + $_) . "}") for (0x24b6 .. 0x24cf);
+    set_codes($_, "\\textcircled{" . chr(ord('a') - 0x24d0 + $_) . "}") for (0x24d0 .. 0x24e9);
+
+    my %alt = map { hex($_) } qw(2700 0000
+                                 2705 260e
+                                 270a 261b
+                                 270b 261e
+                                 2728 2605
+                                 274c 25cf
+                                 274e 25a0
+                                 2753 25b2
+                                 2754 25bc
+                                 2755 25c6
+                                 2757 25d7
+                                 275f 0000
+                                 2760 0000
+                                 2768 0000
+                                 2769 2666
+                                 276a 2665
+                                 276b 0000
+                                 276c 0000
+                                 276d 0000
+                                 276e 0000
+                                 276f 0000
+                                 2770 0000
+                                 2771 0000
+                                 2772 0000
+                                 2773 0000
+                                 2774 0000
+                                 2775 0000
+                                 2795 2192
+                                 2796 2194
+                                 2797 2195
+                                 27b0 0000
+                                 27bf 0000);
+        
+# NOTE: Unicode 6.0 fails to list 25d7, 2665 and 2666
+
+    for my $char (0x2700 .. 0x27bf) {
+        if (exists $alt{$char}) {
+            set_codes($char, '_');
+            set_codes($alt{$char},
+                      ($alt{$char} == 0 ? '_' :
+                       $char >= 0x2760 ?
+                       "\\ding{" . (160 - 0x2760 + $char) . "}" :
+                       "\\ding{" . (32 - 0x2700 + $char) . "}"));
+        } else {
+            if ($char >= 0x2760) {
+                set_codes($char, "\\ding{" . (160 - 0x2760 + $char) . "}");
+            } else {
+                set_codes($char, "\\ding{" . (32 - 0x2700 + $char) . "}");
+            }
+        }
+    }
+
+# These may override the \ding{} and \textcircled{} codes
+    set_codes(0x2422, qw(\textblank));
+    set_codes(0x2423, qw(\textvisiblespace));
+    set_codes(0x24ea, "\\textcircled{0}");
+    set_codes(0x24c5, "\\textcircledP");
+    set_codes(0x24c7, "\\circledR");
+
+# TODO: 2500 .. 259f pmboxdraw
+# 2571 \diagup
+# TODO: 25a0 .. box drawing
+
+    set_codes(0x25a0, qw(\ensuremath{\blacksquare} \ensuremath{\square}));
+    set_codes(0x25b2, qw(\ensuremath{\blacktriangle} \ensuremath{\vartriangle}));
+    set_codes(0x25b6, qw(\ensuremath{\blacktriangleright} \ensuremath{\vartriangleright})); #RHD \rhd));
+    set_codes(0x25bc, qw(\ensuremath{\blacktriangledown} \ensuremath{\triangledown}));
+    set_codes(0x25c0, qw(\ensuremath{\blacktriangleleft} \ensuremath{\vartriangleright})); #\LHD \lhd));
+    set_codes(0x25ca, qw(\ensuremath{\lozenge}));
+    set_codes(0x25e6, qw(\textopenbullet));
+    set_codes(0x25cf, qw(\CIRCLE \LEFTcircle \RIGHTcircle));
+    set_codes(0x25d6, qw(\LEFTCIRCLE \RIGHTCIRCLE));
+    set_codes(0x25ef, qw(\textbigcircle));
+
+    set_codes(0x2605, qw(\ensuremath{\bigstar}));
+    set_codes(0x2609, qw(\astrosun));
+    set_codes(0x2639, qw(\frownie \smiley \blacksmiley \sun));
+    set_codes(0x263d, qw(\rightmoon \leftmoon));
+    set_codes(0x263f, qw(\mercury \venus \earth \mars \jupiter \saturn _ \neptune \pluto));
+    set_codes(0x2648, qw(\aries \taurus \gemini \cancer \leo \virgo \libra
+                         \scorpio \sagittarius \capricornus \aquarius \pisces));
+    set_codes(0x2654, qw(\symking \symqueen \symrook \symbishop \symknight \sympawn));
+    set_codes(0x2660, qw(\ensuremath{\spadesuit} \ensuremath{\heartsuit}
+                         \ensuremath{\diamondsuit} \ensuremath{\clubsuit}
+                         \ensuremath{\varspadesuit} \ensuremath{\varheartsuit}
+                         \ensuremath{\vardiamondsuit} \ensuremath{\varclubsuit}));
+
+    set_codes(0x2669, qw(\quarternote \eighthnote \twonotes _
+                         \ensuremath{\flat} \ensuremath{\natural} \ensuremath{\sharp}));
+    set_codes(0x26e2, qw(\uranus));
+}
+
+sub math_alpha {
+    my $char = 0x1d400;
+    my @latin = map {chr($_)} (0x41 .. 0x5a, 0x61 .. 0x7a);
+    my @greek = qw(A B \Gamma \Delta E Z H \Theta I K \Lambda M N \Xi
+                   O \Pi R \varTheta \Sigma T \Upsilon \Phi X \Psi \Omega \nabla
+                   \alpha \beta \gamma \delta \varepsilon \zeta \eta
+                   \theta \iota \kappa \lambda \mu \nu \xi o \pi \rho
+                   \varsigma \sigma \tau \upsilon \varphi \chi \psi \omega
+                   \partial \varepsilon \vartheta \varkappa \phi \varrho \varpi);
+    my @digits = qw(0 1 2 3 4 5 6 7 8 9);
+
+    for my $tex (qw(\ensuremath{\mathbf{_}}
+                    \ensuremath{\mathit{_}}
+                    \ensuremath{\boldsymbol{_}}
+                    \ensuremath{\mathscr{_}}
+                    \ensuremath{\mathbfscr{_}}
+                    \ensuremath{\mathfrak{_}}
+                    \ensuremath{\mathbb{_}}
+                    \ensuremath{\mathbffrak{_}}
+                    \ensuremath{\mathsf{_}}
+                    \ensuremath{\mathsfbf{_}}
+                    \ensuremath{\mathsfsl{_}}
+                    \ensuremath{\mathsfbfsl{_}}
+                    \ensuremath{\mathtt{_}}
+                   )) {
+        for (@latin) {
+            ($codes{$char++} = $tex) =~ s/_/$_/g;
+        }
+    }
+
+    $codes{$char++} = qw(\ensuremath{\imath});
+    $codes{$char++} = qw(\ensuremath{\jmath});
+    delete $codes{$char++}; # Reserved
+    delete $codes{$char++}; # Reserved
+
+    for my $tex (qw(\ensuremath{\mathbf{_}}
+                    \ensuremath{\mathit{_}}
+                    \ensuremath{\boldsymbol{_}}
+                    \ensuremath{\mathsf{_}}
+                    \ensuremath{\mathsfbfsl{_}}
+                   )) {
+        for (@greek) {
+            ($codes{$char++} = $tex) =~ s/_/$_/g;
+        }
+    }
+
+    $codes{$char++} = qw(\ensuremath{\mathbf{\digamma}});
+    delete $codes{$char++}; # Small digamma
+    delete $codes{$char++}; # Reserved
+    delete $codes{$char++}; # Reserved
+
+    for my $tex (qw(\textbf{_}
+                    \textbb{_}
+                    \textsf{_}
+                    \textsf{\textbf{_}}
+                    \texttt{_}
+                   )) {
+        for (@digits) {
+            ($codes{$char++} = $tex) =~ s/_/$_/g;
+        }
+    }
 }
 
 sub other {
