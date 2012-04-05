@@ -21,121 +21,25 @@ use List::MoreUtils qw(uniq);
 
 my ($TEST_TEX, $COMPARE, $MAKE_MODULE) = (0, 1, 0);
 
-my @accents = qw(
-`  '  ^  ~  =  __ u  .
-"  h  r  H  v  |  U  G
-
-__ textroundcap __ __ __ __ __ __
-__ __ __ __ __ __ __ __
-
-__ __ __ d  textsubumlaut textsubring   cb           c 
-k  __ __ __ __            textsubcircum textsubbreve __
-
-textsubtilde b  __ __ __ __ __ __
-__ __ __ __ __ __ __ __
-
-__ __ __ __ __ __ __ __
-__ __ __ __ __ __ __ __
-
-__ __ __ __ __ __ __ __
-__ __ __ __ __ __ __ __
-
-__ __ __ __ __ __ __ __
-__ __ __ __ __ __ __ __
-);
-
 my %codes;
+my %combining_class;
 
 my %decomp1;
 my %decomp2;
-my %combining_class;
 
 parseUnicodeData();
 
-#my $p = XML::Parser->new(Style => 'Stream', Pkg => 'main');
-#$p->parsefile('-');
-
-$codes{0x0192} = '\textflorin'; # Wrong: \ensuremath{f}
-$codes{0x0195} = '\texthvlig'; # Missing
-$codes{0x019e} = '\textnrleg'; # Missing
-$codes{0x01c2} = '\textdoublepipe'; # Missing (TODO: double check)
-$codes{0x0237} = '\j'; # Missing
-$codes{0x02c6} = '\^{}'; # Missing
-$codes{0x02dc} = '\~{}'; # Wrong: \texttildelow
-
-ascii();
-latin1();
-greek();
-math_alpha();
-ding();
-shapes();
-other();
-non_decomp();
-
-# Accents
-$codes{0x20db} = '\ensuremath{\dddot{}}';
-$codes{0x20dc} = '\ensuremath{\ddddot{}}';
-for (0x0300 .. 0x036f) {
-    set_codes($_, ($accents[$_-0x300] ne '__' ?
-                   "\\$accents[$_-0x300]\{\}" : '_'));
-}
-
-# Super and subscripts
-set_codes(0x2070,
-          (map { "\\textsuperscript{$_}" } qw[0 i]),
-          qw[_ _],
-          (map { "\\textsuperscript{$_}" } qw[4 5 6 7 8 9 + - = ( ) n]),
-          (map { "\\textsubscript{$_}" } qw[0 1 2 3 4 5 6 7 8 9 + - = ( )]),
-          qw[_],
-          (map { "\\textsubscript{$_}" } qw[a e o x \textschwa h k l m n p s t]));
-
-
-## IPA extensions
-#025b X{\ensuremath{\varepsilon}}X
-#
-#0261 X{g}X
-#
-#0278 X{\ensuremath{\phi}}X
-#
-#029e X{\textturnk}X
-#
-## Spacing modifiers
-#
-#02bc X{\rasp}X
-#
-#02c6 X{\^{}}X
-#
-#02c7 X{\textasciicaron}X
-#
-#02d8 X{\textasciibreve}X
-#
-#02d9 X{\textperiodcentered}X
-#
-#02da X{\r{}}X
-#
-#02db X{\k{}}X
-#
-#02dc X{\~{}}X
-#
-#02dd X{\H{}}X
-#
-#02e5 X{\tone{55}}X
-#
-#02e6 X{\tone{44}}X
-#
-#02e7 X{\tone{33}}X
-#
-#02e8 X{\tone{22}}X
-#
-#02e9 X{\tone{11}}X
-#
+ascii(); # 0000-007f
+latin1(); # 0080-00ff
+latin_extended(); # 0100-02ff
+accents(); # 0300-036f, 20d0-20ff
+greek(); # 0370-03ff
+ding(); # 2400-27bf
+other(); # 2000-2e7f, fb00-fb4f
+math_alpha(); # 1d400-1d4ff
 
 # Decomp
-# \i
-sub in_range {
-    my ($val, $low, $hi) = @_;
-    return ($low <= $val && $val <= $hi);
-}
+# TODO: \i
 for (0x0000 .. 0xffff) {
     next if in_range($_, 0x0400, 0x04ff);
     next if in_range($_, 0x0600, 0x06ff);
@@ -158,15 +62,11 @@ for (0x0000 .. 0xffff) {
     }
 }
 
-for my $key (keys %codes) {
-    $_ = $codes{$key};
-    s[^(\\[^\\])$][$1\{\}]g; # Ensure that single macros that can take arguments already have their arguments
-#    s[{(\\d+dot)}][{$1\{\}}]g;
+$codes{$_} =~ s[^(\\\W)\{(\w)\}$][$1$2]g for keys %codes; # translate "\'{x}" to "\'x"
 
-    s[^(\\\W){(\w)}$][$1$2]g; # translate "\'{x}" to "\'x"
-#    s[\{\{([^{}]*)\}\}][{$1}]g; # Remove doubled up {{x}} (but dont do {{x}y{z}})
-#    s[\\ensuremath{\\ensuremath{([^{}]*)}}][\\ensuremath{$1}]g;
-    $codes{$key} = $_;
+sub in_range {
+    my ($val, $low, $hi) = @_;
+    return ($low <= $val && $val <= $hi);
 }
 
 sub parseUnicodeData {
@@ -174,17 +74,10 @@ sub parseUnicodeData {
     while (<$fh>) {
         my @fields = split ';', $_;
         my $code = hex($fields[0]);
-        #print $fields[5], "\n";
         my ($decomp1, $dummy, $decomp2) = $fields[5] =~ m/^([0-9A-F]+)( ([0-9A-F]+))?/;
         $combining_class{$code} = $fields[3];
-        if (defined $decomp2) {
-            #print $_, "\n";
-            #printf "%04x %04x %04x\n", hex($code), hex($decomp1), hex($decomp2);
-            $decomp2{$code} = hex($decomp2);
-        }
-        if (defined $decomp1) {
-            $decomp1{$code} = hex($decomp1);
-        }
+        $decomp1{$code} = hex($decomp1) if defined $decomp1;
+        $decomp2{$code} = hex($decomp2) if defined $decomp2;
     }
 }
 
@@ -200,11 +93,14 @@ sub set_codes {
 ########################################
 # Output
 
+#for my $num (0x00a0 .. 0x03ff) {
+#    printf("%04x %s\n", $num, encode_utf8(chr($num))) if not exists $codes{$num};
+#}
+
 #for my $num (sort {$a <=> $b} keys %codes) {
 #    printf("%04x %s %s\n", $num, encode_utf8(chr($num)), $codes{$num}) if exists $combining_class{$num} and $combining_class{$num} != 0;
 #    
 #}
-
 
 sub start {
     my ($file, @packages) = @_;
@@ -214,38 +110,12 @@ sub start {
 }
 
 if ($TEST_TEX) {
-    my ($latin, $main, $greek, $mn, $ding, $math_alpha) =
-        map { IO::File->new("test/$_.tex", 'w') } qw(latin main greek mn ding math_alpha);
-
-#    %\usepackage{cite}
-#    %\usepackage{amsfonts}
-#    %%\usepackage[mathscr,mathcal]{euscript}
-#    %\usepackage{txfonts}
-#    %\usepackage{pxfonts}
-#    %\usepackage{wasysym}
-#    %\usepackage{stmaryrd}
-#    \usepackage{mathdesign}
+    my ($latin, $main, $greek, $ding, $math_alpha) =
+        map { IO::File->new("test/$_.tex", 'w') } qw(latin main greek ding math_alpha);
 
     start($latin, qw({textcomp} {tipx}));
-    start($main, qw({amssymb} {amsmath} {fixltx2e} {mathrsfs} {mathabx} {shuffle} {textcomp} {tipa}));
-#\usepackage{amssymb}
-#\usepackage{amsmath}
-#\usepackage{textcomp}
-#\usepackage{stmaryrd}
-#\usepackage{xfrac}
-#\usepackage{txfonts}
-#\usepackage{mathdots}
-#\usepackage{wasysym}
-#% \usepackage{mathabx} Causes conflicts
-#\usepackage{mathbbol}
-#\usepackage{shuffle}
-
-    start($greek, qw({amssymb} [greek,english]{babel} {teubner})); # amssymb is for \backepsilon and \varkappa
-    start($mn, qw({MnSymbol}));
-    start($ding, qw({amssymb} {amsmath} {pifont} {pxfonts} {skak} {wasysym} {xfrac}));
-    start($math_alpha, qw({amsmath} {amssymb} {bbold} {mathrsfs} {sansmath}));
-
     print $latin "\\renewcommand{\\|}{} % \\usepackage{fc}\n";
+    print $latin "\\newcommand{\\B}{} % \\usepackage{fc}\n";
     print $latin "\\newcommand{\\G}{} % \\usepackage{fc}\n";
     print $latin "\\newcommand{\\U}{} % \\usepackage{fc}\n";
     print $latin "\\newcommand{\\h}{} % \\usepackage{vntex}\n";
@@ -256,24 +126,40 @@ if ($TEST_TEX) {
     print $latin "\\newcommand{\\textsubbreve}{} % DOES NOT EXIST\n";
     print $latin "\\newcommand{\\cb}{} % \\usepackage{combelow}\n";
 
+    start($greek, qw({amssymb} [greek,english]{babel} {teubner}));
+    print $math_alpha "% Note: {amssymb} is for \\backepsilon and \\varkappa\n";
+
+    start($math_alpha, qw({amsmath} {amssymb} {bbold} {mathrsfs} {sansmath}));
+    print $math_alpha "% Note \\mathscr is defined only for upper case letters\n";
+    print $math_alpha "\\newcommand{\\mathbfscr}{} % Doesn't actually exist\n";
+    print $math_alpha "\\newcommand{\\mathbffrak}{} % Doesn't actually exist\n";
+    print $math_alpha "\\newcommand{\\mathsfbfsl}{} % Doesn't actually exist\n";
+
+    start($ding, qw({amssymb} {pifont} {pxfonts} {skak} {wasysym}));
+
+    start($main, qw({metre} {amsmath} {fixltx2e} {mathrsfs} {stmaryrd}
+                    {txfonts} {marvosym} {mathdots} {mathbbol}
+                    {shuffle} {tipa} {wasysym} {xfrac}));
+    print $main "% Note: {metre} must load before {amsmath}\n";
+    print $main "% {metre} is for \\metra\n";
+    print $main "% {fixltx2e} is for \\textsubscript\n";
+    print $main "% {mathrsfs} is for \\mathscr\n";
+    print $main "% {marvosym} is for \\Pfund and \\fax\n";
+    print $main "% {mathdots} is for \\iddots\n";
+    print $main "% {mathbbol} is for \\Lparen and \\Rparen\n";
+    print $main "% {shuffle} is for \\shuffle\n";
+    print $main "% {tipa} is for \\textschwa\n";
+    print $main "% {wasysym} is for \\diameter, \\invneg, \\wasylozenge, and \\recorder\n";
+
     for (sort {$a <=> $b} keys %codes) {
         my $file = (
-            $_ >= 0x0000 && $_ <= 0x036f ? $latin :
-              #  0000.. 007f ascii
-              #  0080.. 009f [omitted: control]
-              #  00a0.. 00bf latin1
-              #  00c0.. 024f decomp
-              #  0250.. 02ff [omitted: ipa]
-              #  0300.. 036f accents
-            $_ >= 0x0370 && $_ <= 0x03ff ? $greek :
-              #  0370.. 03ff greek
-            $_ >= 0x0400 && $_ <= 0x01df ? undef :
-              #  0400.. 1dff [omitted: hebrew, arabic, etc.]
-            $_ >= 0x1e00 && $_ <= 0x1eff ? $latin :
-              #  1e00.. 1eff decomp
-            $_ >= 0x1f00 && $_ <= 0x1fff ? $greek :
-              #  1f00.. 1fff greek decomp
-            #  2000.. ffff (???)
+            in_range($_, 0x0000, 0x036f) ? $latin :
+            in_range($_, 0x0370, 0x03ff) ? $greek :
+            in_range($_, 0x0400, 0x01df) ? undef : # omitted: hebrew, arabic, etc.
+            in_range($_, 0x1e00, 0x1eff) ? $latin :
+            in_range($_, 0x1f00, 0x1fff) ? $greek :
+            in_range($_, 0x2000, 0x23ff) ? $main :
+            in_range($_, 0x2400, 0x27bf) ? $ding :
             #   2400.. 27bf ding
             #     2400 control
             #     2460 digits
@@ -281,31 +167,20 @@ if ($TEST_TEX) {
             #     25a0 shapes
             #     2600 misc
             #     2700 ding
-            #       33 -> 01..60 [05,0A,0B,28,4c,4e,53,54,55,57,5f,60,68-75,95,96,97,b0,bf]
+            #     2733 -> 01..60 [05,0A,0B,28,4c,4e,53,54,55,57,5f,60,68-75,95,96,97,b0,bf]
             #             13 [\checkmark]
-#
             #       
             #   301a.. 301b open brackets
             #   fb00.. fb04 *ffil
-
-            # 2000-2bff, 2e00-2e7f # Symbols and punctuation
-            # 3000-3030 # CJK punctuation
-            #$_ == 0x2212 || $_ == 0x2a03 ? $mn :
-            $_ >= 0x2400 && $_ <= 0x27bf ? $ding :
-
+            in_range($_, 0x27c0, 0x2e7f) ? $main :
+            in_range($_, 0xfb00, 0xfb04) ? $latin :
             $_ >=0x1d400 && $_ <=0x1d7ff ? $math_alpha :
-              # 1d400..1d7ff math_alpha
-
-            $main);
+            undef);
 
         print $file sprintf("%04x X{%s}X\n\n", $_, $codes{$_});
-
-# TODO: 0x2254 (:= not :-)        
-# TODO: 0x2afg (has extra {})
-
     }
 
-    print $_ "\\end{document}\n" for ($latin, $main, $greek, $mn, $ding, $math_alpha);
+    print $_ "\\end{document}\n" for ($latin, $main, $greek, $ding, $math_alpha);
 }
 
 if ($COMPARE) {
@@ -403,7 +278,7 @@ sub decomp {
             } elsif ($decomp2{$char} == 0x0314) {
                 return "\\textgreek{<$1}";
             } elsif ($decomp2{$char} == 0x0342) {
-                return "\\textgreek{~$1}";
+                return "\\textgreek{\\~{$1}}";
             } elsif ($decomp2{$char} == 0x0345) {
                 return "\\textgreek{$1|}";
             } else {
@@ -411,7 +286,7 @@ sub decomp {
                 exit 1;
             }
         } else {
-            die (sprintf "%04x", $char) unless exists $codes{$decomp2{$char}};
+            die unless exists $codes{$decomp2{$char}};
             die if $codes{$decomp2{$char}} =~ /\{\}.*\{\}/;
             die unless $codes{$decomp2{$char}} =~ /\{\}/;
             my $accent = $codes{$decomp2{$char}};
@@ -421,6 +296,38 @@ sub decomp {
         }
     } elsif (exists $decomp1{$char}) { return decomp($decomp1{$char});
     } else { return chr($char); }    
+}
+
+sub accents {
+    my @accents = qw(
+    `  '  ^  ~  =  __ u  .
+    "  h  r  H  v  |  U  G
+    
+    __ textroundcap __ __ __ __ __ __
+    __ __ __ __ __ __ __ __
+    
+    __ __           __ d  textsubumlaut textsubring   cb           c 
+    k  textsyllabic __ __ __            textsubcircum textsubbreve __
+    
+    textsubtilde b  __ __ __ __ __ __
+    __ __ __ __ __ __ __ __
+    
+    __ __ __ __ __ __ __ __
+    __ __ __ __ __ __ __ __
+    
+    __ __ __ __ __ __ __ __
+    __ __ __ __ __ __ __ __
+    
+    __ __ __ __ __ __ __ __
+    __ __ __ __ __ __ __ __
+    );
+    
+    # Accents
+    for (0x0300 .. 0x036f) {
+        set_codes($_, ($accents[$_-0x300] ne '__' ?
+                       "\\$accents[$_-0x300]\{\}" : '_'));
+    }
+    set_codes(0x20db, qw(\ensuremath{\dddot{}} \ensuremath{\ddddot{}}));
 }
 
 sub greek {
@@ -521,24 +428,10 @@ sub math_alpha {
 }
 
 sub ding {
-
-    set_codes(0x2423, qw(\textvisiblespace));
-    # Circled 1..9
-    for my $char (0x2460 .. 0x2469) {
-        set_codes($char, "\\ding{" . (172 - 0x2460 + $char) . "}");
-    }
-    for my $char (0x24b6 .. 0x24cf) {
-        set_codes($char, "\\textcircled{" . chr(ord('A') - 0x24b6 + $char) . "}");
-    }
-    for my $char (0x24d0 .. 0x24e9) {
-        set_codes($char, "\\textcircled{" . chr(ord('a') - 0x24d0 + $char) . "}");
-    }
-    set_codes(0x24ea, "\\textcircled{0}");
-    set_codes(0x24c5, "\\textcircledP");
-    set_codes(0x24c7, "\\circledR");
-
-# TODO: 2500 .. 259f pmboxdraw
-# TODO: 25a0 .. box drawing
+    # Circled 1..9, A-Z, a-z
+    set_codes($_, "\\ding{" . (172 - 0x2460 + $_) . "}") for (0x2460 .. 0x2469);
+    set_codes($_, "\\textcircled{" . chr(ord('A') - 0x24b6 + $_) . "}") for (0x24b6 .. 0x24cf);
+    set_codes($_, "\\textcircled{" . chr(ord('a') - 0x24d0 + $_) . "}") for (0x24d0 .. 0x24e9);
 
     my %alt = map { hex($_) } qw(2700 0000
                                  2705 260e
@@ -591,9 +484,18 @@ sub ding {
             }
         }
     }
-}
 
-sub shapes {
+# These may override the \ding{} and \textcircled{} codes
+    set_codes(0x2422, qw(\textblank));
+    set_codes(0x2423, qw(\textvisiblespace));
+    set_codes(0x24ea, "\\textcircled{0}");
+    set_codes(0x24c5, "\\textcircledP");
+    set_codes(0x24c7, "\\circledR");
+
+# TODO: 2500 .. 259f pmboxdraw
+# 2571 \diagup
+# TODO: 25a0 .. box drawing
+
     set_codes(0x25a0, qw(\ensuremath{\blacksquare} \ensuremath{\square}));
     set_codes(0x25b2, qw(\ensuremath{\blacktriangle} \ensuremath{\vartriangle}));
     set_codes(0x25b6, qw(\ensuremath{\blacktriangleright} \ensuremath{\vartriangleright})); #RHD \rhd));
@@ -604,7 +506,6 @@ sub shapes {
     set_codes(0x25cf, qw(\CIRCLE \LEFTcircle \RIGHTcircle));
     set_codes(0x25d6, qw(\LEFTCIRCLE \RIGHTCIRCLE));
     set_codes(0x25ef, qw(\textbigcircle));
-
 
     set_codes(0x2605, qw(\ensuremath{\bigstar}));
     set_codes(0x2609, qw(\astrosun));
@@ -632,7 +533,7 @@ sub ascii {
     set_codes(0x5e, qw(\^{}));
     set_codes(0x5f, qw(\_));
     set_codes(0x7b, qw(\{));
-    #set_codes(0x7c, qw(\textbar));
+    set_codes(0x7c, qw(\textbar));
     set_codes(0x7e, qw(\}));
     set_codes(0x7f, qw(\~{})); 
 }
@@ -674,11 +575,9 @@ sub latin1 {
 \textthreequarters
 ?`
 ));
-}
 
-sub non_decomp {
-
-# Things that shouldn't be decomposed
+    # We skip things from Table 329 that are definable by
+    # decomposition but the following remain
     set_codes(0x00c5, '\AA');
     set_codes(0x00c6, '\AE');
     set_codes(0x00d0, '\DH');
@@ -692,27 +591,43 @@ sub non_decomp {
     set_codes(0x00f7, '\textdiv');
     set_codes(0x00f8, '\o');
     set_codes(0x00fe, '\th');
+}
 
-    set_codes(0x0110, '\DJ');
-    set_codes(0x0111, '\dj');
-    set_codes(0x0131, '\i');
-    set_codes(0x0132, '\IJ');
-    set_codes(0x0133, '\ij');
-    set_codes(0x0141, '\L');
-    set_codes(0x0142, '\l');
-    set_codes(0x0149, '\'n');
-    set_codes(0x014a, '\NG');
-    set_codes(0x014b, '\ng');
-    set_codes(0x0152, '\OE');
-    set_codes(0x0153, '\oe');
-    set_codes(0x01a0, '\OHORN');
-    set_codes(0x01a1, '\ohorn');
-    set_codes(0x01af, '\UHORN');
-    set_codes(0x01b0, '\uhorn');
+sub latin_extended {
+    # Latin A
+    set_codes(0x0110, qw(\DJ));
+    set_codes(0x0111, qw(\dj));
+    set_codes(0x0126, qw(\B{H}));
+    set_codes(0x0127, qw(\b{h}));
+    set_codes(0x0131, qw(\i));
+    set_codes(0x0132, qw(\IJ));
+    set_codes(0x0133, qw(\ij));
+    set_codes(0x0141, qw(\L));
+    set_codes(0x0142, qw(\l));
+    set_codes(0x0149, qw('n));
+    set_codes(0x014a, qw(\NG));
+    set_codes(0x014b, qw(\ng));
+    set_codes(0x0152, qw(\OE));
+    set_codes(0x0153, qw(\oe));
+    set_codes(0x0166, qw(\B{T}));
+    set_codes(0x0167, qw(\B{t}));
+    # Latin B
+    set_codes(0x0192, qw(\textflorin)); # TODO
+    set_codes(0x0195, qw(\texthvlig)); # TODO
+    set_codes(0x019e, qw(\textnrleg)); # TODO
+    set_codes(0x01a0, qw(\OHORN));
+    set_codes(0x01a1, qw(\ohorn));
+    set_codes(0x01af, qw(\UHORN));
+    set_codes(0x01b0, qw(\uhorn));
+    set_codes(0x01c2, qw(\textdoublepipe)); # Missing (TODO: double check)
+    set_codes(0x0237, qw(\j));
+    # Spacing modifier letters
+    set_codes(0x02bc, qw('));
+    set_codes(0x02c6, qw(\^{} \v{} \|{} \={} \'{} \`{} \textsyllabic{} \b{}));
+    set_codes(0x02d8, qw(\u{} \.{} \r{} \k{} \~{} \H{}));
 }
 
 sub other {
-
 # General Punctuation
     set_codes(0x2000, qw(
 \enskip \quad \enspace \quad
@@ -733,7 +648,7 @@ _ _ _ _
 \textperthousand \textpertenthousand \ensuremath{^{\prime}} \ensuremath{^{\prime\prime}}
 \ensuremath{^{\prime\prime\prime}} \ensuremath{^{\backprime}} \ensuremath{^{\backprime\backprime}} \ensuremath{^{\backprime\backprime\backprime}}
 _ \guilsinglleft \guilsinglright \textreferencemark
-{!!} \textinterrobang _ _
+_ \textinterrobang _ _
 ));
 
     set_codes(0x2050, qw(
@@ -742,7 +657,16 @@ _ _ _ \ensuremath{^{\prime\prime\prime\prime}}
 _ _ _ _
 _ _ _ \ensuremath{\mkern4mu}
 
-{} _ _ _));
+\nolinebreak _ _ _));
+
+# Super and subscripts
+set_codes(0x2070,
+          (map { "\\textsuperscript{$_}" } qw[0 i]),
+          qw[_ _],
+          (map { "\\textsuperscript{$_}" } qw[4 5 6 7 8 9 + - = ( ) n]),
+          (map { "\\textsubscript{$_}" } qw[0 1 2 3 4 5 6 7 8 9 + - = ( )]),
+          qw[_],
+          (map { "\\textsubscript{$_}" } qw[a e o x \textschwa h k l m n p s t]));
 
 # Currency Symbols
     set_codes(0x20a0, qw(
@@ -753,14 +677,6 @@ _ \textwon  _ \textdong
 
 _ \textpeso \textguarani _
 ));
-
-# 23b0 \lmoustache
-# 2571 \diagup
-# \textblank
-
-#\def\mathscr{}
-#\def\Pfund{}
-#\def\fax{}
 
 # Combining diacriticals for symbols
     set_codes(0x2100, qw(
@@ -935,7 +851,8 @@ _ \ensuremath{\langle} \ensuremath{\rangle} _
 _ _ _ _
 ));
 
-# \usepackage{metre}
+    set_codes(0x23b0, qw(\ensuremath{\left\lmoustache\right.} \ensuremath{\left\rmoustache\right.}));
+
     set_codes(0x23d0, qw(
 _
 \metra{\b}
@@ -950,7 +867,6 @@ _
 
 # 2500 Box drawing (and shapes)
 # 2600 Misc shapes
-
 # 27c0 Misc math
 
     set_codes(0x27e4, qw(
@@ -990,7 +906,6 @@ _ \ensuremath{\longleftarrow} \ensuremath{\longrightarrow} \ensuremath{\longleft
 
     set_codes(0x29f4, qw(_ \ensuremath{\setminus} \ensuremath{\bar{/}} _));
     set_codes(0x29f8, qw(\ensuremath{\big{/}} _ _ _));
-
 
 # Suplemental math operators
     set_codes(0x2a00, qw(
@@ -1081,5 +996,4 @@ _ _ _ _
    set_codes(0x2e1e, qw(\ensuremath{\dot{\sim}}));
 
    set_codes(0xfb00, qw(ff fi fl ffi ffl));
-
 }
