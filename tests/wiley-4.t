@@ -9,7 +9,7 @@ Unicode in first author's last name
   pages = {1325--1352},
   month = sep,
   year = {2000},
-  publisher = {John Wiley \& Sons, Ltd.},
+  publisher = {John Wiley {\&} Sons, Ltd.},
   issn = {1097-024X},
   doi = {10.1002/1097-024X(200009)30:11<1325::AID-SPE342>3.0.CO;2-T},
   bib_scrape_url = {http://onlinelibrary.wiley.com/doi/10.1002/1097-024X%28200009%2930:11%3C1325::AID-SPE342%3E3.0.CO;2-T/abstract},

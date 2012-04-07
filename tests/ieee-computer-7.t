@@ -1,8 +1,8 @@
 http://www.computer.org/csdl/trans/ts/2006/06/e0365-abs.html
 Journal (IEEE Transactions)
 @article{Arisholm:2006:10.1109/TSE.2006.59,
-  author = {Erik Arisholm and Lionel C. Briand and Siw Elisabeth Hove and Yvan Labiche},
-  title = {The Impact of UML Documentation on Software Maintenance: An Experimental Evaluation},
+  author = {Arisholm, Erik and Briand, Lionel C. and Hove, Siw Elisabeth and Labiche, Yvan},
+  title = {The Impact of {UML} Documentation on Software Maintenance: An Experimental Evaluation},
   journal = {IEEE Transactions on Software Engineering},
   volume = {32},
   number = {6},

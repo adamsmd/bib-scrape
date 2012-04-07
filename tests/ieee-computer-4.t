@@ -1,8 +1,8 @@
 http://www.computer.org/portal/web/csdl/doi/10.1109/LICS.2010.17
 Subscript in title and abstract
 @inproceedings{Place:2010:10.1109/LICS.2010.17,
-  author = {Thomas Place and Luc Segoufin},
-  title = {Deciding Definability in FO\ensuremath{_2}(\ensuremath{<}\ensuremath{_h}, \ensuremath{<}\ensuremath{_v}) on Trees},
+  author = {Place, Thomas and Segoufin, Luc},
+  title = {Deciding Definability in {FO}\textsubscript{2}({\textless}\textsubscript{h}, {\textless}\textsubscript{v}) on Trees},
   booktitle = {2010 25th Annual IEEE Symposium on Logic in Computer Science},
   series = {Logic in Computer Science, Symposium on},
   pages = {253--262},

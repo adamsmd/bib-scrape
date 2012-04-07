@@ -9,7 +9,7 @@ http://onlinelibrary.wiley.com/doi/10.1002/1097-024X%28200009%2930:11%3C1203::AI
   pages = {1203--1233},
   month = sep,
   year = {2000},
-  publisher = {John Wiley \& Sons, Ltd.},
+  publisher = {John Wiley {\&} Sons, Ltd.},
   issn = {1097-024X},
   doi = {10.1002/1097-024X(200009)30:11<1203::AID-SPE338>3.0.CO;2-N},
   bib_scrape_url = {http://onlinelibrary.wiley.com/doi/10.1002/1097-024X%28200009%2930:11%3C1203::AID-SPE338%3E3.0.CO;2-N/abstract},

@@ -1,7 +1,7 @@
 http://www.computer.org/portal/web/csdl/doi/10.1109/LICS.2010.50
 Unicode in title
 @inproceedings{Goubault Larrecq:2010:10.1109/LICS.2010.50,
-  author = {Jean Goubault-Larrecq},
+  author = {Goubault-Larrecq, Jean},
   title = {\ensuremath{\omega}QRB-Domains and the Probabilistic Powerdomain},
   booktitle = {2010 25th Annual IEEE Symposium on Logic in Computer Science},
   series = {Logic in Computer Science, Symposium on},

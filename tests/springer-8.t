@@ -4,7 +4,7 @@ Unicode in title
   author = {Parigot, Michel},
   editor = {Voronkov, Andrei},
   affiliation = {Universit{\'e} Paris 7 Equipe de logique - CNRS UA 753 45-55 5{\'e}me {\'e}tage 2 place jussieu 75251 Paris Cedex 05 France 2 place jussieu 75251 Paris Cedex 05 France},
-  title = {{\ensuremath{\lambda}}{\ensuremath{\mu}}-Calculus: An algorithmic interpretation of classical natural deduction},
+  title = {{\textgreek{l}}{\textgreek{m}}-Calculus: An algorithmic interpretation of classical natural deduction},
   booktitle = {Logic Programming and Automated Reasoning},
   volume = {624},
   series = {Lecture Notes in Computer Science},

@@ -1,7 +1,7 @@
 http://iospress.metapress.com/content/jj599ww44r90maa0/
 Example with Unicode
 @article{Abbott:2005,
-  author = {Michael Abbott and Thorsten Altenkirch and Conor McBride and Neil Ghani},
+  author = {Abbott, Michael and Altenkirch, Thorsten and McBride, Conor and Ghani, Neil},
   title = {{\ensuremath{\partial}} for Data: Differentiating Data Structures},
   journal = {Fundamenta Informaticae},
   volume = {65},

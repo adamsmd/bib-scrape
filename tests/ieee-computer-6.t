@@ -1,7 +1,7 @@
 http://www.computer.org/csdl/mags/co/2005/12/rz043-abs.html
 Magazine
 @article{Pantel:2005:10.1109/MC.2005.406,
-  author = {Patrick Pantel and Andrew Philpot and Eduard Hovy},
+  author = {Pantel, Patrick and Philpot, Andrew and Hovy, Eduard},
   title = {Data Alignment and Integration},
   journal = {Computer},
   volume = {38},

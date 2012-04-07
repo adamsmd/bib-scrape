@@ -1,7 +1,7 @@
 http://iospress.metapress.com/content/tf54nwg673hvgk5d/
 Unicode in author
 @article{Blanqui:2005,
-  author = {Fr{\'e}d{\'e}ric Blanqui},
+  author = {Blanqui, Fr{\'e}d{\'e}ric},
   title = {Inductive types in the Calculus of Algebraic Constructions},
   journal = {Fundamenta Informaticae},
   volume = {65},
