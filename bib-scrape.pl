@@ -248,6 +248,7 @@ sub parse_springerlink {
 sub parse_cambridge_university_press {
     my ($mech) = @_;
 
+    $mech->follow_link(text => 'Abstract') if defined $mech->find_link(text => 'Abstract');
     $mech->follow_link(text => 'Export Citation');
     $mech->submit_form(form_name => 'exportCitationForm',
                        fields => {'Download' => 'Download',
