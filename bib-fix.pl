@@ -5,7 +5,7 @@ use strict;
 $|++;
 
 use Text::BibTeX;
-use Text::BibTeX qw(:subs);
+use Text::BibTeX qw(:subs :nameparts :joinmethods);
 use Text::BibTeX::Value;
 use Text::ISBN;
 use TeX::Encode;
@@ -14,6 +14,8 @@ use HTML::Entities;
 use Encode;
 
 use Text::BibTeX::Months;
+use Text::BibTeX::Name;
+use Text::BibTeX::NameFormat;
 
 use Getopt::Long qw(:config auto_version auto_help);
 
@@ -129,6 +131,14 @@ bibscrape [options] <url> ...
 
 my $file = new Text::BibTeX::File "<-";
 
+my @valid_names = ([]);
+for (<DATA>) {
+    chomp;
+    if (m/^\s*$/) { push @valid_names, [] }
+    else { push @{$valid_names[$#valid_names]}, new Text::BibTeX::Name($_) }
+}
+@valid_names = map { @{$_} ? ($_) : () } @valid_names;
+
 while (my $entry = new Text::BibTeX::Entry $file) {
     # TODO: $bib_text =~ s/^\x{FEFF}//; # Remove Byte Order Mark
     # Fix any unicode that is in the field values
@@ -174,6 +184,27 @@ while (my $entry = new Text::BibTeX::Entry $file) {
 # Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
 #  List of renames (regex?)
 
+    if ($entry->exists('author')) { canonical_names($entry, 'author') }
+    if ($entry->exists('editor')) { canonical_names($entry, 'editor') }
+
+#D<onald|.=[onald]> <E.|> Knuth
+#
+#D(onald|.) (E.) Knuth
+#D E Knuth
+#
+#D[onald] Knuth
+#D Knuth
+#
+#D[onald] [E.] Knuth
+#D Knuth
+#
+#Donald Knuth
+#D[onald] Knuth
+#D. Knuth
+#Knuth, D.
+#
+#    }
+
     # Don't include pointless URLs to publisher's page
     # [][url][http://dx.doi.org/][];
     # TODO: via Omit if matches
@@ -207,7 +238,7 @@ while (my $entry = new Text::BibTeX::Entry $file) {
 
     # Generate an entry key
     # TODO: Formats: author/editor1.last year title/journal.abbriv
-    # TODO: Key may fail on unicode names? Remove doi?
+    # TODO: Remove doi?
     if ($GENERATE_KEY or not defined $entry->key()) {
         my ($name) = ($entry->names('author'), $entry->names('editor'));
         #$organization, or key
@@ -299,3 +330,111 @@ sub update {
         else { $entry->delete($field); }
     }
 }
+
+sub canonical_names {
+    my ($entry, $field) = @_;
+
+    my $name_format = new Text::BibTeX::NameFormat ('vljf', 0);
+    $name_format->set_options(BTN_VON, 0, BTJ_SPACE, BTJ_SPACE);
+    for (BTN_LAST, BTN_JR, BTN_FIRST) {
+        $name_format->set_options($_, 0, BTJ_SPACE, BTJ_NOTHING);
+    }
+    my @names;
+  NAME:
+    for my $name ($entry->names($field)) {
+        for my $name_group (@valid_names) {
+          VALID_NAME:
+            for my $_ (@$name_group) {
+                for my $part (qw(von last jr first)) {
+                    if (lc decode('utf8', join(' ', $name->part($part))) ne
+                        lc decode('utf8', join(' ', $_->part($part)))) {
+                        next VALID_NAME;
+                    }
+                }
+                push @names, decode('utf8', $name_group->[0]->format($name_format));
+                next NAME;
+            }
+        }
+        print "WARNING: Unrecognized name @{[$name->format($name_format)]}\n";
+        push @names, decode('utf8', $name->format($name_format));
+    }
+
+    $entry->set($field, join(' and ', @names));
+}
+
+__DATA__
+
+Hinze, Ralf
+
+Jeuring, Johan
+
+McBride, Conor
+
+McBride, Nicole
+
+McKinna, James
+
+Uustalu, Tarmo
+
+Wazny, Jeremy
+
+Shan, Chung-chieh
+
+Kiselyov, Oleg
+
+Tolmach, Andrew
+
+Leroy, Xavier
+
+Chitil, Olaf
+
+Oliveira, Bruno C. d. S.
+
+Jeremy Gibbons
+
+Carette, Jacques
+
+Fischer, Sebastian
+
+de Paiva, Valeria
+
+Kameyama, Yukiyoshi
+
+Nykänen, Matti
+
+Sperber, Michael
+
+Dybvig, R. Kent
+
+Flatt, Matthew
+
+van Straaten, Anton
+Van Straaten, Anton
+
+Findler, Robby
+
+Matthews, Jacob
+
+van Noort, Thomas
+
+Rodriguez Yakushev, Alexey
+
+Holdermans, Stefan
+
+Heeren, Bastiaan
+
+Magalhães, José Pedro
+
+Cebrián, Toni
+
+Arbiser, Ariel
+
+Miquel, Alexandre
+
+Ríos, Alejandro
+
+Barthe, Gilles
+
+Dybjer, Peter
+
+Thiemann, Peter
