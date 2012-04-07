@@ -1,7 +1,7 @@
 http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=5794644
 "Mc" name
-@article{McBRIDE:2009:10.1017/S0956796809007242,
-  author = {McBRIDE,CONOR and UUSTALU,TARMO},
+@article{McBride:2009:10.1017/S0956796809007242,
+  author = {McBride, Conor and Uustalu, Tarmo},
   title = {Preface},
   journal = {Journal of Functional Programming},
   volume = {19},

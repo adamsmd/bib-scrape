@@ -1,7 +1,7 @@
 http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=8440159
 Chinese name, unusual subtitle placement
-@article{KAMEYAMA:2011:10.1017/S0956796811000256,
-  author = {KAMEYAMA,YUKIYOSHI and KISELYOV,OLEG and SHAN,CHUNG-CHIEH},
+@article{Kameyama:2011:10.1017/S0956796811000256,
+  author = {Kameyama, Yukiyoshi and Kiselyov, Oleg and Shan, Chung-chieh},
   title = {Shifting the stage: Staging with delimited control},
   journal = {Journal of Functional Programming},
   volume = {21},

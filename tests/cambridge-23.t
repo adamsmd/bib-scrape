@@ -1,7 +1,7 @@
 http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=8368550
 Front matter
 @article{Tolmach:2011:10.1017/S0956796811000190,
-  author = {Tolmach,Andrew and Leroy,Xavier},
+  author = {Tolmach, Andrew and Leroy, Xavier},
   title = {Special Issue Dedicated to {ICFP} 2009 Editorial},
   journal = {Journal of Functional Programming},
   volume = {21},

@@ -1,7 +1,7 @@
 http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=7524488
 Capitals in title "C-Rules"
-@article{WAZNY:2010:10.1017/S0956796810000018,
-  author = {WAZNY,JEREMY},
+@article{Wazny:2010:10.1017/S0956796810000018,
+  author = {Wazny, Jeremy},
   title = {Experience report: Functional programming in {C}-Rules},
   journal = {Journal of Functional Programming},
   volume = {20},

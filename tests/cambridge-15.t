@@ -1,7 +1,7 @@
 http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=192403
 "Mc" name
-@article{MCBRIDE:2004:10.1017/S0956796803004829,
-  author = {MCBRIDE,CONOR and MCKINNA,JAMES},
+@article{McBride:2004:10.1017/S0956796803004829,
+  author = {McBride, Conor and McKinna, James},
   title = {The view from the left},
   journal = {Journal of Functional Programming},
   volume = {14},
