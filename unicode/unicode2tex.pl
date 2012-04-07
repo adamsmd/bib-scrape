@@ -184,8 +184,18 @@ if ($TEST_TEX) {
 }
 
 if ($COMPARE) {
+    my %unimath;
+    my $fh = IO::File->new("unimathsymbols.txt", 'r');
+    while (<$fh>) {
+        next if /^#/;
+        my @fields = split / *\^ */;
+        $unimath{hex($fields[0])} = $fields[2] if $fields[2] ne '';
+        #print "$fields[0]:$fields[2].\n";
+    }
+
     for (sort {$a <=> $b}
              (uniq(map {0+$_}   (keys %codes),
+                   map {0+$_}   (keys %unimath),
                    map {ord $_} (keys %TeX::Encode::charmap::CHAR_MAP),
                    map {ord $_} (keys %TeXEncode::LATEX_Escapes)))) {
         my $num = $_;
@@ -193,9 +203,13 @@ if ($COMPARE) {
         my $self = $codes{$num};
         my $other1 = $TeX::Encode::charmap::CHAR_MAP{$str};
         my $other2 = $TeXEncode::LATEX_Escapes{$str};
+        my $other3 = $unimath{$num};
+        $self =~ s[\\ensuremath{(.*)}][$1] if defined $self;
         $other1 =~ s[^\$(.*)\$$][\\ensuremath{$1}] if defined $other1;
         $other2 =~ s[^\$(.*)\$$][\\ensuremath{$1}] if defined $other2;
-        unless (defined $self and defined $other1 and $other1 eq $self) {
+        $other3 =~ s[^\$(.*)\$$][\\ensuremath{$1}] if defined $other3;
+        if (defined $other3) {
+        unless (defined $self and defined $other3 and $other3 eq $self) {
             printf("%04x %s", $num, encode_utf8(chr($num)));
             # XML is better than XML.old
             # XML is better than LATEX_Escapes when they conflict
@@ -203,9 +217,11 @@ if ($COMPARE) {
             #print(" ($other2)") if defined $other2;
             # XML is better than CHAR_MAP when they conflict
             # There are some in CHARP_MAP that are missing from XML
-            print(" ($other1)") if defined $other1;
+            #print(" ($other1)") if defined $other1;
+            print(" ($other3)") if defined $other3;
             print(" [$self]") if defined $self;
             print("\n");
+        }
         }
     }
 }
@@ -343,8 +359,8 @@ sub ascii {
     set_codes(0x5f, qw(\_));
     set_codes(0x7b, qw(\{));
     set_codes(0x7c, qw(\textbar));
-    set_codes(0x7e, qw(\}));
-    set_codes(0x7f, qw(\~{})); 
+    set_codes(0x7d, qw(\}));
+    set_codes(0x7e, qw(\~{})); 
 }
 
 sub latin1 {
@@ -465,6 +481,8 @@ sub accents {
         set_codes($_, ($accents[$_-0x300] ne '__' ?
                        "\\$accents[$_-0x300]\{\}" : '_'));
     }
+    set_codes(0x0305, qw(\ensuremath{\overline{}}));
+    set_codes(0x20d7, qw(\ensuremath{\vec{}}));
     set_codes(0x20db, qw(\ensuremath{\dddot{}} \ensuremath{\ddddot{}}));
 }
 
@@ -731,14 +749,15 @@ _ \textdegree{}F \ensuremath{\mathscr{g}} \ensuremath{\mathscr{H}}
 \ensuremath{\mathfrak{Z}} _ K \AA
 \ensuremath{\mathscr{B}} \ensuremath{\mathfrak{C}} \textestimated \ensuremath{\mathscr{e}}
 
-\ensuremath{\mathscr{E}} \ensuremath{\mathscr{F}} _ \ensuremath{\mathscr{M}}
+\ensuremath{\mathscr{E}} \ensuremath{\mathscr{F}} \ensuremath{\Finv} \ensuremath{\mathscr{M}}
 \ensuremath{\mathscr{o}} \ensuremath{\aleph} \ensuremath{\beth} \ensuremath{\gimel}
 \ensuremath{\daleth} _ _ \fax
 \ensuremath{\mathbb{\pi}} \ensuremath{\mathbb{\gamma}} \ensuremath{\mathbb{\Gamma}} \ensuremath{\mathbb{\Pi}}
 
 \ensuremath{\mathbb{\sum}} \ensuremath{\Game} _ _
-_ \ensuremath{\mathbb{D}} \ensuremath{\mathbb{d}} \ensuremath{\mathbb{e}}
-\ensuremath{\mathbb{i}} \ensuremath{\mathbb{j}} _ _
+\ensuremath{\Yup} \ensuremath{\mathbb{D}} \ensuremath{\mathbb{d}} \ensuremath{\mathbb{e}}
+\ensuremath{\mathbb{i}} \ensuremath{\mathbb{j}} _ \ensuremath{\bindnasrepma}
+_ _ _ _
 ));
 
 # Number forms
@@ -918,7 +937,7 @@ _ \ensuremath{\longleftarrow} \ensuremath{\longrightarrow} \ensuremath{\longleft
 
 
 # 2900 Suplemental arrows
-    set_codes(0x2904, qw(_ \ensuremath{\Mapsfrom} \ensuremath{\Mapsto} _));
+    set_codes(0x2904, qw(_ _ \ensuremath{\Mapsfrom} \ensuremath{\Mapsto}));
 
     set_codes(0x2930, qw(_ _ _ \ensuremath{\leadsto}));
     set_codes(0x2940, qw(\ensuremath{\circlearrowleft} \ensuremath{\circlearrowright} _ _));
