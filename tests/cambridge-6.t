@@ -2,7 +2,7 @@ http://journals.cambridge.org/action/displayAbstract?aid=83911
 Call for papers.  Italics in abstract.  Subtitle.
 @article{Barthe:2001:10.1017/S0956796801004105,
   author = {Barthe,Gilles and Dybjer,Peter and Thiemann,Peter},
-  title = {Special issue on Dependent Type Theory Meets Programming Practice: CALL FOR PAPERS},
+  title = {Special issue on Dependent Type Theory Meets Programming Practice: {CALL} {FOR} {PAPERS}},
   journal = {Journal of Functional Programming},
   volume = {11},
   number = {04},
@@ -18,7 +18,7 @@ There are several remedies to this situation. Dependent type systems, which allo
 {\par}
 To the present day, the impact of these developments on practical programming has been small, partially because of the level of sophistication of these systems and of their type checkers. Only recently, there have been efforts to integrate dependent systems into intermediate languages in compilers and programming languages. Additional uses have been identified in high-profile applications such as mobile code security, where terms of a dependently typed lambda calculus to encode safety proofs.
 {\par}
-A special issue of the {\em Journal of Functional Programming} will be devoted to the interplay between dependent type theory and programming practice. We welcome technical contributions in the field, as well as position papers that:
+A special issue of the \emph{Journal of Functional Programming} will be devoted to the interplay between dependent type theory and programming practice. We welcome technical contributions in the field, as well as position papers that:
 {\par}
 {\textbullet} make researchers in programming languages aware of new developments and research directions on the theory side;
 {\par}

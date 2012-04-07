@@ -203,7 +203,7 @@ while (my $entry = new Text::BibTeX::Entry $file) {
     }
 
     # TODO: Title Capticalization: Initialisms, After colon, list of proper names
-    update($entry, 'title', sub { s/([[:upper:]]{2,})/{$1}/g; }) if $ESCAPE_ACRONYMS;
+    update($entry, 'title', sub { s/((\d*[[:upper:]]\d*){2,})/{$1}/g; }) if $ESCAPE_ACRONYMS;
 
     # Generate an entry key
     # TODO: Formats: author/editor1.last year title/journal.abbriv
@@ -260,22 +260,25 @@ sub latex_encode
     # HTML -> LaTeX Codes
     $str = decode_entities($str);
     #$str =~ s[\_(.)][\\ensuremath{\_{$1}}]isog; # Fix for IOS Press
-    $str =~ s[([\#\$\%\&\~\_\^\{\}\\])][\\$1]sog;
-    $str =~ s[<!--.*?-->][]sg;
+    $str =~ s[<!--.*?-->][]sg; # Remove HTML comments
     $str =~ s[<a [^>]*onclick="toggleTabs\(.*?\)">.*?</a>][]isg; # Science Direct
-    $str =~ s[<a( .*?)?>(.*?)</a>][$2]isog;
-    $str =~ s[<p(| [^>]*)>(.*?)</p>][$2\n\n]isg;
-    $str =~ s[<par(| [^>]*)>(.*?)</par>][$2\n\n]isg;
-    $str =~ s[<span style="font-family:monospace">(.*?)</span>][{\\tt $1}]i;
-    $str =~ s[<span( .*)?>(.*?)</span>][$2]isg;
-    $str =~ s[<i>(.*?)</i>][{\\it $1}]isog;
-    $str =~ s[<italic>(.*?)</italic>][{\\it $1}]isog;
-    $str =~ s[<em>(.*?)</em>][{\\em $1}]isog;
-    $str =~ s[<strong>(.*?)</strong>][{\\bf $1}]isog;
-    $str =~ s[<b>(.*?)</b>][{\\bf $1}]isog;
-    $str =~ s[<sup>(.*?)</sup>][\\ensuremath{\^\\textrm{$1}}]isog;
-    $str =~ s[<supscrpt>(.*?)</supscrpt>][\\ensuremath{\^\\textrm{$1}}]isog;
-    $str =~ s[<sub>(.*?)</sub>][\\ensuremath{\_\\textrm{$1}}]isog;
+
+    # HTML formatting
+    $str =~ s[<a( .*?)?>(.*?)</a>][$2]isog; # Remove <a> links
+    $str =~ s[<p(| [^>]*)>(.*?)</p>][$2\n\n]isg; # Replace <p> with "\n\n"
+    $str =~ s[<par(| [^>]*)>(.*?)</par>][$2\n\n]isg; # Replace <par> with "\n\n"
+    $str =~ s[<span style="font-family:monospace">(.*?)</span>][\\texttt{$1}]i; # Replace monospace spans with \texttt
+    $str =~ s[<span( .*)?>(.*?)</span>][$2]isg; # Remove <span>
+    $str =~ s[<i>(.*?)</i>][\\textit{$1}]isog; # Replace <i> with \textit
+    $str =~ s[<italic>(.*?)</italic>][\\textit{$1}]isog; # Replace <italic> with \textit
+    $str =~ s[<em>(.*?)</em>][\\emph{$1}]isog; # Replace <em> with \emph
+    $str =~ s[<strong>(.*?)</strong>][\\textbf{$1}]isog; # Replace <strong> with \textbf
+    $str =~ s[<b>(.*?)</b>][\\textbf{$1}]isog; # Replace <b> with \textbf
+    $str =~ s[<small>(.*?)</small>][{\\small $1}]isog; # Replace <small> with \small
+    $str =~ s[<sup>(.*?)</sup>][\\textsuperscript{$1}]isog; # Super scripts
+    $str =~ s[<supscrpt>(.*?)</supscrpt>][\\textsuperscript{$1}]isog; # Super scripts
+    $str =~ s[<sub>(.*?)</sub>][\\textsubscript{$1}]isog; # Sub scripts
+
     $str =~ s[<img src="http://www.sciencedirect.com/scidirimg/entities/([0-9a-f]+).gif".*?>][@{[chr(hex $1)]}]isg; # Fix for Science Direct
     $str =~ s[<!--title-->$][]isg; # Fix for Science Direct
 
@@ -283,8 +286,7 @@ sub latex_encode
     $str =~ s[\s*$][]; # remove trailing whitespace
     $str =~ s[^\s*][]; # remove leading whitespace
     $str =~ s[\n{2,} *][\n{\\par}\n]sg; # BibTeX eats whitespace so convert "\n\n" to paragraph break
-    $str =~ s[([<>])][\\ensuremath{$1}]sog;
-    $str = unicode2tex($str);
+    $str =~ s[([^{}\\]+)][@{[unicode2tex($1)]}]g; # Encode unicode but skip any \, {, or } that we already encoded.
     return $str;
 }
 

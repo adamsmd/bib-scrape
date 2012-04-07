@@ -2,7 +2,7 @@ http://portal.acm.org/citation.cfm?id=1411204.1411243
 Converts HTML italics to Tex, "Van" in author
 @inproceedings{VanHorn:2008:10.1145/1411204.1411243,
   author = {Van Horn, David and Mairson, Harry G.},
-  title = {Deciding {\it k}{CFA} is complete for {EXPTIME}},
+  title = {Deciding \textit{k}{CFA} is complete for {EXPTIME}},
   booktitle = {Proceedings of the 13th ACM SIGPLAN international conference on Functional programming},
   series = {ICFP '08},
   location = {Victoria, BC, Canada},
@@ -16,6 +16,6 @@ Converts HTML italics to Tex, "Van" in author
   acmid = {1411243},
   bib_scrape_url = {http://portal.acm.org/citation.cfm?id=1411204.1411243},
   keywords = {complexity, flow analysis},
-  abstract = {We give an exact characterization of the computational complexity of the {\it k}CFA hierarchy. For any {\it k} \ensuremath{>} 0, we prove that the control flow decision problem is complete for deterministic exponential time. This theorem validates empirical observations that such control flow analysis is intractable. It also provides more general insight into the complexity of abstract interpretation.},
+  abstract = {We give an exact characterization of the computational complexity of the \textit{k}CFA hierarchy. For any \textit{k} {\textgreater} 0, we prove that the control flow decision problem is complete for deterministic exponential time. This theorem validates empirical observations that such control flow analysis is intractable. It also provides more general insight into the complexity of abstract interpretation.},
 }
 
