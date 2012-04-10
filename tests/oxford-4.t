@@ -2,7 +2,7 @@ http://comjnl.oxfordjournals.org/content/53/6/634.abstract
 Italics in title and abstract
 @article{Kuo:2010:10.1093/comjnl/bxp008,
   author = {Kuo, Yu-Chen},
-  title = {General Tree \textit{k}-Coteries to Reduce the Degradation of Quorums},
+  title = {General Tree \emph{k}-Coteries to Reduce the Degradation of Quorums},
   journal = {The Computer Journal},
   volume = {53},
   number = {6},

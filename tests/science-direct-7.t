@@ -1,7 +1,7 @@
 http://www.sciencedirect.com/science/article/pii/S0020019011001281
 Complex math in abstract
 @article{Cygan:2011:10.1016/j.ipl.2011.05.008,
-  author = {Cygan, Marek and Kowalik, {\L{}}ukasz},
+  author = {Cygan, Marek and Kowalik, {\L}ukasz},
   title = {Channel assignment via fast zeta transform},
   journal = {Information Processing Letters},
   volume = {111},
@@ -13,6 +13,6 @@ Complex math in abstract
   doi = {10.1016/j.ipl.2011.05.008},
   bib_scrape_url = {http://www.sciencedirect.com/science/article/pii/S0020019011001281},
   keywords = {Algorithms ; Channel assignment ; Inclusion{--}exclusion ; Exact algorithm ; L(2,1)-labeling},
-  abstract = {We show an \emph{O}\textsuperscript{\textasteriskcentered}((\emph{{\ensuremath{\ell}}}+1)\textsuperscript{\emph{n}})-time algorithm for the channel assignment problem, where \emph{{\ensuremath{\ell}}} is the maximum edge weight. This improves on the previous \emph{O}\textsuperscript{\textasteriskcentered}((\emph{{\ensuremath{\ell}}}+2)\textsuperscript{\emph{n}})-time algorithm by Kr{\'a}l (2005) [1], as well as algorithms for important special cases, like \emph{L}(2,1)-labeling. For the latter problem, our algorithm works in \emph{O}\textsuperscript{\textasteriskcentered}(3\textsuperscript{\emph{n}}) time. The progress is achieved by applying the fast zeta transform in combination with the inclusion{--}exclusion principle.},
+  abstract = {We show an \ensuremath{{O}^{⁎}({{({\ensuremath{\ell}}+1)}}^{n})}-time algorithm for the channel assignment problem, where \emph{{\ensuremath{\ell}}} is the maximum edge weight. This improves on the previous \ensuremath{{O}^{⁎}({{({\ensuremath{\ell}}+2)}}^{n})}-time algorithm by Kr{\'a}l (2005) [1], as well as algorithms for important special cases, like \ensuremath{L(2,1)}-labeling. For the latter problem, our algorithm works in \ensuremath{{O}^{⁎}({3}^{n})} time. The progress is achieved by applying the fast zeta transform in combination with the inclusion{--}exclusion principle.},
 }
 

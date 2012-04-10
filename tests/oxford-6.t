@@ -2,7 +2,7 @@ http://comjnl.oxfordjournals.org/content/53/3/342.abstract
 Math in title and abstract
 @article{Datta:2010:10.1093/comjnl/bxn071,
   author = {Datta, Ajoy K. and Larmore, Lawrence L. and Vemula, Priyanka},
-  title = {A Self-Stabilizing \ensuremath{O(k)}-Time \ensuremath{k}-Clustering Algorithm},
+  title = {A Self-Stabilizing \emph{O}(\emph{k})-Time \emph{k}-Clustering Algorithm},
   journal = {The Computer Journal},
   volume = {53},
   number = {3},

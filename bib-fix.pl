@@ -171,7 +171,7 @@ while (my $entry = new Text::BibTeX::Entry $file) {
     # TODO: option for numeric range
     # TODO: might misfire if "-" doesn't represent a range, Common for tech report numbers
     for my $key ('chapter', 'month', 'number', 'pages', 'volume', 'year') {
-        update($entry, $key, sub { s[\s*-+\s*][--]ig; });
+        update($entry, $key, sub { s[\s*[-\N{U+2013}\N{U+2014}]+\s*][--]ig; });
         update($entry, $key, sub { s[n/a--n/a][]ig; $_ = undef if $_ eq "" });
         update($entry, $key, sub { s[\b(\w+)--\1\b][$1]ig; });
     }
@@ -299,7 +299,8 @@ sub latex_encode
     $str =~ s[<p(| [^>]*)>(.*?)</p>][$2\n\n]isg; # Replace <p> with "\n\n"
     $str =~ s[<par(| [^>]*)>(.*?)</par>][$2\n\n]isg; # Replace <par> with "\n\n"
     $str =~ s[<span style="font-family:monospace">(.*?)</span>][\\texttt{$1}]i; # Replace monospace spans with \texttt
-    $str =~ s[<span( .*)?>(.*?)</span>][$2]isg; # Remove <span>
+    $str =~ s[<span( .*?)?>(.*?)</span>][$2]isg; # Remove <span>
+    $str =~ s[<span( .*?)?>(.*?)</span>][$2]isg; # Remove <span>
     $str =~ s[<i>(.*?)</i>][\\textit{$1}]isog; # Replace <i> with \textit
     $str =~ s[<italic>(.*?)</italic>][\\textit{$1}]isog; # Replace <italic> with \textit
     $str =~ s[<em>(.*?)</em>][\\emph{$1}]isog; # Replace <em> with \emph
@@ -311,13 +312,152 @@ sub latex_encode
     $str =~ s[<sub>(.*?)</sub>][\\textsubscript{$1}]isog; # Sub scripts
 
     $str =~ s[<img src="http://www.sciencedirect.com/scidirimg/entities/([0-9a-f]+).gif".*?>][@{[chr(hex $1)]}]isg; # Fix for Science Direct
-    $str =~ s[<!--title-->$][]isg; # Fix for Science Direct
+    #$str =~ s[<!--title-->$][]isg; # Fix for Science Direct
+
+    # MathML formatting
+    my $math_str; # Using this variable is icky but I can't figure out how to eliminate the root of the xml
+sub xml {
+    my $x = $_;
+#    print join(":", @_), "\n";
+#    $x->replace_with(map { blessed $_ ? $_->copy() : XML::Twig::Elt->new('#PCDATA' => $_) } @_);
+    join('', map { blessed $_ ? rec($_) : greek($_) } @_);
+}
+
+sub greek {
+    my ($str) = @_;
+#    370; 390
+# Based on table 131 in Comprehensive Latex
+    my @mapping = qw(
+_ A B \Gamma \Delta E Z H \Theta I K \Lambda M N \Xi O
+\Pi P _ \Sigma T \Upsilon \Phi X \Psi \Omega _ _ _ _ _ _
+_ \alpha \beta \gamma \delta \varepsilon \zeta \eta \theta \iota \kappa \mu \nu \xi o
+\pi \rho \varsigma \sigma \tau \upsilon \varphi \xi \psi \omega _ _ _ _ _ _);
+    $str =~ s[([\N{U+0390}-\N{U+03cf}])]
+             [@{[$mapping[ord($1)-0x0390] ne '_' ? $mapping[ord($1)-0x0390] : $1]}]g;
+    return $str;
+
+#    0x03b1 => '\\textgreek{a}',
+#\varphi
+#    0x03b2 => '\\textgreek{b}',
+#    0x03b3 => '\\textgreek{g}',
+#    0x03b4 => '\\textgreek{d}',
+#    0x03b5 => '\\textgreek{e}',
+#    0x03b6 => '\\textgreek{z}',
+#    0x03b7 => '\\textgreek{h}',
+#    0x03b8 => '\\textgreek{j}',
+#    0x03b9 => '\\textgreek{i}',
+#    0x03ba => '\\textgreek{k}',
+#    0x03bb => '\\textgreek{l}',
+#    0x03bc => '\\textgreek{m}',
+#    0x03bd => '\\textgreek{n}',
+#    0x03be => '\\textgreek{x}',
+#    0x03bf => '\\textgreek{o}',
+#    0x03c0 => '\\textgreek{p}',
+#    0x03c1 => '\\textgreek{r}',
+#    0x03c2 => '\\textgreek{c}',
+#    0x03c3 => '\\textgreek{s}',
+#    0x03c4 => '\\textgreek{t}',
+#    0x03c5 => '\\textgreek{u}',
+#    0x03c6 => '\\textgreek{f}',
+#    0x03c7 => '\\textgreek{q}',
+#    0x03c8 => '\\textgreek{y}',
+#    0x03c9 => '\\textgreek{w}',
+#
+#    0x03d1 => '\\ensuremath{\\vartheta}',
+#    0x03d4 => '\\textgreek{"\\ensuremath{\\Upsilon}}',
+#    0x03d5 => '\\ensuremath{\\phi}',
+#    0x03d6 => '\\ensuremath{\\varpi}',
+#    0x03d8 => '\\textgreek{\\Koppa}',
+#    0x03d9 => '\\textgreek{\\coppa}',
+#    0x03da => '\\textgreek{\\Stigma}',
+#    0x03db => '\\textgreek{\\stigma}',
+#    0x03dc => '\\textgreek{\\Digamma}',
+#    0x03dd => '\\textgreek{\\digamma}',
+#    0x03df => '\\textgreek{\\koppa}',
+#    0x03e0 => '\\textgreek{\\Sampi}',
+#    0x03e1 => '\\textgreek{\\sampi}',
+#    0x03f0 => '\\ensuremath{\\varkappa}',
+#    0x03f1 => '\\ensuremath{\\varrho}',
+#    0x03f4 => '\\ensuremath{\\Theta}',
+#    0x03f5 => '\\ensuremath{\\epsilon}',
+#    0x03f6 => '\\ensuremath{\\backepsilon}',
+
+#ff
+
+}
+
+sub rec {
+    my ($x) = @_;
+    if ($x->tag eq 'mml:math') { return xml($x->children()); }
+    if ($x->tag eq 'mml:mi' and defined $x->att('mathvariant') and $x->att('mathvariant') eq 'normal')
+    { return xml('\mathrm{', $x->children(), '}') }
+    if ($x->tag eq 'mml:mi') { return xml($x->children()) }
+    if ($x->tag eq 'mml:mo') { return xml($x->children()) }
+    if ($x->tag eq 'mml:mn') { return xml($x->children()) }
+    if ($x->tag eq 'mml:msqrt') { return xml('\sqrt{', $x->children(), '}') }
+    if ($x->tag eq 'mml:mrow') { return xml('{', $x->children(), '}') }
+    if ($x->tag eq 'mml:mspace') { return xml('\hspace{', $x->att('width'), '}') }
+    if ($x->tag eq 'mml:msubsup') { return xml('{', $x->child(0), '}_{', $x->child(1), '}^{', $x->child(2), '}') }
+    if ($x->tag eq 'mml:msub') { return xml('{', $x->child(0), '}_{', $x->child(1), '}') }
+    if ($x->tag eq 'mml:msup') { return xml('{', $x->child(0), '}^{', $x->child(1), '}') }
+    if ($x->tag eq '#PCDATA') { return greek($x->sprint) }
+}
+
+#print "[$str]\n";
+    my $twig = XML::Twig->new(
+#        twig_handlers => {
+#            'mml:math' => sub { $math_str = join('', map {$_->sprint} $_->children()); },
+#            'mml:mi' => sub { (defined $_->att('mathvariant') and $_->att('mathvariant') eq 'normal')
+#                                  ? xml('\mathrm{', $_->children(), '}') : xml($_->children()) },
+#            'mml:mo' => sub { xml($_->children()) },
+#            'mml:mn' => sub { xml($_->children()) },
+#            'mml:msqrt' => sub { xml('\sqrt{', $_->children(), '}') },
+#            'mml:mrow' => sub { xml('[', $_->children(), ']') },
+#            'mml:mspace' => sub { xml('\hspace{', $_->att('width'), '}') },
+#            'mml:msubsup' => sub { xml('{', $_->child(0), '}_{', $_->child(1), '}^{', $_->child(2), '}') },
+#            'mml:msub' => sub { xml('{', $_->child(0), '}_{', $_->child(1), '}') },
+#            'mml:msup' => sub { xml('{', $_->child(0), '}^{', $_->child(1), '}') },
+#        }
+        );
+    $str =~ s[(<mml:math\b[^>]*>.*?</mml:math>)][\\ensuremath{@{[rec($twig->parse($1)->root)]}}]gs; # TODO: ensuremath (but avoid latex encoding)
+    #$twig->parse($str);
+    #$str = $twig->sprint;
+#   print "[$str]\n";
+    #$str =~ s[<mml:math\b[^>]*>(.*?)</mml:math>][\\ensuremath{$1}]gs;
+    #$str =~ s[<mml:mi mathvariant="normal">(.*?)</mml:mi>][\\mathrm{$1}]gs;
+    #$str =~ s[<mml:mi>(.*?)</mml:mi>][$1]gs;
+    #$str =~ s[<mml:mo\b[^>]*>(.*?)</mml:mo>][$1]gs;
+    #$str =~ s[<mml:mspace width="(.*?)"/>][\\hspace{$1}]gs;
+    #$str =~ s[<mml:msqrt\b[^>]*>(.*?)</mml:msqrt>][\\sqrt{$1}]gs;
+#<mml:msubsup><base><sub><sup>
+    #mi x -> {x}
+#mo x -> {x}
+#mspace -> " "
+#msqrt x -> \sqrt{x}
+#
+#<mml:math altimg="si1.gif" overflow="scroll" xmlns:mml="http://www.w3.org/1998/Math/MathML">
+#<mml:mi>O</mml:mi>
+#<mml:mo stretchy="false">(</mml:mo>
+#<mml:mi>n</mml:mi>
+#<mml:msqrt>
+#  <mml:mi>n</mml:mi>
+#</mml:msqrt>
+#<mml:mi mathvariant="normal">log</mml:mi>
+#<mml:mspace width="0.2em"/>
+#<mml:mi>n</mml:mi>
+#<mml:mo stretchy="false">)</mml:mo></mml:math>
+
 
     # Misc fixes
     $str =~ s[\s*$][]; # remove trailing whitespace
     $str =~ s[^\s*][]; # remove leading whitespace
     $str =~ s[\n{2,} *][\n{\\par}\n]sg; # BibTeX eats whitespace so convert "\n\n" to paragraph break
-    $str =~ s[([^{}\\]+)][@{[unicode2tex($1)]}]g; # Encode unicode but skip any \, {, or } that we already encoded.
+    #$str =~ s[\s{2,}][ ]sg; # Remove duplicate whitespace
+    my @parts = split(/(\$.*?\$|[\\{}_^])/, $str);
+    $str = join('', map { /[_^{}\\\$]/ ? $_ : unicode2tex($_) } @parts);
+#    $str =~ s[\{{2,}][\{]sg;
+#    $str =~ s[\}{2,}][\{]sg;
+    #$str =~ s[([^{}\\]+)][@{[unicode2tex($1)]}]g; # Encode unicode but skip any \, {, or } that we already encoded.
     return $str;
 }
 

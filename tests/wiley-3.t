@@ -2,7 +2,7 @@ http://onlinelibrary.wiley.com/doi/10.1002/rsa.20337/abstract
 Complex math in title and abstract
 @article{Capalbo:2010:10.1002/rsa.20337,
   author = {Capalbo, Michael},
-  title = {Explicit sparse almost-universal graphs for G(n, k/n)},
+  title = {Explicit sparse almost-universal graphs for ${\bf {{\cal G}(n, {k \over n})}}$},
   journal = {Random Structures {\&} Algorithms},
   volume = {37},
   number = {4},

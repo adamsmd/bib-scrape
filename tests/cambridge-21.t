@@ -1,7 +1,7 @@
 http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=8440149
 Book review
-@article{CEBRIAN:2011:10.1017/S0956796811000177,
-  author = {CEBRI{\'A}N,TONI},
+@article{Cebrian:2011:10.1017/S0956796811000177,
+  author = {Cebri{\'a}n, Toni},
   title = {\textit{How to think about algorithms}, by Jeff Edmonds, Cambridge University Press, {ISBN} 0521614104},
   journal = {Journal of Functional Programming},
   volume = {21},

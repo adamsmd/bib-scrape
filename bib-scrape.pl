@@ -190,12 +190,32 @@ sub parse_acm {
     return $entry;
 }
 
+sub get_url {
+    my ($url) = @_;
+    my $uri = URI->new_abs($url, $mech->base());
+    $mech->get($uri);
+    my $content = $mech->content();
+    $mech->back();
+    $content =~ s[<!--.*?-->][]sg; # Remove HTML comments
+    $content =~ s[\s*$][]; # remove trailing whitespace
+    $content =~ s[^\s*][]; # remove leading whitespace
+    return $content;
+}
+
 sub parse_science_direct {
     my ($mech) = @_;
 
     # Find the title and reverse engineer the Unicode
-    my ($title) = $mech->content() =~ m[<div\b[^>]*\bclass="articleTitle.*?>\s*(.*?)\s*</div>]s;
-    my ($abst) = $mech->content() =~ m[>Abstract</h3>\s*(.*?)\s*</div>];
+    my ($title) = $mech->content() =~ m[<h1 class="svTitle">\s*(.*?)\s*</h1>]s;
+    $title =~ s[<sup><a\b[^>]*\bclass="intra_ref"[^>]*>.*?</a></sup>][];
+    $title =~ s[<span\b[^>]*\bonclick="submitCitation\('(.*?)'\)"[^>]*>(<span\b[^>]*>.*?</span>|<img\b[^>]*>)</span>]
+        [@{[join(" ", split(/[\r\n]+/, get_url(decode_entities($1))))]}]g;
+    my ($abst) = $mech->content() =~ m[>Abstract</h2>\s*(.*?)\s*</div>];
+#    print "ABST:$abst\n";
+    $abst =~ s[<span\b[^>]*\bonclick="submitCitation\('(.*?)'\)"[^>]*>(<span\b[^>]*>.*?</span>|<img\b[^>]*>)</span>]
+        [@{[join(" ", split(/[\r\n]+/, get_url(decode_entities($1))))]}]g;
+
+#s[][]g;
 
     $mech->follow_link(text => 'Export citation');
 
@@ -255,6 +275,7 @@ sub parse_cambridge_university_press {
                                   'displayAbstract' => 'Yes',
                                   'format' => 'BibTex'});
     my $entry = parse_bibtex($mech->content());
+    update($entry, 'abstract', sub { s/^\s*ABSTRACT\s*//; });
     $mech->back(); $mech->back();
 
     my ($abst) = $mech->content() =~ m[>Abstract</.*?><p>(<p>.*?</p>)\s*</p>]s;
@@ -279,6 +300,7 @@ sub parse_cambridge_university_press {
 
     update($entry, 'abstract', sub { $_ = undef if m[^\s*$] });
     update($entry, 'doi', sub { $_ = undef if $_ eq "null" });
+    update($entry, 'author', sub { $_ = undef if $_ eq "" });
 
     return $entry;
     # TODO: fix case of authors
@@ -319,6 +341,8 @@ sub parse_ieee_computer_society {
     return $entry;
 }
 
+# IEEE is evil because they require a subscription just to get bibliography data
+# (they also use JavaScript to implement simple links)
 sub parse_ieeexplore {
     my ($mech, $fields) = @_;
     my ($record) = $mech->content() =~
@@ -403,13 +427,15 @@ sub parse_wiley {
     my $html = Text::MetaBib::parse($mech->content());
     my ($year, $month) = $html->date('citation_date');
     $entry->set('month', $month);
-    #$entry->set('title', $mech->content() =~ m[<h1 class="articleTitle">(.*?)</h1>]s);
-    $entry->set('abstract', $mech->content() =~ m[<div class="para">(.*?)</div>]s);
+    # Choose the title either from bibtex or HTML based on whether we thing the BibTeX has the proper math in it.
+    $entry->set('title', $mech->content() =~ m[<h1 class="articleTitle">(.*?)</h1>]s)
+        unless $entry->get('title') =~ /\$/;
+    #$entry->set('abstract', $mech->content() =~ m[<div class="para">(.*?)</div>]s);
 
     update($entry, 'abstract',
-           sub { s[Copyright &copy; \d\d\d\d John Wiley &amp; Sons, Ltd\.\s*(</p>)?$][$1] });
+           sub { s[Copyright (.|&copy;) \d\d\d\d John Wiley (.|&amp;) Sons, Ltd\.\s*((</p>)?)$][$3] });
     update($entry, 'abstract',
-           sub { s[&copy; \d\d\d\d Wiley Periodicals, Inc\. Random Struct\. Alg\., \d\d\d\d\s*(</p>)?$][$1] });
+           sub { s[(.|&copy;) \d\d\d\d Wiley Periodicals, Inc\. Random Struct\. Alg\., \d\d\d\d\s*((</p>)?)$][$2] });
     return $entry;
 }
 
@@ -444,6 +470,8 @@ sub parse_oxford_journals {
     $entry->set('year', $year);
     $entry->set('month', $month);
 
+    my ($title) = $mech->content =~ m[<h1 id="article-title-1" itemprop="headline">\s*(.*?)\s</h1>]si;
+    $entry->set('title', $title) if defined $title;
     my ($abstract) = ($mech->content() =~ m[>\s*Abstract\s*</h2>\s*(.*?)\s*</div>]si);
     $entry->set('abstract', $abstract) if defined $abstract;
 

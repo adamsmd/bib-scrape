@@ -1,7 +1,7 @@
 http://dx.doi.org/10.1007/11737414_3
 Shows unicode handling, but missing name for Bruno C.d.S. Oliveira
 @incollection{Hinze:2006:10.1007/11737414_3,
-  author = {Hinze, Ralf and L{\"o}h, Andres and Oliveira, Bruno C.d.S.},
+  author = {Hinze, Ralf and L{\"o}h, Andres and Oliveira, Bruno C. d. S.},
   editor = {Hagiya, Masami and Wadler, Philip},
   affiliation = {Institut f{\"u}r Informatik III, Universit{\"a}t Bonn, R{\"o}merstra{\ss}e 164, 53117 Bonn, Germany},
   title = {{\textquotedblleft}Scrap Your Boilerplate{\textquotedblright} Reloaded},

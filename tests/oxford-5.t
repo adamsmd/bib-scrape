@@ -2,7 +2,7 @@ http://comjnl.oxfordjournals.org/content/53/5/592.abstract
 Italics in title and abstract. Has subtitle.
 @article{Baccelli:2010:10.1093/comjnl/bxp049,
   author = {Baccelli, Fran{\c{c}}ois and B{\l}aszczyszyn, Bart{\l}omiej and M{\"u}hlethaler, Paul},
-  title = {Time{--}Space Opportunistic Routing in Wireless \textit{Ad hoc} Networks: Algorithms and Performance Optimization by Stochastic Geometry},
+  title = {Time{--}Space Opportunistic Routing in Wireless \emph{Ad hoc} Networks: Algorithms and Performance Optimization by Stochastic Geometry},
   journal = {The Computer Journal},
   volume = {53},
   number = {5},
