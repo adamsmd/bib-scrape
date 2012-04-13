@@ -27,6 +27,30 @@ my %ccc;
 my %decomp1;
 my %decomp2;
 
+# TODO: these are the "problem" accents
+#\`{i}  \'{i}  \^{i}  \~{i}  \={i}  \u{i}  \.{i}
+#
+#\"{i}  \h{i}  \r{i}  \H{i}  \v{i}  \|{i}  \U{i}  \G{i}    
+#
+#\textroundcap{i}
+#
+#%\d{i}  \textsubumlaut{i} \textsubring{i}   \cb{i}           \c{i} 
+#
+#%\k{i}  \textsyllabic{i}               \textsubcircum{i} \textsubbreve{i}     
+#
+#%\textsubtilde{i} \b{i}       
+#
+#    0x1e2f \'{\"{i}}
+#
+#
+#\`{j}  \'{j}  \^{j}  \~{j}  \={j}  \u{j}  \.{j}
+#
+#\"{j}  \h{j}  \r{j}  \H{j}  \v{j}  \|{j}  \U{j}  \G{j}    
+#
+#\textroundcap{j}
+#
+#    0x01f0 \v{j}
+
 parseUnicodeData();
 
 ascii(); # 0000-007f
@@ -626,7 +650,7 @@ sub math_alpha {
                    \alpha \beta \gamma \delta \varepsilon \zeta \eta
                    \theta \iota \kappa \lambda \mu \nu \xi o \pi \rho
                    \varsigma \sigma \tau \upsilon \varphi \chi \psi \omega
-                   \partial \varepsilon \vartheta \varkappa \phi \varrho \varpi);
+                   \partial \epsilon \vartheta \varkappa \phi \varrho \varpi);
     my @digits = qw(0 1 2 3 4 5 6 7 8 9);
 
     for my $tex (qw(\ensuremath{\mathbf{_}}
