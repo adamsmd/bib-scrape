@@ -1,7 +1,7 @@
 http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=7916734
 "Van" name
-@article{VANNOORT:2010:10.1017/S0956796810000183,
-  author = {VAN NOORT,THOMAS and RODRIGUEZ YAKUSHEV,ALEXEY and HOLDERMANS,STEFAN and JEURING,JOHAN and HEEREN,BASTIAAN and MAGALH{\~A}ES,JOS{\'E} PEDRO},
+@article{Noort:2010:10.1017/S0956796810000183,
+  author = {van Noort, Thomas and Rodriguez Yakushev, Alexey and Holdermans, Stefan and Jeuring, Johan and Heeren, Bastiaan and Magalh{\~a}es, Jos{\'e} Pedro},
   title = {A lightweight approach to datatype-generic rewriting},
   journal = {Journal of Functional Programming},
   volume = {20},

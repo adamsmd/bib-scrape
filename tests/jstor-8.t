@@ -2,7 +2,7 @@ http://www.jstor.org/stable/10.2307/3833558
 Missing italics in title
 @article{Hori:2003:10.2307/3833558,
   author = {Hori, Shohei and Nomura, Takashi and Shimon Sakaguchi},
-  title = {Control of Regulatory T Cell Development by the Transcription Factor {\it Foxp3}},
+  title = {Control of Regulatory T Cell Development by the Transcription Factor \textit{Foxp3}},
   journal = {Science},
   volume = {299},
   number = {5609},
