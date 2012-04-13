@@ -211,11 +211,8 @@ sub parse_science_direct {
     $title =~ s[<span\b[^>]*\bonclick="submitCitation\('(.*?)'\)"[^>]*>(<span\b[^>]*>.*?</span>|<img\b[^>]*>)</span>]
         [@{[join(" ", split(/[\r\n]+/, get_url(decode_entities($1))))]}]g;
     my ($abst) = $mech->content() =~ m[>Abstract</h2>\s*(.*?)\s*</div>];
-#    print "ABST:$abst\n";
     $abst =~ s[<span\b[^>]*\bonclick="submitCitation\('(.*?)'\)"[^>]*>(<span\b[^>]*>.*?</span>|<img\b[^>]*>)</span>]
         [@{[join(" ", split(/[\r\n]+/, get_url(decode_entities($1))))]}]g;
-
-#s[][]g;
 
     $mech->follow_link(text => 'Export citation');
 
@@ -229,7 +226,6 @@ sub parse_science_direct {
     $mech->submit_form(with_fields => {
         'format' => 'cite-abs', 'citation-type' => 'RIS'});
     my $f = Text::RIS::parse(decode('utf8', $mech->content()))->bibtex();
-    $entry->set('author', $f->get('author'));
     $entry->set('month', $f->get('month'));
     $entry->delete('keywords');
     $entry->set('keywords', $f->get('keywords')) if $f->get('keywords');
@@ -346,12 +342,12 @@ sub parse_ieee_computer_society {
 sub parse_ieeexplore {
     my ($mech, $fields) = @_;
     my ($record) = $mech->content() =~
-        m[<span *id="recordId" *style="display:none;">(\d*)</span>];
+        m[<span *id="recordId" *style="display: none;">\s*(\d+)\s*</span>]s;
 
     # Ick, work around javascript by hard coding the URL
     $mech->get("http://ieeexplore.ieee.org/xpl/downloadCitations?".
                "recordIds=$record&".
-               "fromPageName=abstract&".
+               "fromPage=&".
                "citations-format=citation-abstract&".
                "download-format=download-bibtex");
     my $cont = $mech->content();

@@ -19,6 +19,9 @@ use Text::BibTeX::NameFormat;
 
 use Getopt::Long qw(:config auto_version auto_help);
 
+use XML::Twig;
+use Scalar::Util qw(blessed);
+
 ############
 # Options
 ############
@@ -78,11 +81,11 @@ my @KNOWN_FIELDS = qw(
 
 my ($DEBUG, $GENERATE_KEY, $COMMA, $ESCAPE_ACRONYMS) = (0, 1, 1, 1);
 my ($ISBN13, $ISBN_SEP) = (0, '-');
-my %NO_ENCODE = map {($_,1)} ('doi', 'url', 'eprint', 'bib_scrape_url');
-my %NO_COLLAPSE = map {($_,1)} ('note', 'annote', 'abstract');
-my %RANGE = map {($_,1)} ('chapter', 'month', 'number', 'pages', 'volume', 'year');
+my %NO_ENCODE = map {($_,1)} qw(doi url eprint bib_scrape_url);
+my %NO_COLLAPSE = map {($_,1)} qw(note annote abstract);
+my %RANGE = map {($_,1)} qw(chapter month number pages volume year);
 my %OMIT = (); # per type (optional regex on value)
-my %OMIT_EMPTY = map {($_,1)} ('abstract'); # per type
+my %OMIT_EMPTY = map {($_,1)} qw(abstract issn doi); # per type
 #my @REQUIRE_FIELDS = (...); # per type (optional regex on value)
 #my @RENAME
 
@@ -529,6 +532,7 @@ Leroy, Xavier
 Chitil, Olaf
 
 Oliveira, Bruno C. d. S.
+Oliveira, Bruno
 
 Jeremy Gibbons
 
@@ -578,3 +582,131 @@ Barthe, Gilles
 Dybjer, Peter
 
 Thiemann, Peter
+
+Heintze, Nevin
+
+McAllester, David
+
+Arisholm, Erik
+
+Briand, Lionel C.
+
+Hove, Siw Elisabeth
+
+Labiche, Yvan
+
+Chen, Yangjun
+
+Chen, Yibin
+
+Endrullis, Jörg
+
+Hendriks, Dimitri
+
+Klop, Jan Willem
+
+Place, Thomas
+
+Segoufin, Luc
+
+Goubault-Larrecq, Jean
+
+Pantel, Patrick
+
+Philpot, Andrew
+
+Hovy, Eduard
+
+Geffert, Viliam
+
+Pighizzini, Giovanni
+
+Mereghetti, Carlo
+
+Wickramaratna, Kasun
+
+Kubat, Miroslav
+
+Minnett, Peter
+
+Geffert, Viliam
+
+Pighizzini, Giovanni
+
+Mereghetti, Carlo
+
+Torta, Gianluca
+
+Torasso, Pietro
+
+Blanqui, Frédéric
+
+Abbott, Michael
+
+Altenkirch, Thorsten
+
+Ghani, Neil
+
+Valmari, Antti
+
+Sevinç, Ender
+
+Coşar, Ahmet
+
+Cîrstea, Corina
+
+Kurz, Alexander
+
+Pattinson, Dirk
+
+Schröder, Lutz
+
+Venema, Yde
+
+Shih, Yu-Ying
+
+Chao, Daniel
+
+Kuo, Yu-Chen
+
+Baccelli, François
+
+Błaszczyszyn, Bartłomiej
+
+Mühlethaler, Paul
+
+Datta, Ajoy K.
+
+Larmore, Lawrence L.
+
+Vemula, Priyanka
+
+Alhadidi, D[ima]
+Alhadidi, D.
+
+Belblidia, N[adia]
+Belblidia, N.
+
+Debbabi, M[ourad]
+Debbabi, M.
+
+Bhattacharya, P[rabir]
+Bhattacharya, P.
+
+Strogatz, Steven H.
+
+Lin, Chun-Jung
+
+Smith, David
+
+Löh, Andres
+
+Hagiya, Masami
+
+Wadler, Philip
+
+Cousot, Patrick
+Cousot, Radhia
+
+van Noort, Thomas
+Van Noort, Thomas
