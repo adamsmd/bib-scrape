@@ -8,6 +8,9 @@ use WWW::Mechanize;
 use Text::BibTeX;
 use Text::BibTeX qw(:subs);
 use Text::BibTeX::Value;
+use Text::BibTeX::Name;
+use Text::BibTeX::Scrape;
+use Text::BibTeX::Fix;
 use HTML::Entities qw(decode_entities);
 use Encode;
 
@@ -27,6 +30,100 @@ my ($BIBTEX, $DEBUG);
 
 GetOptions('bibtex!' => \$BIBTEX, 'debug!' => \$DEBUG);
 
+
+############
+# Options
+############
+#
+# Comma at end
+# Key: Keep vs generate
+#
+# Author, Editor: title case, initialize, last-first
+# Author, Editor, Affiliation(?): List of renames
+# Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
+#  List of renames (regex?)
+#
+# Title
+#  Captialization: Initialisms, After colon, list of proper names
+#
+# ISSN: Print vs Electronic
+# Keywords: ';' vs ','
+#
+#
+
+# TODO:
+#  abstract:
+#  - paragraphs: no marker but often we get ".<Uperchar>" or "<p></p>"
+#  - pass it through paragraph fmt
+#  author as editors?
+#  Put upper case words in {.} (e.g. IEEE)
+#  detect fields that are already de-unicoded (e.g. {H}askell or $p$)
+#  move copyright from abstract to copyright field
+#  address based on publisher
+#END TODO
+
+# TODO: omit type-regex field-regex (existing entry is in scope)
+
+# Warn about non-four-digit year
+# Omit:class/type
+# Include:class/type
+# no issn, no isbn
+# SIGPLAN
+# title-case after ":"
+# Warn if first alpha after ":" is not capitalized
+# Flag about whether to Unicode, HTML, or LaTeX encode
+# purify_string
+
+## TODO: per type
+## Doubles as field order
+#my @KNOWN_FIELDS = qw(
+#      author editor affiliation title
+#      howpublished booktitle journal volume number series jstor_issuetitle
+#      type jstor_articletype school institution location
+#      chapter pages articleno numpages
+#      edition month year issue_date jstor_formatteddate
+#      organization publisher address
+#      language isbn issn doi eid acmid url eprint bib_scrape_url
+#      note annote keywords abstract copyright);
+#
+#my ($DEBUG, $GENERATE_KEY, $COMMA, $ESCAPE_ACRONYMS) = (0, 1, 1, 1);
+#my ($ISBN13, $ISBN_SEP) = (0, '-');
+#my %NO_ENCODE = map {($_,1)} qw(doi url eprint bib_scrape_url);
+#my %NO_COLLAPSE = map {($_,1)} qw(note annote abstract);
+#my %RANGE = map {($_,1)} qw(chapter month number pages volume year);
+#my %OMIT = (); # per type (optional regex on value)
+#my %OMIT_EMPTY = map {($_,1)} qw(abstract issn doi); # per type
+##my @REQUIRE_FIELDS = (...); # per type (optional regex on value)
+##my @RENAME
+#
+#sub string_no_flag {
+#    my ($name, $HASH) = @_;
+#    ("$name=s" => sub { delete $HASH->{$_[1]} },
+#     "no-$name=s" => sub { $HASH->{$_[1]} = 1 });
+#}
+#
+#sub string_flag {
+#    my ($name, $HASH) = @_;
+#    ("$name=s" => sub { $HASH->{$_[1]} = 1 },
+#     "no-$name=s" => sub { delete $HASH->{$_[1]} });
+#}
+#
+#GetOptions(
+#    'field=s' => sub { push @KNOWN_FIELDS, $_[1] },
+#    'debug!' => \$DEBUG,
+#    #no-defaults
+#    'generate-keys!' => \$GENERATE_KEY,
+#    'isbn13!' => \$ISBN13,
+#    'isbn-sep=s' => $ISBN_SEP,
+#    'comma!' => \$COMMA,
+#    string_no_flag('encode', \%NO_ENCODE),
+#    string_no_flag('collapse', \%NO_COLLAPSE), # Whether to collapse contingues whitespace
+#    string_flag('omit', \%OMIT),
+#    string_flag('omit', \%OMIT_EMPTY),
+#    'escape-acronyms!' => \$ESCAPE_ACRONYMS
+#    );
+
+
 =head1 SYNOPSIS
 
 bibscrape [options] <url> ...
@@ -44,6 +141,24 @@ bibscrape [options] <url> ...
 
 =cut
 
+### TODO
+=head1 SYNOPSIS
+
+bibscrape [options] <url> ...
+
+=head2 OPTIONS
+
+=item --omit=field
+
+    Omit a particular field from the output.
+
+=item --debug
+
+    Print debug data (TODO: make it verbose and go to STDERR)
+
+=cut
+
+
 # TODO:
 #  get PDF
 #  abstract:
@@ -53,7 +168,13 @@ bibscrape [options] <url> ...
 #  add abstract to jstor
 #END TODO
 
-my $mech;
+my @valid_names = ([]);
+for (<DATA>) {
+    chomp;
+    if (m/^\s*$/) { push @valid_names, [] }
+    else { push @{$valid_names[$#valid_names]}, new Text::BibTeX::Name($_) }
+}
+@valid_names = map { @{$_} ? ($_) : () } @valid_names;
 
 my @entries;
 
@@ -64,6 +185,8 @@ if ($BIBTEX) {
 #    $x->exists('doi') ? "http://dx.doi.org/".doi_clean($x->get('doi')) :
 #        $x->exists('bib-scrape-url') ? $x->get('bib-scrape-url') : warn "";
 #    push @entries, ...;
+
+#TODO(?): decode utf8
         print $entry, "\n";
         push @entries, $entry;
     }
@@ -75,404 +198,222 @@ for (@ARGV) {
     push @entries, $entry;
 }
 
-sub jstor_patch {
-    &WWW::Mechanize::_die(@_)
-        unless ($_[0] eq "Error " and
-                $_[1] eq "GET" and
-                $_[2] eq "ing " and
-                $_[3] =~ m[^http://www.jstor.org/] and
-                $_[4] eq ": " and
-                $_[5] eq "Forbidden");
-}
-
+my $fixer = Text::BibTeX::Fix->new(valid_names => [@valid_names]);
 for my $old_entry (@entries) {
     my $url = $old_entry->get('bib_scrape_url');
     print $old_entry->print_s() and next unless $url;
-    $mech = WWW::Mechanize->new(autocheck => 1, onerror => \&jstor_patch );
-    $mech->add_handler("request_send",  sub { shift->dump; return }) if $DEBUG;
-    $mech->add_handler("response_done", sub { shift->dump; return }) if $DEBUG;
-    $mech->agent_alias('Windows IE 6');
-    $mech->get($url);
-
-    my $entry = parse($mech);
-    $entry->set('bib_scrape_url', $url);
-    print encode('utf8', $entry->print_s());
+#    print encode('utf8', Text::BibTeX::Scrape::scrape($url)->print_s());
+    my $entry = Text::BibTeX::Scrape::scrape($url);
+#    $entry->set_key(encode('utf8', $entry->key));
+#    $entry->set($_, encode('utf8', $entry->get($_)))
+#        for ($entry->fieldlist());
+    print $fixer->fix($entry);
 }
 
-################
+__DATA__
 
-sub parse_bibtex {
-    my ($bib_text) = @_;
-    $bib_text =~ s/^\x{FEFF}//; # Remove Byte Order Mark
+Hinze, Ralf
 
-    my $entry = new Text::BibTeX::Entry;
-    print "BIBTEXT:\n$bib_text\n" if $DEBUG;
-    $entry->parse_s(encode('utf8', $bib_text), 0); # 1 for preserve values
-    die "Can't parse BibTeX:\n$bib_text\n" unless $entry->parse_ok;
+Jeuring, Johan
 
-    # Parsing the bibtex converts it to utf8, so we have to decode it
-    $entry->set_key(decode('utf8', $entry->key));
-    for ($entry->fieldlist) { $entry->set($_, decode('utf8', $entry->get($_))) }
+McBride, Conor
 
-    return $entry;
-}
+McBride, Nicole
 
-sub update {
-    my ($entry, $field, $fun) = @_;
-    if ($entry->exists($field)) {
-        $_ = $entry->get($field);
-        &$fun();
-        if (defined $_) { $entry->set($field, $_); }
-        else { $entry->delete($field); }
-    }
-}
+McKinna, James
 
-################
+Uustalu, Tarmo
 
-sub domain { $mech->uri()->authority() =~ m[^(|.*\.)\Q$_[0]\E]i; }
+Wazny, Jeremy
 
-sub parse {
-    if (domain('acm.org')) { parse_acm(@_); }
-    elsif (domain('sciencedirect.com')) { parse_science_direct(@_); }
-    elsif (domain('springerlink.com')) { parse_springerlink(@_); }
-    elsif (domain('journals.cambridge.org')) { parse_cambridge_university_press(@_); }
-    elsif (domain('computer.org')) { parse_ieee_computer_society(@_); }
-    elsif (domain('jstor.org')) { parse_jstor(@_); }
-    elsif (domain('iospress.metapress.com')) { parse_ios_press(@_); }
-    elsif (domain('ieeexplore.ieee.org')) { parse_ieeexplore(@_); }
-    elsif (domain('onlinelibrary.wiley.com')) {parse_wiley(@_); }
-    elsif (domain('oxfordjournals.org')) { parse_oxford_journals(@_); }
-    else { die "Unknown URI: " . $mech->uri(); }
-}
+Shan, Chung-chieh
 
-sub parse_acm {
-    my ($mech) = @_;
+Kiselyov, Oleg
 
-    # BibTeX
-    my ($url) = $mech->find_link(text=>'BibTeX')->url()
-        =~ m[navigate\('(.*?)'];
-    $mech->get($url);
-    my ($i, $cont) = (1, undef);
-    # Try to avoid SIGPLAN Notices
-    while ($mech->find_link(text => 'download', n => $i)) {
-        $mech->follow_link(text => 'download', n => $i);
-        $cont = $mech->content()
-            unless defined $cont and
-            $mech->content() =~ m[journal = \{?SIGPLAN Not]i;
-        $mech->back();
-        $i++;
-    }
-    $cont =~ s[(\@.*) ][$1]; # Prevent keys with spaces
-    my $entry = parse_bibtex($cont);
+Tolmach, Andrew
 
-    $mech->back();
+Leroy, Xavier
 
-    # Un-abbreviated journal title, but avoid spurious "journal" when
-    # proceedings are published in SIGPLAN Not.
-     my $html = Text::MetaBib::parse($mech->content());
-    $entry->set('journal', $html->get('citation_journal_title')->[0]) if $entry->exists('journal');
+Chitil, Olaf
 
-    $entry->set('author', $html->authors()) if $entry->exists('author');
+Oliveira, Bruno C. d. S.
+Oliveira, Bruno
 
-    $entry->set('title', $mech->content() =~
-                m[<h1 class="mediumb-text".*?><strong>(.*?)</strong></h1>])
-        if $entry->exists('title');
+Jeremy Gibbons
 
-    # Abstract
-    my ($abstr_url) = $mech->content() =~ m[(tab_abstract.*?)\'];
-    $mech->get($abstr_url);
-    if (my ($abstr) = $mech->content() =~
-        m[<div style="display:inline">((?:<par>|<p>)?.+?(?:</par>|</p>)?)</div>]) {
-        # Fix the double HTML encoding of the abstract (Bug in ACM?)
-        $entry->set('abstract', decode_entities($abstr));
-    }
+Carette, Jacques
 
-    return $entry;
-}
+Fischer, Sebastian
 
-sub get_url {
-    my ($url) = @_;
-    my $uri = URI->new_abs($url, $mech->base());
-    $mech->get($uri);
-    my $content = $mech->content();
-    $mech->back();
-    $content =~ s[<!--.*?-->][]sg; # Remove HTML comments
-    $content =~ s[\s*$][]; # remove trailing whitespace
-    $content =~ s[^\s*][]; # remove leading whitespace
-    return $content;
-}
+de Paiva, Valeria
 
-sub parse_science_direct {
-    my ($mech) = @_;
+Kameyama, Yukiyoshi
 
-    # Find the title and reverse engineer the Unicode
-    my ($title) = $mech->content() =~ m[<h1 class="svTitle">\s*(.*?)\s*</h1>]s;
-    $title =~ s[<sup><a\b[^>]*\bclass="intra_ref"[^>]*>.*?</a></sup>][];
-    $title =~ s[<span\b[^>]*\bonclick="submitCitation\('(.*?)'\)"[^>]*>(<span\b[^>]*>.*?</span>|<img\b[^>]*>)</span>]
-        [@{[join(" ", split(/[\r\n]+/, get_url(decode_entities($1))))]}]g;
-    my ($abst) = $mech->content() =~ m[>Abstract</h2>\s*(.*?)\s*</div>];
-    $abst =~ s[<span\b[^>]*\bonclick="submitCitation\('(.*?)'\)"[^>]*>(<span\b[^>]*>.*?</span>|<img\b[^>]*>)</span>]
-        [@{[join(" ", split(/[\r\n]+/, get_url(decode_entities($1))))]}]g;
+Nykänen, Matti
 
-    $mech->follow_link(text => 'Export citation');
+Sperber, Michael
 
-    $mech->submit_form(with_fields => {
-        'format' => 'cite', 'citation-type' => 'BIBTEX'});
-    my $entry = parse_bibtex($mech->content());
-    $entry->set('title', $title);
-    $entry->set('abstract', $abst);
-    $mech->back();
+Dybvig, R. Kent
 
-    $mech->submit_form(with_fields => {
-        'format' => 'cite-abs', 'citation-type' => 'RIS'});
-    my $f = Text::RIS::parse(decode('utf8', $mech->content()))->bibtex();
-    $entry->set('month', $f->get('month'));
-    $entry->delete('keywords');
-    $entry->set('keywords', $f->get('keywords')) if $f->get('keywords');
-# TODO: editor
+Flatt, Matthew
 
-    return $entry;
-}
+van Straaten, Anton
+Van Straaten, Anton
 
-sub parse_springerlink {
-    my ($mech) = @_;
-# TODO: handle books
-    $mech->follow_link(url_regex => qr[/export-citation/])
-        unless $mech->uri() =~ m[/export-citation/];
+Findler, Robby
 
-    $mech->submit_form(
-        with_fields => {
-            'ctl00$ContentPrimary$ctl00$ctl00$Export' => 'AbstractRadioButton',
-            'ctl00$ContentPrimary$ctl00$ctl00$CitationManagerDropDownList'
-                => 'BibTex'},
-        button => 'ctl00$ContentPrimary$ctl00$ctl00$ExportCitationButton');
-    my $entry = parse_bibtex(decode('utf8', $mech->content()));
-    $mech->back();
+Matthews, Jacob
 
-    $mech->submit_form(
-        with_fields => {
-            'ctl00$ContentPrimary$ctl00$ctl00$Export' => 'AbstractRadioButton',
-            'ctl00$ContentPrimary$ctl00$ctl00$CitationManagerDropDownList' => 'EndNote'},
-        button => 'ctl00$ContentPrimary$ctl00$ctl00$ExportCitationButton');
-    my $f = Text::RIS::parse($mech->content())->bibtex();
-    ($f->exists($_) && $entry->set($_, $f->get($_))) for ('doi', 'month', 'issn', 'isbn');
-    # TODO: remove "Summary" from abstract
+van Noort, Thomas
 
-    return $entry;
-}
+Rodriguez Yakushev, Alexey
 
-sub parse_cambridge_university_press {
-    my ($mech) = @_;
+Holdermans, Stefan
 
-    $mech->follow_link(text => 'Abstract') if defined $mech->find_link(text => 'Abstract');
-    $mech->follow_link(text => 'Export Citation');
-    $mech->submit_form(form_name => 'exportCitationForm',
-                       fields => {'Download' => 'Download',
-                                  'displayAbstract' => 'Yes',
-                                  'format' => 'BibTex'});
-    my $entry = parse_bibtex($mech->content());
-    update($entry, 'abstract', sub { s/^\s*ABSTRACT\s*//; });
-    $mech->back(); $mech->back();
+Heeren, Bastiaan
 
-    my ($abst) = $mech->content() =~ m[>Abstract</.*?><p>(<p>.*?</p>)\s*</p>]s;
-    $entry->set('abstract', $abst) if $abst;
+Magalhães, José Pedro
 
-    $entry->set('title',
-                join(": ",
-                     map { $_ ne "" ? $_ : () }
-                     ($mech->content() =~ m[<h2><font.*?>(.*?)</font></h2>]sg,
-                      $mech->content() =~ m[</h3>\s*<h3>(.*?)(?=</h3>)]sg
-                     )));
-    $entry->set('title', $mech->content() =~
-                m[<div id="codeDisplayWrapper">\s*<div.*?>\s*<div.*?>(.*?)</div>])
-        unless $entry->get('title');
+Cebrián, Toni
 
-    #print $mech->content();
-    my $html = Text::MetaBib::parse($mech->content());
-    if ($html->exists('citation_date')) {
-        my ($year, $month) = $html->date('citation_date');
-        $entry->set('month', $month);
-    }
+Arbiser, Ariel
 
-    update($entry, 'abstract', sub { $_ = undef if m[^\s*$] });
-    update($entry, 'doi', sub { $_ = undef if $_ eq "null" });
-    update($entry, 'author', sub { $_ = undef if $_ eq "" });
+Miquel, Alexandre
 
-    return $entry;
-    # TODO: fix case of authors
-}
+Ríos, Alejandro
 
-# TODO: why are answers intermittent from IEEE?
-sub parse_ieee_computer_society {
-    my ($mech) = @_;
+Barthe, Gilles
 
-    my ($bibtex) = $mech->content() =~ m[<div id="bibText-content">(.*?)</div>]sig;
-    $bibtex =~ s[<br>][\n]sig;
-    $bibtex = decode_entities($bibtex); # Fix the HTML encoding
-    my $entry = parse_bibtex($bibtex);
-    update($entry, 'volume', sub { $_ = undef if $_ eq "0" });
+Dybjer, Peter
 
-    my $html = Text::MetaBib::parse($mech->content());
-    $entry->set('abstract', $html->get('dc.description')->[0]) if $html->exists('dc.description');
-    if ($html->exists('dc.date')) {
-        my ($year, $month) = $html->date('dc.date');
-        $entry->set('month', $month);
-    }
+Thiemann, Peter
 
-    my ($ris) = $mech->content() =~ m[<div id="refWorksText-content">(.*?)</div>]si;
-    $ris =~ s[<br>][\n]sig;
-    $ris = decode_entities($ris); # Fix the HTML encoding
-    my $f = Text::RIS::parse($ris)->bibtex();
-    $entry->set('keywords', $f->get('keywords')) if $f->exists('keywords');
-    if ($f->type() eq 'proceedings') { # IEEE gets this all wrong
-        $entry->set_type('inproceedings') ;
-        my ($booktitle) = ($mech->content() =~ m[<div id="abs-proceedingTitle">(.*?)</div>]s);
-        if ($booktitle) {
-            $entry->set('series', $entry->get('journal')) if $entry->exists('journal');
-            $entry->delete('journal');
-            $entry->set('booktitle', $booktitle);
-        }
-    }
+Heintze, Nevin
 
-    return $entry;
-}
+McAllester, David
 
-# IEEE is evil because they require a subscription just to get bibliography data
-# (they also use JavaScript to implement simple links)
-sub parse_ieeexplore {
-    my ($mech, $fields) = @_;
-    my ($record) = $mech->content() =~
-        m[<span *id="recordId" *style="display: none;">\s*(\d+)\s*</span>]s;
+Arisholm, Erik
 
-    # Ick, work around javascript by hard coding the URL
-    $mech->get("http://ieeexplore.ieee.org/xpl/downloadCitations?".
-               "recordIds=$record&".
-               "fromPage=&".
-               "citations-format=citation-abstract&".
-               "download-format=download-bibtex");
-    my $cont = $mech->content();
-    $cont =~ s/<br>//gi;
-    $cont =~ s/month=([^,\.{}"]*?)\./month=$1/;
-    return parse_bibtex($cont);
-}
+Briand, Lionel C.
 
-sub parse_jstor {
-    my ($mech) = @_;
+Hove, Siw Elisabeth
 
-    # Ick, not only does JSTOR hide behind JavaScript, but
-    # it hides the link for downloading BibTeX if we are not logged in.
-    # We get around this by hard coding the URL that we know it should be at.
-    my ($suffix) = $mech->content() =~
-        m[<div class="stable">Stable URL: .*www.jstor.org/stable/(\d+)</div>];
-    $mech->post("http://www.jstor.org/action/downloadSingleCitation",
-                {'singleCitation'=>'true', 'suffix'=>$suffix,
-                 'include'=>'abs', 'format'=>'bibtex', 'noDoi'=>'yesDoi'});
+Labiche, Yvan
 
-    my $cont = $mech->content();
-    $cont =~ s[\@comment{.*$][]gm; # hack to get around comments
-    $cont =~ s[JSTOR CITATION LIST][]g; # hack to avoid junk chars
-    my $entry = parse_bibtex($cont);
-    $entry->set('doi', '10.2307/' . $suffix);
-    my ($month) = ($entry->get('jstor_formatteddate') =~ m[^(.*?)( \d\d?)?, \d\d\d\d$]);
-    $entry->set('month', $month) if defined $month;
+Chen, Yangjun
 
-    $mech->back();
-    $entry->set('title', $mech->content() =~ m[(?<!<!--)<div class="hd title">(.*?)</div>]);
-    return $entry;
-}
+Chen, Yibin
 
-sub parse_ios_press {
-    my ($mech) = @_;
+Endrullis, Jörg
 
-    $mech->follow_link(text => 'RIS');
-    my $f = Text::RIS::parse(decode('utf8', $mech->content()))->bibtex();
-    my $entry = parse_bibtex("\@" . $f->type . " {unknown_key,}");
-    # TODO: missing items?
-    for ('journal', 'title', 'volume', 'number', 'abstract', 'pages',
-         'author', 'year', 'month', 'doi') {
-        $entry->set($_, $f->get($_)) if $f->exists($_);
-    }
+Hendriks, Dimitri
 
-    $mech->back();
+Klop, Jan Willem
 
-    my ($pub) = ($mech->content() =~ m[>Publisher</td><td.*?>(.*?)</td>]i);
-    $entry->set('publisher', $pub) if defined $pub;
+Place, Thomas
 
-    my ($issn) = ($mech->content() =~ m[>ISSN</td><td.*?>(.*?)</td>]i);
-    $issn =~ s[<br/?>][ ];
-    $entry->set('issn', $issn) if defined $issn;
+Segoufin, Luc
 
-    my ($isbn) = ($mech->content() =~ m[>ISBN</td><td.*?>(.*?)</td>]i);
-    $entry->set('isbn', $isbn) if defined $isbn;
+Goubault-Larrecq, Jean
 
-    my ($abstract) = ($mech->content() =~ m[>\s*Abstract\s*</h5>\s*<div class="blob">\s*<p>(.*?)</p>\s*</div>]i);
-    $entry->set('abstract', $abstract) if defined $abstract;
+Pantel, Patrick
 
-    return $entry;
-}
+Philpot, Andrew
 
-sub parse_wiley {
-    my ($mech) = @_;
-    $mech->follow_link(text => 'Export Citation for this Article');
-    $mech->submit_form(with_fields => {
-        'fileFormat' => 'BIBTEX', 'hasAbstract' => 'CITATION_AND_ABSTRACT'});
-    my $entry = parse_bibtex(decode('utf8', $mech->content()));
+Hovy, Eduard
 
-    $mech->back(); $mech->back();
-    $mech->follow_link(text => 'Abstract') if $mech->find_link(text => 'Abstract');
-    my $html = Text::MetaBib::parse($mech->content());
-    my ($year, $month) = $html->date('citation_date');
-    $entry->set('month', $month);
-    # Choose the title either from bibtex or HTML based on whether we thing the BibTeX has the proper math in it.
-    $entry->set('title', $mech->content() =~ m[<h1 class="articleTitle">(.*?)</h1>]s)
-        unless $entry->get('title') =~ /\$/;
-    #$entry->set('abstract', $mech->content() =~ m[<div class="para">(.*?)</div>]s);
+Geffert, Viliam
 
-    update($entry, 'abstract',
-           sub { s[Copyright (.|&copy;) \d\d\d\d John Wiley (.|&amp;) Sons, Ltd\.\s*((</p>)?)$][$3] });
-    update($entry, 'abstract',
-           sub { s[(.|&copy;) \d\d\d\d Wiley Periodicals, Inc\. Random Struct\. Alg\., \d\d\d\d\s*((</p>)?)$][$2] });
-    return $entry;
-}
+Pighizzini, Giovanni
 
-sub parse_oxford_journals {
-    my ($mech) = @_;
+Mereghetti, Carlo
 
-    my $html = Text::MetaBib::parse($mech->content());
-    my $entry = parse_bibtex("\@article{unknown_key,}");
+Wickramaratna, Kasun
 
-    $entry->set('author', $html->authors()) if $html->authors();
-    $entry->set('pages', $html->pages()) if $html->pages();
-    $html->exists($_->[0]) and $entry->set($_->[1], join(' ; ', @{$html->get($_->[0])})) for (
-#      editor affiliation title
-        ['citation_title', 'title'],
-#      howpublished booktitle journal volume number series
-        ['citation_journal_title', 'journal'], ['citation_volume', 'volume'],
-        ['citation_issue', 'number'], # patent_number, technical_report_number
-#      type school institution location
-#      chapter pages
-#      edition month year
-#      organization publisher address
-        ['dc.publisher', 'publisher'],
-#      language isbn issn doi url
-        ['dc.language', 'language'],
-        ['citation_isbn', 'isbn'], ['citation_issn', 'issn'], ['citation_doi', 'doi'],
-#        ['citation_mjid', 'mjid'],
-#        ['citation_pdf_url', 'pdf_url'],
-#      note annote keywords abstract copyright));        
-        );
+Kubat, Miroslav
 
-    my ($year, $month) = $html->date('dc.date');
-    $entry->set('year', $year);
-    $entry->set('month', $month);
+Minnett, Peter
 
-    my ($title) = $mech->content =~ m[<h1 id="article-title-1" itemprop="headline">\s*(.*?)\s</h1>]si;
-    $entry->set('title', $title) if defined $title;
-    my ($abstract) = ($mech->content() =~ m[>\s*Abstract\s*</h2>\s*(.*?)\s*</div>]si);
-    $entry->set('abstract', $abstract) if defined $abstract;
+Geffert, Viliam
 
-    #$entry->set('address', 'Oxford, UK');
-    update($entry, 'issn', sub { s[ *; *][/]g; });
+Pighizzini, Giovanni
 
-    return $entry;
-}
+Mereghetti, Carlo
+
+Torta, Gianluca
+
+Torasso, Pietro
+
+Blanqui, Frédéric
+
+Abbott, Michael
+
+Altenkirch, Thorsten
+
+Ghani, Neil
+
+Valmari, Antti
+
+Sevinç, Ender
+
+Coşar, Ahmet
+
+Cîrstea, Corina
+
+Kurz, Alexander
+
+Pattinson, Dirk
+
+Schröder, Lutz
+
+Venema, Yde
+
+Shih, Yu-Ying
+
+Chao, Daniel
+
+Kuo, Yu-Chen
+
+Baccelli, François
+
+Błaszczyszyn, Bartłomiej
+
+Mühlethaler, Paul
+
+Datta, Ajoy K.
+
+Larmore, Lawrence L.
+
+Vemula, Priyanka
+
+Alhadidi, D[ima]
+Alhadidi, D.
+
+Belblidia, N[adia]
+Belblidia, N.
+
+Debbabi, M[ourad]
+Debbabi, M.
+
+Bhattacharya, P[rabir]
+Bhattacharya, P.
+
+Strogatz, Steven H.
+
+Lin, Chun-Jung
+
+Smith, David
+
+Löh, Andres
+
+Hagiya, Masami
+
+Wadler, Philip
+
+Cousot, Patrick
+Cousot, Radhia
+
+van Noort, Thomas
+Van Noort, Thomas
+
+Peyton Jones, Simon

@@ -1,12 +1,12 @@
-#!/usr/bin/env perl
+package Text::BibTeX::Fix;
 
 use warnings;
 use strict;
-$|++;
 
 use Text::BibTeX;
 use Text::BibTeX qw(:subs :nameparts :joinmethods);
 use Text::BibTeX::Value;
+use Text::BibTeX::Fix;
 use Text::ISBN;
 use TeX::Encode;
 use TeX::Unicode;
@@ -22,54 +22,49 @@ use Getopt::Long qw(:config auto_version auto_help);
 use XML::Twig;
 use Scalar::Util qw(blessed);
 
-############
-# Options
-############
-#
-# Comma at end
-# Key: Keep vs generate
-#
-# Author, Editor: title case, initialize, last-first
-# Author, Editor, Affiliation(?): List of renames
-# Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
-#  List of renames (regex?)
-#
-# Title
-#  Captialization: Initialisms, After colon, list of proper names
-#
-# ISSN: Print vs Electronic
-# Keywords: ';' vs ','
-#
-#
+sub scalar_flag {
+    my ($obj, $options, $field, $default) = @_;
+    $obj->{$field} = exists $options->{$field} ? $options->{$field} : $default;
+    delete $options->{$field};
+}
 
-# TODO:
-#  abstract:
-#  - paragraphs: no marker but often we get ".<Uperchar>" or "<p></p>"
-#  - pass it through paragraph fmt
-#  author as editors?
-#  Put upper case words in {.} (e.g. IEEE)
-#  detect fields that are already de-unicoded (e.g. {H}askell or $p$)
-#  move copyright from abstract to copyright field
-#  address based on publisher
-#END TODO
+sub array_flag {
+    my ($obj, $options, $field, @default) = @_;
+    $obj->{$field} = [@default];
+    push @{$obj->{$field}}, @{$options->{$field}} if exists $options->{$field};
+    delete $options->{$field} if exists $options->{$field};
+}
 
-# TODO: omit type-regex field-regex (existing entry is in scope)
+sub hash_flag {
+    my ($obj, $options, $negate, $field, @default) = @_;
+    my $key = $negate ? "no_$field" : $field;
+    $obj->{$key} = { map { ($_, 1) } @default };
+    if (exists $options->{$field}) {
+        for (keys %{$options->{$field}}) {
+            if (not $negate and $options->{$field}->{$_} or
+                $negate and not $options->{$field}->{$_}) {
+                $obj->{$key}->{$_} = 1
+            } else { delete $obj->{$key}->{$_} }
+        }
+        delete $options->{$field};
+    }
+}
 
-# Warn about non-four-digit year
-# Omit:class/type
-# Include:class/type
-# no issn, no isbn
-# SIGPLAN
-# title-case after ":"
-# Warn if first alpha after ":" is not capitalized
-# Flag about whether to Unicode, HTML, or LaTeX encode
-# purify_string
+use Class::Struct 'Text::BibTeX::Fix::Impl' => {
+  known_fields => '@', valid_names => '@',
+  debug => '$', generate_key => '$', final_comma => '$',
+  escape_acronyms => '$', isbn13 => '$', isbn_sep => '$',
+  no_encode => '%', no_collapse => '%', omit => '%', omit_empty => '%',
+};
 
-$main::VERSION=1.0;
+sub Text::BibTeX::Fix::new {
+    my ($class, %options) = @_;
+
+    my $cfg = {};
 
 # TODO: per type
 # Doubles as field order
-my @KNOWN_FIELDS = qw(
+    array_flag($cfg, \%options, 'known_fields', qw(
       author editor affiliation title
       howpublished booktitle journal volume number series jstor_issuetitle
       type jstor_articletype school institution location
@@ -77,77 +72,34 @@ my @KNOWN_FIELDS = qw(
       edition month year issue_date jstor_formatteddate
       organization publisher address
       language isbn issn doi eid acmid url eprint bib_scrape_url
-      note annote keywords abstract copyright);
+      note annote keywords abstract copyright));
+    array_flag($cfg, \%options, 'valid_names', qw());
 
-my ($DEBUG, $GENERATE_KEY, $COMMA, $ESCAPE_ACRONYMS) = (0, 1, 1, 1);
-my ($ISBN13, $ISBN_SEP) = (0, '-');
-my %NO_ENCODE = map {($_,1)} qw(doi url eprint bib_scrape_url);
-my %NO_COLLAPSE = map {($_,1)} qw(note annote abstract);
-my %RANGE = map {($_,1)} qw(chapter month number pages volume year);
-my %OMIT = (); # per type (optional regex on value)
-my %OMIT_EMPTY = map {($_,1)} qw(abstract issn doi); # per type
-#my @REQUIRE_FIELDS = (...); # per type (optional regex on value)
-#my @RENAME
+    scalar_flag($cfg, \%options, 'debug', 0);
+    scalar_flag($cfg, \%options, 'generate_key', 1);
+    scalar_flag($cfg, \%options, 'final_comma', 1);
+    scalar_flag($cfg, \%options, 'escape_acronyms', 1);
+    scalar_flag($cfg, \%options, 'isbn13', 0);
+    scalar_flag($cfg, \%options, 'isbn_sep', '-');
 
-sub string_no_flag {
-    my ($name, $HASH) = @_;
-    ("$name=s" => sub { delete $HASH->{$_[1]} },
-     "no-$name=s" => sub { $HASH->{$_[1]} = 1 });
+    hash_flag($cfg, \%options, 1, 'encode', qw(doi url eprint bib_scrape_url));
+    hash_flag($cfg, \%options, 1, 'collapse', qw(note annote abstract));
+    hash_flag($cfg, \%options, 0, 'omit', qw());
+    hash_flag($cfg, \%options, 0, 'omit_empty', qw(abstract issn doi));
+
+    croak("Unknown option: $_") for keys %options;
+
+    return Text::BibTeX::Fix::Impl->new(%$cfg);
 }
 
-sub string_flag {
-    my ($name, $HASH) = @_;
-    ("$name=s" => sub { $HASH->{$_[1]} = 1 },
-     "no-$name=s" => sub { delete $HASH->{$_[1]} });
-}
+sub Text::BibTeX::Fix::Impl::fix {
+    my ($self, $entry) = @_;
 
-GetOptions(
-    'field=s' => sub { push @KNOWN_FIELDS, $_[1] },
-    'debug!' => \$DEBUG,
-    #no-defaults
-    'generate-keys!' => \$GENERATE_KEY,
-    'isbn13!' => \$ISBN13,
-    'isbn-sep=s' => $ISBN_SEP,
-    'comma!' => \$COMMA,
-    string_no_flag('encode', \%NO_ENCODE),
-    string_no_flag('collapse', \%NO_COLLAPSE), # Whether to collapse contingues whitespace
-    string_flag('omit', \%OMIT),
-    string_flag('omit', \%OMIT_EMPTY),
-    'escape-acronyms!' => \$ESCAPE_ACRONYMS
-    );
-
-=head1 SYNOPSIS
-
-bibscrape [options] <url> ...
-
-=head2 OPTIONS
-
-=item --omit=field
-
-    Omit a particular field from the output.
-
-=item --debug
-
-    Print debug data (TODO: make it verbose and go to STDERR)
-
-=cut
-
-my $file = new Text::BibTeX::File "<-";
-
-my @valid_names = ([]);
-for (<DATA>) {
-    chomp;
-    if (m/^\s*$/) { push @valid_names, [] }
-    else { push @{$valid_names[$#valid_names]}, new Text::BibTeX::Name($_) }
-}
-@valid_names = map { @{$_} ? ($_) : () } @valid_names;
-
-while (my $entry = new Text::BibTeX::Entry $file) {
     # TODO: $bib_text =~ s/^\x{FEFF}//; # Remove Byte Order Mark
     # Fix any unicode that is in the field values
-    $entry->set_key(decode('utf8', $entry->key));
-    $entry->set($_, decode('utf8', $entry->get($_)))
-        for ($entry->fieldlist());
+#    $entry->set_key(decode('utf8', $entry->key));
+#    $entry->set($_, decode('utf8', $entry->get($_)))
+#        for ($entry->fieldlist());
 
     # Doi field: remove "http://hostname/" or "DOI: "
     $entry->set('doi', $entry->get('url')) if (
@@ -179,7 +131,7 @@ while (my $entry = new Text::BibTeX::Entry $file) {
         update($entry, $key, sub { s[\b(\w+)--\1\b][$1]ig; });
     }
 
-    update($entry, 'isbn', sub { $_ = Text::ISBN::canonical($_, $ISBN13, $ISBN_SEP) });
+    update($entry, 'isbn', sub { $_ = Text::ISBN::canonical($_, $self->isbn13, $self->isbn_sep) });
     # TODO: ISSN: Print vs electronic vs native, dash vs no-dash vs native
     # TODO: Keywords: ';' vs ','
 
@@ -187,8 +139,8 @@ while (my $entry = new Text::BibTeX::Entry $file) {
 # Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
 #  List of renames (regex?)
 
-    if ($entry->exists('author')) { canonical_names($entry, 'author') }
-    if ($entry->exists('editor')) { canonical_names($entry, 'editor') }
+    if ($entry->exists('author')) { canonical_names($self, $entry, 'author') }
+    if ($entry->exists('editor')) { canonical_names($self, $entry, 'editor') }
 
 #D<onald|.=[onald]> <E.|> Knuth
 #
@@ -227,22 +179,22 @@ while (my $entry = new Text::BibTeX::Entry $file) {
     update($entry, 'note', sub { $_ = undef if $_ eq ($entry->get('doi') or "") });
 
     # Collapse spaces and newlines
-    $NO_COLLAPSE{$_} or update($entry, $_, sub { $_ =~ s/\s+/ /sg; }) for $entry->fieldlist();
+    $self->no_collapse->{$_} or update($entry, $_, sub { $_ =~ s/\s+/ /sg; }) for $entry->fieldlist();
 
     # Eliminate Unicode but not for doi and url fields (assuming \usepackage{url})
     for my $field ($entry->fieldlist()) {
         warn "Undefined $field" unless defined $entry->get($field);
         $entry->set($field, latex_encode($entry->get($field)))
-            unless exists $NO_ENCODE{$field};
+            unless exists $self->no_encode->{$field};
     }
 
     # TODO: Title Capticalization: Initialisms, After colon, list of proper names
-    update($entry, 'title', sub { s/((\d*[[:upper:]]\d*){2,})/{$1}/g; }) if $ESCAPE_ACRONYMS;
+    update($entry, 'title', sub { s/((\d*[[:upper:]]\d*){2,})/{$1}/g; }) if $self->escape_acronyms;
 
     # Generate an entry key
     # TODO: Formats: author/editor1.last year title/journal.abbriv
     # TODO: Remove doi?
-    if ($GENERATE_KEY or not defined $entry->key()) {
+    if ($self->generate_key or not defined $entry->key()) {
         my ($name) = ($entry->names('author'), $entry->names('editor'));
         #$organization, or key
         if ($name and $entry->exists('year')) {
@@ -265,25 +217,25 @@ while (my $entry = new Text::BibTeX::Entry $file) {
 
     # Omit fields we don't want
     # TODO: controled per type or with other fields or regex matching
-    $entry->exists($_) and $entry->delete($_) for (keys %OMIT);
-    $entry->exists($_) and $entry->get($_) eq '' and $entry->delete($_) for (keys %OMIT_EMPTY);
+    $entry->exists($_) and $entry->delete($_) for (keys %{$self->omit});
+    $entry->exists($_) and $entry->get($_) eq '' and $entry->delete($_) for (keys %{$self->omit_empty});
 
     # Put fields in a standard order.
     for my $field ($entry->fieldlist()) {
-        die "Unknown field: $field.\n" unless grep { $field eq $_ } @KNOWN_FIELDS;
+        die "Unknown field '$field'\n" unless grep { $field eq $_ } @{$self->known_fields};
         die "Duplicate field '$field' will be mangled" if
             scalar(grep { $field eq $_ } $entry->fieldlist()) >= 2;
     }
-    $entry->set_fieldlist([map { $entry->exists($_) ? ($_) : () } @KNOWN_FIELDS]);
+    $entry->set_fieldlist([map { $entry->exists($_) ? ($_) : () } @{$self->known_fields}]);
 
     # Force comma or no comma after last field
     my $str = $entry->print_s();
-    $str =~ s[(})(\s*}\s*)$][$1,$2] if $COMMA;
-    $str =~ s[(}\s*),(\s*}\s*)$][$1$2] if !$COMMA;
-    print $str;
+    $str =~ s[(})(\s*}\s*)$][$1,$2] if $self->final_comma;
+    $str =~ s[(}\s*),(\s*}\s*)$][$1$2] if !$self->final_comma;
+
+    return $str;
 }
 
-################
 
 # Based on TeX::Encode and modified to use braces appropriate for BibTeX.
 sub latex_encode
@@ -454,7 +406,9 @@ sub rec {
     # Misc fixes
     $str =~ s[\s*$][]; # remove trailing whitespace
     $str =~ s[^\s*][]; # remove leading whitespace
-    $str =~ s[\n{2,} *][\n{\\par}\n]sg; # BibTeX eats whitespace so convert "\n\n" to paragraph break
+    $str =~ s[\n{2,} *][{\\par}]sg; # BibTeX eats whitespace so convert "\n\n" to paragraph break
+    $str =~ s[\s*\n\s*][ ]sg; # Remove extra line breaks
+    $str =~ s[{\\par}][\n{\\par}\n]sg; # Nicely format paragraph breaks
     #$str =~ s[\s{2,}][ ]sg; # Remove duplicate whitespace
     my @parts = split(/(\$.*?\$|[\\{}_^])/, $str);
     $str = join('', map { /[_^{}\\\$]/ ? $_ : unicode2tex($_) } @parts);
@@ -475,7 +429,7 @@ sub update {
 }
 
 sub canonical_names {
-    my ($entry, $field) = @_;
+    my ($self, $entry, $field) = @_;
 
     my $name_format = new Text::BibTeX::NameFormat ('vljf', 0);
     $name_format->set_options(BTN_VON, 0, BTJ_SPACE, BTJ_SPACE);
@@ -485,7 +439,7 @@ sub canonical_names {
     my @names;
   NAME:
     for my $name ($entry->names($field)) {
-        for my $name_group (@valid_names) {
+        for my $name_group (@{$self->valid_names}) {
           VALID_NAME:
             for my $_ (@$name_group) {
                 for my $part (qw(von last jr first)) {
@@ -505,208 +459,4 @@ sub canonical_names {
     $entry->set($field, join(' and ', @names));
 }
 
-__DATA__
-
-Hinze, Ralf
-
-Jeuring, Johan
-
-McBride, Conor
-
-McBride, Nicole
-
-McKinna, James
-
-Uustalu, Tarmo
-
-Wazny, Jeremy
-
-Shan, Chung-chieh
-
-Kiselyov, Oleg
-
-Tolmach, Andrew
-
-Leroy, Xavier
-
-Chitil, Olaf
-
-Oliveira, Bruno C. d. S.
-Oliveira, Bruno
-
-Jeremy Gibbons
-
-Carette, Jacques
-
-Fischer, Sebastian
-
-de Paiva, Valeria
-
-Kameyama, Yukiyoshi
-
-Nykänen, Matti
-
-Sperber, Michael
-
-Dybvig, R. Kent
-
-Flatt, Matthew
-
-van Straaten, Anton
-Van Straaten, Anton
-
-Findler, Robby
-
-Matthews, Jacob
-
-van Noort, Thomas
-
-Rodriguez Yakushev, Alexey
-
-Holdermans, Stefan
-
-Heeren, Bastiaan
-
-Magalhães, José Pedro
-
-Cebrián, Toni
-
-Arbiser, Ariel
-
-Miquel, Alexandre
-
-Ríos, Alejandro
-
-Barthe, Gilles
-
-Dybjer, Peter
-
-Thiemann, Peter
-
-Heintze, Nevin
-
-McAllester, David
-
-Arisholm, Erik
-
-Briand, Lionel C.
-
-Hove, Siw Elisabeth
-
-Labiche, Yvan
-
-Chen, Yangjun
-
-Chen, Yibin
-
-Endrullis, Jörg
-
-Hendriks, Dimitri
-
-Klop, Jan Willem
-
-Place, Thomas
-
-Segoufin, Luc
-
-Goubault-Larrecq, Jean
-
-Pantel, Patrick
-
-Philpot, Andrew
-
-Hovy, Eduard
-
-Geffert, Viliam
-
-Pighizzini, Giovanni
-
-Mereghetti, Carlo
-
-Wickramaratna, Kasun
-
-Kubat, Miroslav
-
-Minnett, Peter
-
-Geffert, Viliam
-
-Pighizzini, Giovanni
-
-Mereghetti, Carlo
-
-Torta, Gianluca
-
-Torasso, Pietro
-
-Blanqui, Frédéric
-
-Abbott, Michael
-
-Altenkirch, Thorsten
-
-Ghani, Neil
-
-Valmari, Antti
-
-Sevinç, Ender
-
-Coşar, Ahmet
-
-Cîrstea, Corina
-
-Kurz, Alexander
-
-Pattinson, Dirk
-
-Schröder, Lutz
-
-Venema, Yde
-
-Shih, Yu-Ying
-
-Chao, Daniel
-
-Kuo, Yu-Chen
-
-Baccelli, François
-
-Błaszczyszyn, Bartłomiej
-
-Mühlethaler, Paul
-
-Datta, Ajoy K.
-
-Larmore, Lawrence L.
-
-Vemula, Priyanka
-
-Alhadidi, D[ima]
-Alhadidi, D.
-
-Belblidia, N[adia]
-Belblidia, N.
-
-Debbabi, M[ourad]
-Debbabi, M.
-
-Bhattacharya, P[rabir]
-Bhattacharya, P.
-
-Strogatz, Steven H.
-
-Lin, Chun-Jung
-
-Smith, David
-
-Löh, Andres
-
-Hagiya, Masami
-
-Wadler, Philip
-
-Cousot, Patrick
-Cousot, Radhia
-
-van Noort, Thomas
-Van Noort, Thomas
+1;
