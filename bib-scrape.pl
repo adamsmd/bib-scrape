@@ -20,22 +20,12 @@ use Text::BibTeX::Months qw(num2month);
 
 use Getopt::Long qw(:config auto_version auto_help);
 
-############
-# Options
-############
-#
-
 $main::VERSION=1.0;
-my ($BIBTEX, $DEBUG);
-
-GetOptions('bibtex!' => \$BIBTEX, 'debug!' => \$DEBUG);
-
 
 ############
 # Options
 ############
 #
-# Comma at end
 # Key: Keep vs generate
 #
 # Author, Editor: title case, initialize, last-first
@@ -48,18 +38,15 @@ GetOptions('bibtex!' => \$BIBTEX, 'debug!' => \$DEBUG);
 #
 # ISSN: Print vs Electronic
 # Keywords: ';' vs ','
-#
-#
 
 # TODO:
-#  abstract:
-#  - paragraphs: no marker but often we get ".<Uperchar>" or "<p></p>"
-#  - pass it through paragraph fmt
 #  author as editors?
-#  Put upper case words in {.} (e.g. IEEE)
 #  detect fields that are already de-unicoded (e.g. {H}askell or $p$)
 #  move copyright from abstract to copyright field
 #  address based on publisher
+#  follow jstor links to original publisher
+#  add abstract to jstor
+#  get PDF
 #END TODO
 
 # TODO: omit type-regex field-regex (existing entry is in scope)
@@ -68,105 +55,87 @@ GetOptions('bibtex!' => \$BIBTEX, 'debug!' => \$DEBUG);
 # Omit:class/type
 # Include:class/type
 # no issn, no isbn
-# SIGPLAN
 # title-case after ":"
 # Warn if first alpha after ":" is not capitalized
 # Flag about whether to Unicode, HTML, or LaTeX encode
 # purify_string
 
-## TODO: per type
-## Doubles as field order
-#my @KNOWN_FIELDS = qw(
-#      author editor affiliation title
-#      howpublished booktitle journal volume number series jstor_issuetitle
-#      type jstor_articletype school institution location
-#      chapter pages articleno numpages
-#      edition month year issue_date jstor_formatteddate
-#      organization publisher address
-#      language isbn issn doi eid acmid url eprint bib_scrape_url
-#      note annote keywords abstract copyright);
-#
-#my ($DEBUG, $GENERATE_KEY, $COMMA, $ESCAPE_ACRONYMS) = (0, 1, 1, 1);
-#my ($ISBN13, $ISBN_SEP) = (0, '-');
-#my %NO_ENCODE = map {($_,1)} qw(doi url eprint bib_scrape_url);
-#my %NO_COLLAPSE = map {($_,1)} qw(note annote abstract);
 #my %RANGE = map {($_,1)} qw(chapter month number pages volume year);
-#my %OMIT = (); # per type (optional regex on value)
-#my %OMIT_EMPTY = map {($_,1)} qw(abstract issn doi); # per type
-##my @REQUIRE_FIELDS = (...); # per type (optional regex on value)
-##my @RENAME
-#
-#sub string_no_flag {
-#    my ($name, $HASH) = @_;
-#    ("$name=s" => sub { delete $HASH->{$_[1]} },
-#     "no-$name=s" => sub { $HASH->{$_[1]} = 1 });
-#}
-#
-#sub string_flag {
-#    my ($name, $HASH) = @_;
-#    ("$name=s" => sub { $HASH->{$_[1]} = 1 },
-#     "no-$name=s" => sub { delete $HASH->{$_[1]} });
-#}
-#
-#GetOptions(
-#    'field=s' => sub { push @KNOWN_FIELDS, $_[1] },
-#    'debug!' => \$DEBUG,
-#    #no-defaults
-#    'generate-keys!' => \$GENERATE_KEY,
-#    'isbn13!' => \$ISBN13,
-#    'isbn-sep=s' => $ISBN_SEP,
-#    'comma!' => \$COMMA,
-#    string_no_flag('encode', \%NO_ENCODE),
-#    string_no_flag('collapse', \%NO_COLLAPSE), # Whether to collapse contingues whitespace
-#    string_flag('omit', \%OMIT),
-#    string_flag('omit', \%OMIT_EMPTY),
-#    'escape-acronyms!' => \$ESCAPE_ACRONYMS
-#    );
+#my @REQUIRE_FIELDS = (...); # per type (optional regex on value)
+#my @RENAME
 
+sub string_flag {
+    my ($name, $HASH) = @_;
+    ("$name=s" => sub { $HASH->{$_[1]} = 1 },
+     "no-$name=s" => sub { delete $HASH->{$_[1]} });
+}
 
 =head1 SYNOPSIS
 
-bibscrape [options] <url> ...
+bib-scrape.pl [options] <url> ...
+
+=head2 URL
+
+Formats are usually 'http://...', but 'doi:...' is also allowed.
 
 =head2 OPTIONS
 
 =item --bibtex
 
-    Take input as BibTeX data from standard input instead of the
-    default of taking input as URLs from the command line.
+=item --no-bibtex
+
+Take input as BibTeX data from standard input in addition to the
+default of taking input as URLs from the command line.
+[default=no]
 
 =item --debug
 
-    Print debug data (TODO: make it verbose and go to STDERR)
+=item --no-debug
 
-=cut
-
-### TODO
-=head1 SYNOPSIS
-
-bibscrape [options] <url> ...
-
-=head2 OPTIONS
+Print debug data (TODO: make it verbose and go to STDERR)
+[default=no]
 
 =item --omit=field
 
-    Omit a particular field from the output.
+Omit a particular field from the output.
 
-=item --debug
+=item --omit-empty=field
 
-    Print debug data (TODO: make it verbose and go to STDERR)
+Omit a particular field from the output if it is empty.
+
+=item --comma
+
+=item --no-comma
+
+Whether to place a comma after the final field of each BibTeX entry.
+[default=yes]
+
+=item --generate-keys
+
+=item --no-generate-keys
+
+[default=yes]
+
+=item --isbn13=INT
+
+=item --isbn-sep=STR
+
+=item --escape-acronyms
+
+=item --no-escape-acronyms
+
+[default=yes]
+
+=item --no-encode=STR
+
+=item --no-collapse=STR
+
+(TODO: remove no-collapse?)
+
+=item --field=STR
 
 =cut
 
-
-# TODO:
-#  get PDF
-#  abstract:
-#  - paragraphs: no marker but often we get ".<Uperchar>" or "<p></p>"
-#  author as editors?
-#  follow jstor links to original publisher
-#  add abstract to jstor
-#END TODO
 
 my @valid_names = ([]);
 for (<DATA>) {
@@ -175,6 +144,39 @@ for (<DATA>) {
     else { push @{$valid_names[$#valid_names]}, new Text::BibTeX::Name($_) }
 }
 @valid_names = map { @{$_} ? ($_) : () } @valid_names;
+
+my ($BIBTEX, $DEBUG, $GENERATE_KEY, $ISBN13, $ISBN_SEP, $COMMA, $ESCAPE_ACRONYMS) =
+   (      0,      0,             1,       0,       '-',      1,                1);
+my (@EXTRA_FIELDS, %NO_ENCODE, %NO_COLLAPSE, %OMIT, %OMIT_EMPTY);
+
+GetOptions(
+    'bibtex!' => \$BIBTEX,
+    'debug!' => \$DEBUG,
+    'field=s' => sub { push @EXTRA_FIELDS, $_[1] },
+#    #no-defaults
+    'generate-keys!' => \$GENERATE_KEY,
+    'isbn13=i' => \$ISBN13,
+    'isbn-sep=s' => $ISBN_SEP,
+    'comma!' => \$COMMA,
+    string_flag('no-encode', \%NO_ENCODE),
+    string_flag('no-collapse', \%NO_COLLAPSE), # Whether to collapse contingues whitespace
+    string_flag('omit', \%OMIT),
+    string_flag('omit_empty', \%OMIT_EMPTY),
+    'escape-acronyms!' => \$ESCAPE_ACRONYMS
+    );
+
+my $fixer = Text::BibTeX::Fix->new(
+    valid_names => [@valid_names],
+    debug => $DEBUG,
+    known_fields => [@EXTRA_FIELDS],
+    isbn13 => $ISBN13,
+    isbn_sep => $ISBN_SEP,
+    final_comma => $COMMA,
+    no_encode => \%NO_ENCODE,
+    no_collapse => \%NO_COLLAPSE,
+    omit => \%OMIT,
+    omit_empty => \%OMIT_EMPTY,
+    escape_acronyms => $ESCAPE_ACRONYMS);
 
 my @entries;
 
@@ -194,19 +196,15 @@ if ($BIBTEX) {
 
 for (@ARGV) {
     my $entry = new Text::BibTeX::Entry;
+    $_ =~ s[^doi:][http://dx.doi.org/]i;
     $entry->set('bib_scrape_url', $_);
     push @entries, $entry;
 }
 
-my $fixer = Text::BibTeX::Fix->new(valid_names => [@valid_names]);
 for my $old_entry (@entries) {
-    my $url = $old_entry->get('bib_scrape_url');
-    print $old_entry->print_s() and next unless $url;
-#    print encode('utf8', Text::BibTeX::Scrape::scrape($url)->print_s());
-    my $entry = Text::BibTeX::Scrape::scrape($url);
-#    $entry->set_key(encode('utf8', $entry->key));
-#    $entry->set($_, encode('utf8', $entry->get($_)))
-#        for ($entry->fieldlist());
+    my $entry = $old_entry->exists('bib_scrape_url') ?
+        Text::BibTeX::Scrape::scrape($old_entry->get('bib_scrape_url')) :
+        $old_entry;
     print $fixer->fix($entry);
 }
 

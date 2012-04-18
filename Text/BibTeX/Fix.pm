@@ -3,12 +3,13 @@ package Text::BibTeX::Fix;
 use warnings;
 use strict;
 
+use Carp;
+
 use Text::BibTeX;
 use Text::BibTeX qw(:subs :nameparts :joinmethods);
 use Text::BibTeX::Value;
 use Text::BibTeX::Fix;
 use Text::ISBN;
-use TeX::Encode;
 use TeX::Unicode;
 use HTML::Entities;
 use Encode;
@@ -36,15 +37,12 @@ sub array_flag {
 }
 
 sub hash_flag {
-    my ($obj, $options, $negate, $field, @default) = @_;
-    my $key = $negate ? "no_$field" : $field;
-    $obj->{$key} = { map { ($_, 1) } @default };
+    my ($obj, $options, $field, @default) = @_;
+    $obj->{$field} = { map { ($_, 1) } @default };
     if (exists $options->{$field}) {
         for (keys %{$options->{$field}}) {
-            if (not $negate and $options->{$field}->{$_} or
-                $negate and not $options->{$field}->{$_}) {
-                $obj->{$key}->{$_} = 1
-            } else { delete $obj->{$key}->{$_} }
+            if ($options->{$field}->{$_}) { $obj->{$field}->{$_} = 1 }
+            else { delete $obj->{$field}->{$_} }
         }
         delete $options->{$field};
     }
@@ -82,10 +80,10 @@ sub Text::BibTeX::Fix::new {
     scalar_flag($cfg, \%options, 'isbn13', 0);
     scalar_flag($cfg, \%options, 'isbn_sep', '-');
 
-    hash_flag($cfg, \%options, 1, 'encode', qw(doi url eprint bib_scrape_url));
-    hash_flag($cfg, \%options, 1, 'collapse', qw(note annote abstract));
-    hash_flag($cfg, \%options, 0, 'omit', qw());
-    hash_flag($cfg, \%options, 0, 'omit_empty', qw(abstract issn doi));
+    hash_flag($cfg, \%options, 'no_encode', qw(doi url eprint bib_scrape_url));
+    hash_flag($cfg, \%options, 'no_collapse', qw());
+    hash_flag($cfg, \%options, 'omit', qw());
+    hash_flag($cfg, \%options, 'omit_empty', qw(abstract issn doi));
 
     croak("Unknown option: $_") for keys %options;
 
@@ -178,15 +176,22 @@ sub Text::BibTeX::Fix::Impl::fix {
     # Fix Springer's use of 'note' to store 'doi'
     update($entry, 'note', sub { $_ = undef if $_ eq ($entry->get('doi') or "") });
 
-    # Collapse spaces and newlines
-    $self->no_collapse->{$_} or update($entry, $_, sub { $_ =~ s/\s+/ /sg; }) for $entry->fieldlist();
-
     # Eliminate Unicode but not for doi and url fields (assuming \usepackage{url})
     for my $field ($entry->fieldlist()) {
         warn "Undefined $field" unless defined $entry->get($field);
         $entry->set($field, latex_encode($entry->get($field)))
             unless exists $self->no_encode->{$field};
     }
+
+    # Collapse spaces and newlines
+    $self->no_collapse->{$_} or update($entry, $_, sub {
+        s[\s*$][]; # remove trailing whitespace
+        s[^\s*][]; # remove leading whitespace
+        s[\n{2,} *][{\\par}]sg; # BibTeX eats whitespace so convert "\n\n" to paragraph break
+        s[\s*\n\s*][ ]sg; # Remove extra line breaks
+        s[{\\par}][\n{\\par}\n]sg; # Nicely format paragraph breaks
+        #s[\s{2,}][ ]sg; # Remove duplicate whitespace
+                                       }) for $entry->fieldlist();
 
     # TODO: Title Capticalization: Initialisms, After colon, list of proper names
     update($entry, 'title', sub { s/((\d*[[:upper:]]\d*){2,})/{$1}/g; }) if $self->escape_acronyms;
@@ -359,61 +364,12 @@ sub rec {
 }
 
 #print "[$str]\n";
-    my $twig = XML::Twig->new(
-#        twig_handlers => {
-#            'mml:math' => sub { $math_str = join('', map {$_->sprint} $_->children()); },
-#            'mml:mi' => sub { (defined $_->att('mathvariant') and $_->att('mathvariant') eq 'normal')
-#                                  ? xml('\mathrm{', $_->children(), '}') : xml($_->children()) },
-#            'mml:mo' => sub { xml($_->children()) },
-#            'mml:mn' => sub { xml($_->children()) },
-#            'mml:msqrt' => sub { xml('\sqrt{', $_->children(), '}') },
-#            'mml:mrow' => sub { xml('[', $_->children(), ']') },
-#            'mml:mspace' => sub { xml('\hspace{', $_->att('width'), '}') },
-#            'mml:msubsup' => sub { xml('{', $_->child(0), '}_{', $_->child(1), '}^{', $_->child(2), '}') },
-#            'mml:msub' => sub { xml('{', $_->child(0), '}_{', $_->child(1), '}') },
-#            'mml:msup' => sub { xml('{', $_->child(0), '}^{', $_->child(1), '}') },
-#        }
-        );
+    my $twig = XML::Twig->new();
     $str =~ s[(<mml:math\b[^>]*>.*?</mml:math>)][\\ensuremath{@{[rec($twig->parse($1)->root)]}}]gs; # TODO: ensuremath (but avoid latex encoding)
-    #$twig->parse($str);
-    #$str = $twig->sprint;
-#   print "[$str]\n";
-    #$str =~ s[<mml:math\b[^>]*>(.*?)</mml:math>][\\ensuremath{$1}]gs;
-    #$str =~ s[<mml:mi mathvariant="normal">(.*?)</mml:mi>][\\mathrm{$1}]gs;
-    #$str =~ s[<mml:mi>(.*?)</mml:mi>][$1]gs;
-    #$str =~ s[<mml:mo\b[^>]*>(.*?)</mml:mo>][$1]gs;
-    #$str =~ s[<mml:mspace width="(.*?)"/>][\\hspace{$1}]gs;
-    #$str =~ s[<mml:msqrt\b[^>]*>(.*?)</mml:msqrt>][\\sqrt{$1}]gs;
-#<mml:msubsup><base><sub><sup>
-    #mi x -> {x}
-#mo x -> {x}
-#mspace -> " "
-#msqrt x -> \sqrt{x}
-#
-#<mml:math altimg="si1.gif" overflow="scroll" xmlns:mml="http://www.w3.org/1998/Math/MathML">
-#<mml:mi>O</mml:mi>
-#<mml:mo stretchy="false">(</mml:mo>
-#<mml:mi>n</mml:mi>
-#<mml:msqrt>
-#  <mml:mi>n</mml:mi>
-#</mml:msqrt>
-#<mml:mi mathvariant="normal">log</mml:mi>
-#<mml:mspace width="0.2em"/>
-#<mml:mi>n</mml:mi>
-#<mml:mo stretchy="false">)</mml:mo></mml:math>
-
 
     # Misc fixes
-    $str =~ s[\s*$][]; # remove trailing whitespace
-    $str =~ s[^\s*][]; # remove leading whitespace
-    $str =~ s[\n{2,} *][{\\par}]sg; # BibTeX eats whitespace so convert "\n\n" to paragraph break
-    $str =~ s[\s*\n\s*][ ]sg; # Remove extra line breaks
-    $str =~ s[{\\par}][\n{\\par}\n]sg; # Nicely format paragraph breaks
-    #$str =~ s[\s{2,}][ ]sg; # Remove duplicate whitespace
     my @parts = split(/(\$.*?\$|[\\{}_^])/, $str);
     $str = join('', map { /[_^{}\\\$]/ ? $_ : unicode2tex($_) } @parts);
-#    $str =~ s[\{{2,}][\{]sg;
-#    $str =~ s[\}{2,}][\{]sg;
     #$str =~ s[([^{}\\]+)][@{[unicode2tex($1)]}]g; # Encode unicode but skip any \, {, or } that we already encoded.
     return $str;
 }
