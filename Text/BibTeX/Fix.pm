@@ -248,7 +248,7 @@ sub latex_encode
     $str = decode_entities($str);
     #$str =~ s[\_(.)][\\ensuremath{\_{$1}}]isog; # Fix for IOS Press
     $str =~ s[<!--.*?-->][]sg; # Remove HTML comments
-    $str =~ s[<a [^>]*onclick="toggleTabs\(.*?\)">.*?</a>][]isg; # Science Direct
+    $str =~ s[<a [^>]*onclick="toggleTabs\(.*?\)">.*?</a>][]isg; # Fix for Science Direct
 
     # HTML formatting
     $str =~ s[<a( .*?)?>(.*?)</a>][$2]isog; # Remove <a> links
@@ -268,10 +268,40 @@ sub latex_encode
     $str =~ s[<sub>(.*?)</sub>][\\textsubscript{$1}]isog; # Sub scripts
 
     $str =~ s[<img src="http://www.sciencedirect.com/scidirimg/entities/([0-9a-f]+).gif".*?>][@{[chr(hex $1)]}]isg; # Fix for Science Direct
-    #$str =~ s[<!--title-->$][]isg; # Fix for Science Direct
 
     # MathML formatting
-    my $math_str; # Using this variable is icky but I can't figure out how to eliminate the root of the xml
+    my $xml = XML::Parser->new(Style => 'Tree');
+    $str =~ s[(<mml:math\b[^>]*>.*?</mml:math>)]
+             [\\ensuremath{@{[rec(@{$xml->parse($1)})]}}]gs; # TODO: ensuremath (but avoid latex encoding)
+
+    # Encode unicode but skip any \, {, or } that we already encoded.
+    my @parts = split(/(\$.*?\$|[\\{}_^])/, $str);
+    return join('', map { /[_^{}\\\$]/ ? $_ : unicode2tex($_) } @parts);
+}
+
+
+sub rec {
+    my ($tag, $body) = @_;
+
+    if ($tag eq '0') { return greek($body); }
+    my %attr = %{shift @$body};
+
+    if ($tag eq 'mml:math') { return xml(@$body); }
+    if ($tag eq 'mml:mi' and exists $attr{'mathvariant'} and $attr{'mathvariant'} eq 'normal')
+    { return '\mathrm{' . xml(@$body) . '}' }
+    if ($tag eq 'mml:mi') { return xml(@$body) }
+    if ($tag eq 'mml:mo') { return xml(@$body) }
+    if ($tag eq 'mml:mn') { return xml(@$body) }
+    if ($tag eq 'mml:msqrt') { return '\sqrt{' . xml(@$body) . '}' }
+    if ($tag eq 'mml:mrow') { return '{' . xml(@$body) . '}' }
+    if ($tag eq 'mml:mspace') { return '\hspace{' . $attr{'width'} . '}' }
+    if ($tag eq 'mml:msubsup') { return '{' . xml(@$body[0..1]) .
+                                     '}_{' . xml(@$body[2..3]) .
+                                     '}^{' . xml(@$body[4..5]) . '}' }
+    if ($tag eq 'mml:msub') { return '{' . xml(@$body[0..1]) . '}_{' . xml(@$body[2..3]) . '}' }
+    if ($tag eq 'mml:msup') { return '{' . xml(@$body[0..1]) . '}^{' . xml(@$body[2..3]) . '}' }
+}
+
 sub xml {
     if ($#_ == -1) { return ''; }
     elsif ($#_ == 0) { die; }
@@ -339,37 +369,6 @@ _ \alpha \beta \gamma \delta \varepsilon \zeta \eta \theta \iota \kappa \mu \nu 
 
 #ff
 
-}
-
-sub rec {
-    my ($tag, $body) = @_;
-
-    if ($tag eq '0') { return greek($body); }
-    my %attr = %{shift @$body};
-
-    if ($tag eq 'mml:math') { return xml(@$body); }
-    if ($tag eq 'mml:mi' and exists $attr{'mathvariant'} and $attr{'mathvariant'} eq 'normal')
-    { return '\mathrm{' . xml(@$body) . '}' }
-    if ($tag eq 'mml:mi') { return xml(@$body) }
-    if ($tag eq 'mml:mo') { return xml(@$body) }
-    if ($tag eq 'mml:mn') { return xml(@$body) }
-    if ($tag eq 'mml:msqrt') { return '\sqrt{' . xml(@$body) . '}' }
-    if ($tag eq 'mml:mrow') { return '{' . xml(@$body) . '}' }
-    if ($tag eq 'mml:mspace') { return '\hspace{' . $attr{'width'} . '}' }
-    if ($tag eq 'mml:msubsup') { return '{' . xml(@$body[0..1]) .
-                                     '}_{' . xml(@$body[2..3]) .
-                                     '}^{' . xml(@$body[4..5]) . '}' }
-    if ($tag eq 'mml:msub') { return '{' . xml(@$body[0..1]) . '}_{' . xml(@$body[2..3]) . '}' }
-    if ($tag eq 'mml:msup') { return '{' . xml(@$body[0..1]) . '}^{' . xml(@$body[2..3]) . '}' }
-}
-
-    my $xml = XML::Parser->new(Style => 'Tree');
-    $str =~ s[(<mml:math\b[^>]*>.*?</mml:math>)]
-             [\\ensuremath{@{[rec(@{$xml->parse($1)})]}}]gs; # TODO: ensuremath (but avoid latex encoding)
-
-    # Encode unicode but skip any \, {, or } that we already encoded.
-    my @parts = split(/(\$.*?\$|[\\{}_^])/, $str);
-    return join('', map { /[_^{}\\\$]/ ? $_ : unicode2tex($_) } @parts);
 }
 
 sub update {
