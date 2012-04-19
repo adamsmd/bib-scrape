@@ -27,30 +27,6 @@ my %ccc;
 my %decomp1;
 my %decomp2;
 
-# TODO: these are the "problem" accents
-#\`{i}  \'{i}  \^{i}  \~{i}  \={i}  \u{i}  \.{i}
-#
-#\"{i}  \h{i}  \r{i}  \H{i}  \v{i}  \|{i}  \U{i}  \G{i}    
-#
-#\textroundcap{i}
-#
-#%\d{i}  \textsubumlaut{i} \textsubring{i}   \cb{i}           \c{i} 
-#
-#%\k{i}  \textsyllabic{i}               \textsubcircum{i} \textsubbreve{i}     
-#
-#%\textsubtilde{i} \b{i}       
-#
-#    0x1e2f \'{\"{i}}
-#
-#
-#\`{j}  \'{j}  \^{j}  \~{j}  \={j}  \u{j}  \.{j}
-#
-#\"{j}  \h{j}  \r{j}  \H{j}  \v{j}  \|{j}  \U{j}  \G{j}    
-#
-#\textroundcap{j}
-#
-#    0x01f0 \v{j}
-
 parseUnicodeData();
 
 ascii(); # 0000-007f
@@ -285,6 +261,8 @@ sub unicode2tex {
                     if not defined $old;
                 my $new = $CODES{$_};
                 $new =~ s[\{\}][$old];
+                $new =~ s[\{([ij])\}][\{\\$1\}]g
+                    if ($CCC{$_} == 230 || $CCC{$_} == 234);
                 push @out, "{$new}";
             } else {
                 push @out, "{$CODES{$_}}";
@@ -368,6 +346,9 @@ sub decomp {
             my $accent = $codes{$decomp2{$char}};
             my $body = decomp($decomp1{$char});
             $accent =~ s/\{\}/\{$body\}/;
+            $accent =~ s/\{([ij])\}/\{\\$1\}/g
+                if ($ccc{$decomp2{$char}} == 230 || # Combining class above
+                    $ccc{$decomp2{$char}} == 234); # Combining class double above
             return $accent;
         }
     } elsif (exists $decomp1{$char}) { return decomp($decomp1{$char});
@@ -499,6 +480,32 @@ sub accents {
     __ __ __ __ __ __ __ __
     __ __ __ __ __ __ __ __
     );
+
+
+# TODO: these are the "problem" accents
+#\`{i}  \'{i}  \^{i}  \~{i}  \={i}  \u{i}  \.{i}
+#
+#\"{i}  \h{i}  \r{i}  \H{i}  \v{i}  \|{i}  \U{i}  \G{i}    
+#
+#\textroundcap{i}
+#
+#%\d{i}  \textsubumlaut{i} \textsubring{i}   \cb{i}           \c{i} 
+#
+#%\k{i}  \textsyllabic{i}               \textsubcircum{i} \textsubbreve{i}     
+#
+#%\textsubtilde{i} \b{i}       
+#
+#    0x1e2f \'{\"{i}}
+#
+#
+#\`{j}  \'{j}  \^{j}  \~{j}  \={j}  \u{j}  \.{j}
+#
+#\"{j}  \h{j}  \r{j}  \H{j}  \v{j}  \|{j}  \U{j}  \G{j}    
+#
+#\textroundcap{j}
+#
+#    0x01f0 \v{j}
+
     
     # Accents
     for (0x0300 .. 0x036f) {

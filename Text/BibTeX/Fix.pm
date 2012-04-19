@@ -5,6 +5,13 @@ use strict;
 
 use Carp;
 
+use Encode;
+use HTML::Entities qw(decode_entities);
+use Scalar::Util qw(blessed);
+use TeX::Unicode;
+use Text::ISBN;
+use XML::Parser;
+
 use Text::BibTeX;
 use Text::BibTeX qw(:subs :nameparts :joinmethods);
 use Text::BibTeX::Value;

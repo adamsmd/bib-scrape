@@ -3,15 +3,15 @@ package Text::BibTeX::Scrape;
 use warnings;
 use strict;
 
+use Encode;
+use HTML::Entities qw(decode_entities);
+use Text::RIS;
+use Text::MetaBib;
 use WWW::Mechanize;
+
 use Text::BibTeX;
 use Text::BibTeX qw(:subs);
 use Text::BibTeX::Value;
-use HTML::Entities qw(decode_entities);
-use Encode;
-
-use Text::RIS;
-use Text::MetaBib;
 use Text::BibTeX::Months qw(num2month);
 
 my $DEBUG = 0;
