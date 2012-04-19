@@ -4,71 +4,13 @@ use warnings;
 use strict;
 $|++;
 
-use WWW::Mechanize;
-use Text::BibTeX;
-use Text::BibTeX qw(:subs);
-use Text::BibTeX::Value;
-use Text::BibTeX::Name;
-use Text::BibTeX::Scrape;
-use Text::BibTeX::Fix;
-use HTML::Entities qw(decode_entities);
-use Encode;
-
-use Text::RIS;
-use Text::MetaBib;
-use Text::BibTeX::Months qw(num2month);
-
 use Getopt::Long qw(:config auto_version auto_help);
 
-$main::VERSION=1.0;
+use Text::BibTeX::Fix;
+use Text::BibTeX::Name;
+use Text::BibTeX::Scrape;
 
-############
-# Options
-############
-#
-# Key: Keep vs generate
-#
-# Author, Editor: title case, initialize, last-first
-# Author, Editor, Affiliation(?): List of renames
-# Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
-#  List of renames (regex?)
-#
-# Title
-#  Captialization: Initialisms, After colon, list of proper names
-#
-# ISSN: Print vs Electronic
-# Keywords: ';' vs ','
-
-# TODO:
-#  author as editors?
-#  detect fields that are already de-unicoded (e.g. {H}askell or $p$)
-#  move copyright from abstract to copyright field
-#  address based on publisher
-#  follow jstor links to original publisher
-#  add abstract to jstor
-#  get PDF
-#END TODO
-
-# TODO: omit type-regex field-regex (existing entry is in scope)
-
-# Warn about non-four-digit year
-# Omit:class/type
-# Include:class/type
-# no issn, no isbn
-# title-case after ":"
-# Warn if first alpha after ":" is not capitalized
-# Flag about whether to Unicode, HTML, or LaTeX encode
-# purify_string
-
-#my %RANGE = map {($_,1)} qw(chapter month number pages volume year);
-#my @REQUIRE_FIELDS = (...); # per type (optional regex on value)
-#my @RENAME
-
-sub string_flag {
-    my ($name, $HASH) = @_;
-    ("$name=s" => sub { $HASH->{$_[1]} = 1 },
-     "no-$name=s" => sub { delete $HASH->{$_[1]} });
-}
+$main::VERSION='1.1';
 
 =head1 SYNOPSIS
 
@@ -120,6 +62,8 @@ Whether to place a comma after the final field of each BibTeX entry.
 
 =item --isbn-sep=STR
 
+[default=-]
+
 =item --escape-acronyms
 
 =item --no-escape-acronyms
@@ -136,6 +80,54 @@ Whether to place a comma after the final field of each BibTeX entry.
 
 =cut
 
+############
+# Options
+############
+#
+# Key: Keep vs generate
+#
+# Author, Editor: title case, initialize, last-first
+# Author, Editor, Affiliation(?): List of renames
+# Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
+#  List of renames (regex?)
+#
+# Title
+#  Captialization: Initialisms, After colon, list of proper names
+#
+# ISSN: Print vs Electronic
+# Keywords: ';' vs ','
+
+# TODO:
+#  author as editors?
+#  detect fields that are already de-unicoded (e.g. {H}askell or $p$)
+#  move copyright from abstract to copyright field
+#  address based on publisher
+#  follow jstor links to original publisher
+#  add abstract to jstor
+#  get PDF
+#END TODO
+
+# TODO: omit type-regex field-regex (existing entry is in scope)
+
+# Warn about non-four-digit year
+# Omit:class/type
+# Include:class/type
+# no issn, no isbn
+# title-case after ":"
+# Warn if first alpha after ":" is not capitalized
+# Flag about whether to Unicode, HTML, or LaTeX encode
+# purify_string
+# Warning on duplicate names
+
+#my %RANGE = map {($_,1)} qw(chapter month number pages volume year);
+#my @REQUIRE_FIELDS = (...); # per type (optional regex on value)
+#my @RENAME
+
+sub string_flag {
+    my ($name, $HASH) = @_;
+    ("$name=s" => sub { $HASH->{$_[1]} = 1 },
+     "no-$name=s" => sub { delete $HASH->{$_[1]} });
+}
 
 my @valid_names = ([]);
 for (<DATA>) {
@@ -181,6 +173,7 @@ my $fixer = Text::BibTeX::Fix->new(
 my @entries;
 
 if ($BIBTEX) {
+# TODO: whether to re-scrape bibtex
     my $file = new Text::BibTeX::File "<-";
     while (my $entry = new Text::BibTeX::Entry $file) {
 #    bib_scrape_url = dx.doi if doi and not bib_scrape_url
@@ -205,6 +198,7 @@ for my $old_entry (@entries) {
     my $entry = $old_entry->exists('bib_scrape_url') ?
         Text::BibTeX::Scrape::scrape($old_entry->get('bib_scrape_url')) :
         $old_entry;
+# TODO: whether to fix
     print $fixer->fix($entry);
 }
 
