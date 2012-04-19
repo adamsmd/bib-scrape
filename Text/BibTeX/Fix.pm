@@ -14,21 +14,10 @@ use XML::Parser;
 
 use Text::BibTeX;
 use Text::BibTeX qw(:subs :nameparts :joinmethods);
-use Text::BibTeX::Value;
-use Text::BibTeX::Fix;
-use Text::ISBN;
-use TeX::Unicode;
-use HTML::Entities;
-use Encode;
-
-use Text::BibTeX::Months;
+use Text::BibTeX::Months qw(str2month);
 use Text::BibTeX::Name;
 use Text::BibTeX::NameFormat;
-
-use Getopt::Long qw(:config auto_version auto_help);
-
-use XML::Twig;
-use Scalar::Util qw(blessed);
+use Text::BibTeX::Value;
 
 sub scalar_flag {
     my ($obj, $options, $field, $default) = @_;
@@ -284,10 +273,9 @@ sub latex_encode
     # MathML formatting
     my $math_str; # Using this variable is icky but I can't figure out how to eliminate the root of the xml
 sub xml {
-    my $x = $_;
-#    print join(":", @_), "\n";
-#    $x->replace_with(map { blessed $_ ? $_->copy() : XML::Twig::Elt->new('#PCDATA' => $_) } @_);
-    join('', map { blessed $_ ? rec($_) : greek($_) } @_);
+    if ($#_ == -1) { return ''; }
+    elsif ($#_ == 0) { die; }
+    else { rec(@_[0..1]) . xml(@_[2..$#_]); }
 }
 
 sub greek {
@@ -354,31 +342,34 @@ _ \alpha \beta \gamma \delta \varepsilon \zeta \eta \theta \iota \kappa \mu \nu 
 }
 
 sub rec {
-    my ($x) = @_;
-    if ($x->tag eq 'mml:math') { return xml($x->children()); }
-    if ($x->tag eq 'mml:mi' and defined $x->att('mathvariant') and $x->att('mathvariant') eq 'normal')
-    { return xml('\mathrm{', $x->children(), '}') }
-    if ($x->tag eq 'mml:mi') { return xml($x->children()) }
-    if ($x->tag eq 'mml:mo') { return xml($x->children()) }
-    if ($x->tag eq 'mml:mn') { return xml($x->children()) }
-    if ($x->tag eq 'mml:msqrt') { return xml('\sqrt{', $x->children(), '}') }
-    if ($x->tag eq 'mml:mrow') { return xml('{', $x->children(), '}') }
-    if ($x->tag eq 'mml:mspace') { return xml('\hspace{', $x->att('width'), '}') }
-    if ($x->tag eq 'mml:msubsup') { return xml('{', $x->child(0), '}_{', $x->child(1), '}^{', $x->child(2), '}') }
-    if ($x->tag eq 'mml:msub') { return xml('{', $x->child(0), '}_{', $x->child(1), '}') }
-    if ($x->tag eq 'mml:msup') { return xml('{', $x->child(0), '}^{', $x->child(1), '}') }
-    if ($x->tag eq '#PCDATA') { return greek($x->sprint) }
+    my ($tag, $body) = @_;
+
+    if ($tag eq '0') { return greek($body); }
+    my %attr = %{shift @$body};
+
+    if ($tag eq 'mml:math') { return xml(@$body); }
+    if ($tag eq 'mml:mi' and exists $attr{'mathvariant'} and $attr{'mathvariant'} eq 'normal')
+    { return '\mathrm{' . xml(@$body) . '}' }
+    if ($tag eq 'mml:mi') { return xml(@$body) }
+    if ($tag eq 'mml:mo') { return xml(@$body) }
+    if ($tag eq 'mml:mn') { return xml(@$body) }
+    if ($tag eq 'mml:msqrt') { return '\sqrt{' . xml(@$body) . '}' }
+    if ($tag eq 'mml:mrow') { return '{' . xml(@$body) . '}' }
+    if ($tag eq 'mml:mspace') { return '\hspace{' . $attr{'width'} . '}' }
+    if ($tag eq 'mml:msubsup') { return '{' . xml(@$body[0..1]) .
+                                     '}_{' . xml(@$body[2..3]) .
+                                     '}^{' . xml(@$body[4..5]) . '}' }
+    if ($tag eq 'mml:msub') { return '{' . xml(@$body[0..1]) . '}_{' . xml(@$body[2..3]) . '}' }
+    if ($tag eq 'mml:msup') { return '{' . xml(@$body[0..1]) . '}^{' . xml(@$body[2..3]) . '}' }
 }
 
-#print "[$str]\n";
-    my $twig = XML::Twig->new();
-    $str =~ s[(<mml:math\b[^>]*>.*?</mml:math>)][\\ensuremath{@{[rec($twig->parse($1)->root)]}}]gs; # TODO: ensuremath (but avoid latex encoding)
+    my $xml = XML::Parser->new(Style => 'Tree');
+    $str =~ s[(<mml:math\b[^>]*>.*?</mml:math>)]
+             [\\ensuremath{@{[rec(@{$xml->parse($1)})]}}]gs; # TODO: ensuremath (but avoid latex encoding)
 
-    # Misc fixes
+    # Encode unicode but skip any \, {, or } that we already encoded.
     my @parts = split(/(\$.*?\$|[\\{}_^])/, $str);
-    $str = join('', map { /[_^{}\\\$]/ ? $_ : unicode2tex($_) } @parts);
-    #$str =~ s[([^{}\\]+)][@{[unicode2tex($1)]}]g; # Encode unicode but skip any \, {, or } that we already encoded.
-    return $str;
+    return join('', map { /[_^{}\\\$]/ ? $_ : unicode2tex($_) } @parts);
 }
 
 sub update {

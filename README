@@ -32,10 +32,14 @@ Examples:
 
 Install
 ================
-WWW::Mechanize
+HTML::Entities
+HTML::HeadParser
 Text::BibTeX
-TeX::Encode
-  broken dependancy requires: Test::Pod::Coverage
+WWW::Mechanize
+XML::Parser
+
+find -name \*.pl -o -name \*.pm |grep -v /unicode/ | xargs grep '^use'|perl -ne '/use ([^; ]+)/; print $1, "\n"'|sort -u|xargs corelist|grep 'not in CORE'
+
 
 Disclaimer
 ================
