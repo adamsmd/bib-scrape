@@ -279,7 +279,6 @@ sub latex_encode
     return join('', map { /[_^{}\\\$]/ ? $_ : unicode2tex($_) } @parts);
 }
 
-
 sub rec {
     my ($tag, $body) = @_;
 
@@ -381,6 +380,32 @@ sub update {
     }
 }
 
+sub first_name {
+    my ($name) = @_;
+
+    $name =~ s/\s\p{upper}\.$//; # Allow for a middle initial
+
+    return
+        $name =~ /^\p{upper}\p{lower}+$/ || # Simple name
+        $name =~ /^\p{upper}\p{lower}+-\p{upper}\p{lower}+$/ || # Hyphenated name with upper
+        $name =~ /^\p{upper}\p{lower}+-\p{lower}\p{lower}+$/ || # Hyphenated name with lower
+        $name =~ /^\p{upper}\p{lower}+\p{upper}\p{lower}+$/ || # "Asian" name (e.g. XiaoLin)
+        # We could allow the following but publishers often abriviate
+        # names when the actual paper doesn't
+        #$name =~ /^\p{upper}\.$/ || # Initial
+        #$name =~ /^\p{upper}\.-\p{upper}\.$/ || # Double initial
+        0;
+}
+
+sub last_name {
+    my ($name) = @_;
+
+    return
+        $name =~ /^\p{upper}\p{lower}+$/ || # Simple name
+        $name =~ /^\p{upper}\p{lower}+-\p{upper}\p{lower}+$/ || # Hyphenated name with upper
+        $name =~ /^(O'|Mc|Mac)\p{upper}\p{lower}+$/; # Name with prefix
+}
+
 sub canonical_names {
     my ($self, $entry, $field) = @_;
 
@@ -405,7 +430,12 @@ sub canonical_names {
                 next NAME;
             }
         }
-        print "WARNING: Unrecognized name @{[$name->format($name_format)]}\n";
+        print "WARNING: Unrecognized name @{[$name->format($name_format)]}\n" unless
+            (not defined $name->part('von') and
+             not defined $name->part('jr') and
+             first_name(decode('utf8', join(' ', $name->part('first')))) and
+             last_name(decode('utf8', join(' ', $name->part('last')))));
+
         push @names, decode('utf8', $name->format($name_format));
     }
 

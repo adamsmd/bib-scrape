@@ -132,7 +132,8 @@ sub string_flag {
 my @valid_names = ([]);
 for (<DATA>) {
     chomp;
-    if (m/^\s*$/) { push @valid_names, [] }
+    if (m/^#/) { }
+    elsif (m/^\s*$/) { push @valid_names, [] }
     else { push @{$valid_names[$#valid_names]}, new Text::BibTeX::Name($_) }
 }
 @valid_names = map { @{$_} ? ($_) : () } @valid_names;
@@ -204,179 +205,23 @@ for my $old_entry (@entries) {
 
 __DATA__
 
-Hinze, Ralf
-
-Jeuring, Johan
-
-McBride, Conor
-
-McBride, Nicole
-
-McKinna, James
-
-Uustalu, Tarmo
-
-Wazny, Jeremy
-
-Shan, Chung-chieh
-
-Kiselyov, Oleg
-
-Tolmach, Andrew
-
-Leroy, Xavier
-
-Chitil, Olaf
-
 Oliveira, Bruno C. d. S.
 Oliveira, Bruno
 
-Jeremy Gibbons
-
-Carette, Jacques
-
-Fischer, Sebastian
-
 de Paiva, Valeria
-
-Kameyama, Yukiyoshi
-
-Nykänen, Matti
-
-Sperber, Michael
 
 Dybvig, R. Kent
 
-Flatt, Matthew
-
 van Straaten, Anton
 Van Straaten, Anton
-
-Findler, Robby
-
-Matthews, Jacob
 
 van Noort, Thomas
 
 Rodriguez Yakushev, Alexey
 
-Holdermans, Stefan
-
-Heeren, Bastiaan
-
 Magalhães, José Pedro
 
-Cebrián, Toni
-
-Arbiser, Ariel
-
-Miquel, Alexandre
-
-Ríos, Alejandro
-
-Barthe, Gilles
-
-Dybjer, Peter
-
-Thiemann, Peter
-
-Heintze, Nevin
-
-McAllester, David
-
-Arisholm, Erik
-
-Briand, Lionel C.
-
 Hove, Siw Elisabeth
-
-Labiche, Yvan
-
-Chen, Yangjun
-
-Chen, Yibin
-
-Endrullis, Jörg
-
-Hendriks, Dimitri
-
-Klop, Jan Willem
-
-Place, Thomas
-
-Segoufin, Luc
-
-Goubault-Larrecq, Jean
-
-Pantel, Patrick
-
-Philpot, Andrew
-
-Hovy, Eduard
-
-Geffert, Viliam
-
-Pighizzini, Giovanni
-
-Mereghetti, Carlo
-
-Wickramaratna, Kasun
-
-Kubat, Miroslav
-
-Minnett, Peter
-
-Geffert, Viliam
-
-Pighizzini, Giovanni
-
-Mereghetti, Carlo
-
-Torta, Gianluca
-
-Torasso, Pietro
-
-Blanqui, Frédéric
-
-Abbott, Michael
-
-Altenkirch, Thorsten
-
-Ghani, Neil
-
-Valmari, Antti
-
-Sevinç, Ender
-
-Coşar, Ahmet
-
-Cîrstea, Corina
-
-Kurz, Alexander
-
-Pattinson, Dirk
-
-Schröder, Lutz
-
-Venema, Yde
-
-Shih, Yu-Ying
-
-Chao, Daniel
-
-Kuo, Yu-Chen
-
-Baccelli, François
-
-Błaszczyszyn, Bartłomiej
-
-Mühlethaler, Paul
-
-Datta, Ajoy K.
-
-Larmore, Lawrence L.
-
-Vemula, Priyanka
 
 Alhadidi, D[ima]
 Alhadidi, D.
@@ -392,19 +237,18 @@ Bhattacharya, P.
 
 Strogatz, Steven H.
 
-Lin, Chun-Jung
 
-Smith, David
+Van Horn, David
 
-Löh, Andres
+Di Gianantonio, Pietro
 
-Hagiya, Masami
+Hernán, Miguel Ángel
 
-Wadler, Philip
+De Bosschere, Koen
 
-Cousot, Patrick
-Cousot, Radhia
-
+# Sadly cambridge returns names in all upper case
+# This forces us to list lots of extra names
+# Normally you wouldn't needs these extra names
 van Noort, Thomas
 Van Noort, Thomas
 
