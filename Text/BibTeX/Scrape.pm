@@ -40,6 +40,7 @@ sub scrape {
     $mech->add_handler("request_send",  sub { shift->dump; return }) if $DEBUG;
     $mech->add_handler("response_done", sub { shift->dump; return }) if $DEBUG;
     $mech->agent_alias('Windows IE 6');
+    $mech->cookie_jar->set_cookie(0, 'MUD', 'MP', '/', 'springerlink.com', 80, 0, 0, 86400, 0);
     $mech->get($url);
     my $entry = parse($mech);
     $mech = undef;
