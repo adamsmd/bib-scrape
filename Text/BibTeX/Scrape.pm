@@ -36,10 +36,11 @@ my $mech;
 sub scrape {
     my ($url) = @_;
 
+    # TODO: test running without jstor_patch from home
     $mech = WWW::Mechanize->new(autocheck => 1, onerror => \&jstor_patch );
     $mech->add_handler("request_send",  sub { shift->dump; return }) if $DEBUG;
     $mech->add_handler("response_done", sub { shift->dump; return }) if $DEBUG;
-    $mech->agent_alias('Windows IE 6');
+    #$mech->agent_alias('Windows IE 6');
     $mech->cookie_jar->set_cookie(0, 'MUD', 'MP', '/', 'springerlink.com', 80, 0, 0, 86400, 0);
     $mech->get($url);
     my $entry = parse($mech);
