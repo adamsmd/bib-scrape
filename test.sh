@@ -7,5 +7,5 @@ fi
 for i in "$@"; do
     echo $i
     URL=`head -n 1 $i`
-    (head -n 2 $i; ./bib-scrape.pl `head -n 1 $i` | ./bib-fix.pl) | diff $i -
+    (head -n 2 $i; ./bib-scrape.pl `head -n 1 $i`) | diff -u $i -
 done

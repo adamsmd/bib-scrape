@@ -34,8 +34,8 @@ Install
 ================
 HTML::Entities
 HTML::HeadParser
-Text::BibTeX
-WWW::Mechanize
+cpan install Text::BibTeX
+cpan install WWW::Mechanize
 XML::Parser
 
 find -name \*.pl -o -name \*.pm |grep -v /unicode/ | xargs grep '^use'|perl -ne '/use ([^; ]+)/; print $1, "\n"'|sort -u|xargs corelist|grep 'not in CORE'

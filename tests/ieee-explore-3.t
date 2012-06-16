@@ -1,7 +1,7 @@
 http://ieeexplore.ieee.org/xpl/freeabs_all.jsp?arnumber=4779914
 Strange page numbers and very strange author names
 @inproceedings{Singh:2008:10.1109/IGARSS.2008.4779914,
-  author = {Singh, G. and Venkataraman, G. and kumar, V. and Rao, Y.S. and Snehmani},
+  author = {Singh, Gulab and Venkataraman, G. and kumar (\emph{sic}), V. and Rao, Y. S. and Snehmani},
   title = {The H/A/Alpha Polarimetric Decomposition Theorem and Complex Wishart Distribution for Snow Cover Monitoring},
   booktitle = {Geoscience and Remote Sensing Symposium, 2008. IGARSS 2008. IEEE International},
   volume = {4},

@@ -1,7 +1,7 @@
 http://journals.cambridge.org/article_S0956796898003141
 DOI of null
-@article{STREICHER:1998:10.1017/S0956796898003141,
-  author = {STREICHER,Th. and REUS,B.},
+@article{Streicher:1998:10.1017/S0956796898003141,
+  author = {Streicher, Th[omas] and Reus, B[ernhard]},
   title = {Classical logic, continuation semantics and abstract machines},
   journal = {Journal of Functional Programming},
   volume = {8},

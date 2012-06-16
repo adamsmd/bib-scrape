@@ -10,6 +10,7 @@ Acronym in title
   numpages = {7},
   month = apr,
   year = {1982},
+  issue_date = {April 1982},
   publisher = {ACM},
   address = {New York, NY, USA},
   issn = {0163-5808},

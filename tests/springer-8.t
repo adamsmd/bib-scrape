@@ -12,6 +12,7 @@ Unicode in title
   year = {1992},
   publisher = {Springer Berlin / Heidelberg},
   isbn = {978-3-540-55727-2},
+  issn = {0302-9743 (Print) 1611-3349 (Online)},
   doi = {10.1007/BFb0013061},
   bib_scrape_url = {http://www.springerlink.com/content/5x552812m8150709/abstract/},
   keywords = {Computer Science},

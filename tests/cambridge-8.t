@@ -1,7 +1,7 @@
 http://journals.cambridge.org/action/displayAbstract?aid=44197
 Subscript and unicode in abstract
-@article{Streicher:1998,
-  author = {Streicher,Th. and Reus,B.},
+@article{Streicher:1998:10.1017/S0956796898003141,
+  author = {Streicher, Th[omas] and Reus, B[ernhard]},
   title = {Classical logic, continuation semantics and abstract machines},
   journal = {Journal of Functional Programming},
   volume = {8},

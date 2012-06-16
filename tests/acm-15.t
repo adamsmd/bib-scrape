@@ -10,6 +10,7 @@ Single page abstract
   numpages = {1},
   month = dec,
   year = {1975},
+  issue_date = {Winter 1975},
   publisher = {ACM},
   address = {New York, NY, USA},
   issn = {0163-5840},
