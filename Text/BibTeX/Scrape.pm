@@ -40,7 +40,7 @@ sub scrape {
     $mech = WWW::Mechanize->new(autocheck => 1, onerror => \&jstor_patch );
     $mech->add_handler("request_send",  sub { shift->dump; return }) if $DEBUG;
     $mech->add_handler("response_done", sub { shift->dump; return }) if $DEBUG;
-    #$mech->agent_alias('Windows IE 6');
+    $mech->agent('Mozilla/5.0');
     $mech->cookie_jar->set_cookie(0, 'MUD', 'MP', '/', 'springerlink.com', 80, 0, 0, 86400, 0);
     $mech->get($url);
     my $entry = parse($mech);
@@ -161,7 +161,9 @@ sub parse_science_direct {
     $title =~ s[<sup><a\b[^>]*\bclass="intra_ref"[^>]*>.*?</a></sup>][];
     $title =~ s[<span\b[^>]*\bonclick="submitCitation\('(.*?)'\)"[^>]*>(<span\b[^>]*>.*?</span>|<img\b[^>]*>)</span>]
         [@{[join(" ", split(/[\r\n]+/, get_url(decode_entities($1))))]}]g;
-    my ($abst) = $mech->content() =~ m[>Abstract</h2>\s*(.*?)\s*</div>];
+    my ($abst) = $mech->content() =~ m[<div class="abstract svAbstract">\s*(.*?)\s*</div>];
+    $abst = "" unless defined $abst;
+    $abst =~ s[<h2 class="secHeading" id="section_abstract">Abstract</h2>][]g;
     $abst =~ s[<span\b[^>]*\bonclick="submitCitation\('(.*?)'\)"[^>]*>(<span\b[^>]*>.*?</span>|<img\b[^>]*>)</span>]
         [@{[join(" ", split(/[\r\n]+/, get_url(decode_entities($1))))]}]g;
 
@@ -210,12 +212,23 @@ sub parse_springerlink {
     $mech->back();
 
     $mech->follow_link(url_regex => qr[/abstract/]);
-    my ($abstr) = $mech->content =~ m[<div\b[^>]*?class="Abstract">(.*?)</div>]s;
+    my ($abstr) = $mech->content =~ m[<div class="abstractText">\s*(<.*?)\r?\n</div>]s;
+    $abstr =~ s[<p class="Keyword">(.*?)</p>][]isg;
+    $abstr =~ s[<div class="ArticleNote">(.*?)</div>][]isg;
+    $abstr =~ s[<div class="AbstractPara">\s*<div class="">(.*?)</div>\s*</div>][\n\n$1\n\n]isg;
+    $abstr =~ s[<div class="AbstractPara">\s*<div class="normal">(.*?)</div>\s*</div>][\n\n$1\n\n]isg;
+    $abstr =~ s[<div class="Abstract".*?>(.*?)</div>][\n\n$1\n\n]isg;
+    $abstr =~ s[<div class="normal">(.*?)</div>][$1]isg;
     $entry->set('abstract', $abstr) if defined $abstr;
 
     my ($keywords) = $mech->content =~
         m[<p\b[^>]*?class="Keyword"><span\b[^>]*?class="KeywordHeading">.*?</span>(.*?)</p>]sg;
     $entry->set('keyword', join('; ', split('&nbsp;-&nbsp;', $keywords))) if defined $keywords;
+
+    $mech->follow_link(url_regex => qr[/about/]);
+    issn($entry,
+         [$mech->content() =~ m[>(\d\d\d\d-\d\d\d[0-9X]) \(Print\)<]],
+         [$mech->content() =~ m[>(\d\d\d\d-\d\d\d[0-9X]) \(Online\)<]]);
 
     return $entry;
 }
@@ -337,6 +350,10 @@ sub parse_jstor {
 
     $mech->back();
     $entry->set('title', $mech->content() =~ m[(?<!<!--)<div class="hd title">(.*?)</div>]);
+    issn($entry,
+         [$mech->content =~ m[>ISSN: (\d{7}[0-9X])<]],
+         [$mech->content =~ m[>E-ISSN: (\d{7}[0-9X])<]]);
+
     return $entry;
 }
 
@@ -433,7 +450,22 @@ sub parse_oxford_journals {
     #$entry->set('address', 'Oxford, UK');
     update($entry, 'issn', sub { s[ *; *][/]g; });
 
+    issn($entry,
+         [$mech->content() =~ m[Print ISSN (\d\d\d\d-\d\d\d[0-9X])]],
+         [$mech->content() =~ m[Online ISSN (\d\d\d\d-\d\d\d[0-9X])]]);
+
     return $entry;
+}
+
+sub issn {
+    my ($entry, $print, $online) = @_;
+    my ($print_issn) = @$print;
+    my ($online_issn) = @$online;
+    if ($print_issn and $online_issn) {
+        $entry->set('issn', "$print_issn (Print) $online_issn (Online)");
+    } elsif ($print_issn or $online_issn) {
+        $entry->set('issn', $print_issn || $online_issn);
+    }
 }
 
 1;
