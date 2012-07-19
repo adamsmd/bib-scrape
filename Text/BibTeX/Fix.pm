@@ -46,8 +46,8 @@ sub hash_flag {
 
 use Class::Struct 'Text::BibTeX::Fix::Impl' => {
   known_fields => '@', valid_names => '@',
-  debug => '$', generate_key => '$', final_comma => '$',
-  escape_acronyms => '$', isbn13 => '$', isbn_sep => '$',
+  debug => '$', final_comma => '$',
+  escape_acronyms => '$', isbn13 => '$', isbn_sep => '$', issn => '$',
   no_encode => '%', no_collapse => '%', omit => '%', omit_empty => '%',
 };
 
@@ -70,11 +70,11 @@ sub Text::BibTeX::Fix::new {
     array_flag($cfg, \%options, 'valid_names', qw());
 
     scalar_flag($cfg, \%options, 'debug', 0);
-    scalar_flag($cfg, \%options, 'generate_key', 1);
     scalar_flag($cfg, \%options, 'final_comma', 1);
     scalar_flag($cfg, \%options, 'escape_acronyms', 1);
     scalar_flag($cfg, \%options, 'isbn13', 0);
     scalar_flag($cfg, \%options, 'isbn_sep', '-');
+    scalar_flag($cfg, \%options, 'issn', 'both');
 
     hash_flag($cfg, \%options, 'no_encode', qw(doi url eprint bib_scrape_url));
     hash_flag($cfg, \%options, 'no_collapse', qw());
@@ -123,11 +123,59 @@ sub Text::BibTeX::Fix::Impl::fix {
         update($entry, $key, sub { s[\s*[-\N{U+2013}\N{U+2014}]+\s*][--]ig; });
         update($entry, $key, sub { s[n/a--n/a][]ig; $_ = undef if $_ eq "" });
         update($entry, $key, sub { s[\b(\w+)--\1\b][$1]ig; });
+        update($entry, $key, sub { s[(^| )(\w+)--(\w+)--(\w+)--(\w+)($|,)][$1$2-$3--$4-$5$6]g });
+        update($entry, $key, sub { s[\s+,\s+][, ]ig; });
     }
+
+    check($entry, 'pages', "suspect page number", sub {
+        my $page = qr[\d+ | # Simple digits
+                      \d+--\d+ |
+
+                      [XVIxvi]+ | # Roman digits
+                      [XVIxvi]+--[XVIxvi]+ |
+                      [XVIxvi]+-\d+ | # Roman digits dash digits
+                      [XVIxvi]+-\d+--[XVIxvi]+-\d+ |
+
+                      \d+[a-z] | # Digits plus letter
+                      \d+[a-z]--\d+[a-z] |
+                      \d+[.:/]\d+ | # Digits sep Digits
+                      \d+([.:/])\d+--\d+\1\d+ |
+
+                      f\d+ | # "Front" page
+                      f\d+--f\d+
+                      ]x;
+        m[^$page(, $page)*$];
+          });
+
+    check($entry, 'volume', "suspect volume", sub {
+        m[^\d+$] || m[^\d+-\d+$] || m[^[A-Z]-\d+$] || m[^\d+-[A-Z]$] });
+
+    check($entry, 'number', "suspect number", sub {
+        m[^\d+$] || m[^\d+--\d+$] || m[^\d+(/\d+)*$] || m[^\d+es$] });
 
     update($entry, 'isbn', sub { $_ = Text::ISBN::canonical($_, $self->isbn13, $self->isbn_sep) });
     # TODO: ISSN: Print vs electronic vs native, dash vs no-dash vs native
     # TODO: Keywords: ';' vs ','
+
+    my $issn_re = qr[\d\d\d\d-\d\d\d[0-9X]];
+    update($entry, 'issn', sub {
+        s[\b(\d{4})(\d{3}[0-9X])\b][$1-$2]g;
+        if (m[^($issn_re) \(Print\) ($issn_re) \(Online\)$]) {
+            if ($self->issn eq 'both') {
+                Text::ISBN::valid_issn($1) or print "WARNING: Check sum failed in issn: $1\n";
+                Text::ISBN::valid_issn($2) or print "WARNING: Check sum failed in issn: $2\n";
+            } elsif ($self->issn eq 'print') {
+                Text::ISBN::valid_issn($1) or print "WARNING: Check sum failed in issn: $1\n";
+                $_ = $1;
+            } elsif ($self->issn eq 'online') {
+                Text::ISBN::valid_issn($2) or print "WARNING: Check sum failed in issn: $2\n";
+                $_ = $2;
+            }
+        } elsif (m[^$issn_re$]) {
+            Text::ISBN::valid_issn($_) or print "WARNING: Check sum failed in issn: $_\n"
+        } elsif ($_ eq '') { $_ = undef
+        } else { print "WARNING: Suspect ISSN: $_\n" }
+           });
 
     # TODO: Author, Editor, Affiliation: List of renames
 # Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
@@ -183,7 +231,7 @@ sub Text::BibTeX::Fix::Impl::fix {
     $self->no_collapse->{$_} or update($entry, $_, sub {
         s[\s*$][]; # remove trailing whitespace
         s[^\s*][]; # remove leading whitespace
-        s[\n{2,} *][{\\par}]sg; # BibTeX eats whitespace so convert "\n\n" to paragraph break
+        s[(\n *){2,}][{\\par}]sg; # BibTeX eats whitespace so convert "\n\n" to paragraph break
         s[\s*\n\s*][ ]sg; # Remove extra line breaks
         s[{\\par}][\n{\\par}\n]sg; # Nicely format paragraph breaks
         #s[\s{2,}][ ]sg; # Remove duplicate whitespace
@@ -195,14 +243,15 @@ sub Text::BibTeX::Fix::Impl::fix {
     # Generate an entry key
     # TODO: Formats: author/editor1.last year title/journal.abbriv
     # TODO: Remove doi?
-    if ($self->generate_key or not defined $entry->key()) {
+    if (not defined $entry->key()) {
         my ($name) = ($entry->names('author'), $entry->names('editor'));
+        $name = defined $name ?
+            purify_string(join("", $name->part('last'))) :
+            "anon";
+        my $year = $entry->exists('year') ? ":" . $entry->get('year') : "";
+        my $doi = $entry->exists('doi') ? ":" . $entry->get('doi') : "";
         #$organization, or key
-        if ($name and $entry->exists('year')) {
-            ($name) = purify_string(join("", $name->part('last')));
-            $entry->set_key($name . ':' . $entry->get('year') .
-                            ($entry->exists('doi') ? ":" . $entry->get('doi') : ""));
-        }
+        $entry->set_key($name . $year . $doi);
     }
 
     # Use bibtex month macros
@@ -220,6 +269,9 @@ sub Text::BibTeX::Fix::Impl::fix {
     # TODO: controled per type or with other fields or regex matching
     $entry->exists($_) and $entry->delete($_) for (keys %{$self->omit});
     $entry->exists($_) and $entry->get($_) eq '' and $entry->delete($_) for (keys %{$self->omit_empty});
+
+    # Year
+    check($entry, 'year', "Suspect year", sub { /^\d\d\d\d$/ });
 
     # Put fields in a standard order.
     for my $field ($entry->fieldlist()) {
@@ -254,7 +306,8 @@ sub latex_encode
     $str =~ s[<a( .*?)?>(.*?)</a>][$2]isog; # Remove <a> links
     $str =~ s[<p(| [^>]*)>(.*?)</p>][$2\n\n]isg; # Replace <p> with "\n\n"
     $str =~ s[<par(| [^>]*)>(.*?)</par>][$2\n\n]isg; # Replace <par> with "\n\n"
-    $str =~ s[<span style="font-family:monospace">(.*?)</span>][\\texttt{$1}]i; # Replace monospace spans with \texttt
+    $str =~ s[<span style="font-family:monospace\s*">(.*?)</span>][\\texttt{$1}]i; # Replace monospace spans with \texttt
+    $str =~ s[<span class="monospace\s*">(.*?)</span>][\\texttt{$1}]i; # Replace monospace spans with \texttt
     $str =~ s[<span( .*?)?>(.*?)</span>][$2]isg; # Remove <span>
     $str =~ s[<span( .*?)?>(.*?)</span>][$2]isg; # Remove <span>
     $str =~ s[<i>(.*?)</i>][\\textit{$1}]isog; # Replace <i> with \textit
@@ -268,6 +321,8 @@ sub latex_encode
     $str =~ s[<sub>(.*?)</sub>][\\textsubscript{$1}]isog; # Sub scripts
 
     $str =~ s[<img src="http://www.sciencedirect.com/scidirimg/entities/([0-9a-f]+).gif".*?>][@{[chr(hex $1)]}]isg; # Fix for Science Direct
+    $str =~ s[<img src="/content/[A-Z0-9]+/xxlarge(\d+).gif".*?>][@{[chr($1)]}]isg;
+# Fix for Springer Link
 
     # MathML formatting
     my $xml = XML::Parser->new(Style => 'Tree');
@@ -370,6 +425,16 @@ _ \alpha \beta \gamma \delta \varepsilon \zeta \eta \theta \iota \kappa \mu \nu 
 
 }
 
+sub check {
+    my ($entry, $field, $msg, $check) = @_;
+    if ($entry->exists($field)) {
+        $_ = $entry->get($field);
+        unless (&$check()) {
+            print "WARNING: $msg: ", $entry->get($field), "\n";
+        }
+    }
+}
+
 sub update {
     my ($entry, $field, $fun) = @_;
     if ($entry->exists($field)) {
@@ -430,7 +495,7 @@ sub canonical_names {
                 next NAME;
             }
         }
-        print "WARNING: Unrecognized name @{[$name->format($name_format)]}\n" unless
+        print "WARNING: Suspect name @{[$name->format($name_format)]}\n" unless
             (not defined $name->part('von') and
              not defined $name->part('jr') and
              first_name(decode('utf8', join(' ', $name->part('first')))) and
