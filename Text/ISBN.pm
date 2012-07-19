@@ -24,7 +24,12 @@ sub check_digit {
 
 sub check_digit10 { check_digit(11, [10,9,8,7,6,5,4,3,2], @_); }
 sub check_digit13 { check_digit(10, [1,3,1,3,1,3,1,3,1,3,1,3], @_); }
-sub check_digit_issn { check_digit(11, [8, 7, 6, 5, 4, 3, 2], @_); }
+sub check_digit_issn { check_digit(11, [8,7,6,5,4,3,2], @_); }
+
+sub valid_issn {
+    my ($issn) = @_;
+    return ($issn =~ m[^\d\d\d\d-\d\d\d(\d|X)$] && $1 eq check_digit_issn($issn))
+}
 
 # $isbn13: >0 (force to isbn 13), <0 (use isbn10 if possible), 0 (use whatever came in)
 sub canonical {
