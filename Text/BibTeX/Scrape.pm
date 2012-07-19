@@ -387,18 +387,18 @@ sub parse_ios_press {
 
     return $entry;
 }
+    $mech->back(); $mech->back();
 
 sub parse_wiley {
     my ($mech) = @_;
+    $mech->follow_link(url_regex => qr[/abstract]) if $mech->find_link(url_regex => qr[/abstract]);
     $mech->follow_link(text => 'Export Citation for this Article');
     $mech->submit_form(with_fields => {
         'fileFormat' => 'BIBTEX', 'hasAbstract' => 'CITATION_AND_ABSTRACT'});
     my $entry = parse_bibtex(decode('utf8', $mech->content()));
 
-    $mech->back(); $mech->back();
-    $mech->follow_link(text => 'Abstract') if $mech->find_link(text => 'Abstract');
-    my $html = Text::MetaBib::parse($mech->content());
-    my ($year, $month) = $html->date('citation_date');
+    # Fill in the missing month
+    my ($month) = ($mech->content() =~ m[<span id="issueDate">(\w*) \d*</span>]);
     $entry->set('month', $month);
     # Choose the title either from bibtex or HTML based on whether we thing the BibTeX has the proper math in it.
     $entry->set('title', $mech->content() =~ m[<h1 class="articleTitle">(.*?)</h1>]s)
@@ -430,15 +430,15 @@ sub parse_wiley {
         $abstract .= $html;
     }
 
-    # OK, we now have a clean abstract, so lets use that
+    # Finally, we clean up and use this abstract
     $entry->set('abstract', $abstract);
 
     update($entry, 'abstract', sub { s[\\documentclass\{article\} \\usepackage\{mathrsfs\} \\usepackage\{amsmath,amssymb,amsfonts\} \\pagestyle\{empty\} \\begin\{document\} \\begin\{align\*\}(.*?)\\end\{align\*\} \\end\{document\}][\\ensuremath{$1}]isg; });
     update($entry, 'abstract', sub { s[<div class="para">(.*?)</div>][\n\n$1\n\n]isg });
     update($entry, 'abstract',
-           sub { s[Copyright (.|&copy;) \d\d\d\d John Wiley (.|&amp;) Sons, Ltd\.\s*((</p>)?)$][$3] });
+           sub { s[Copyright (.|&copy;) \d\d\d\d John Wiley (.|&amp;) Sons, Ltd\.\s*][] });
     update($entry, 'abstract',
-           sub { s[(.|&copy;) \d\d\d\d Wiley Periodicals, Inc\. Random Struct\. Alg\., \d\d\d\d\s*((</p>)?)$][$2] });
+           sub { s[(.|&copy;) \d\d\d\d Wiley Periodicals, Inc\. Random Struct\. Alg\..*, \d\d\d\d][] });
     return $entry;
 }
 
