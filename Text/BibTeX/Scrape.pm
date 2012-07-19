@@ -3,6 +3,7 @@ package Text::BibTeX::Scrape;
 use warnings;
 use strict;
 
+use Algorithm::Diff;
 use Encode;
 use HTML::Entities qw(decode_entities);
 use Text::RIS;
@@ -402,8 +403,38 @@ sub parse_wiley {
     # Choose the title either from bibtex or HTML based on whether we thing the BibTeX has the proper math in it.
     $entry->set('title', $mech->content() =~ m[<h1 class="articleTitle">(.*?)</h1>]s)
         unless $entry->get('title') =~ /\$/;
-    #$entry->set('abstract', $mech->content() =~ m[<div class="para">(.*?)</div>]s);
 
+    # Ugh! Both the BibTeX and the HTML have problems.  Here we try to
+    # pick out the best from each.  The HTML is usually better except that
+    # it uses <img> takes for some math.
+    my $bibtex_abstr = $entry->get('abstract');
+    my ($html_abstr) = ($mech->content() =~ m[<div id="abstract"><h3>Abstract</h3>(<div class="para">.*?</div>)</div>]);
+    my $math_img = qr[<img [^>]*?>]; # We could use a more complicated regex, but this is good enough
+
+    # Try to find the diff between the BibTeX and HTML
+    my $diff = Algorithm::Diff->new(
+        # Don't let "$...$" and "\documentclass...\end{document}" be split apart
+        [grep {defined $_} (split m[(\$.*?\$|\\documentclass.*?\\end\{document\})?], $bibtex_abstr)],
+        # Don't let "&charCode;", "<img...>" or "<span...><img...></span>" be split apart
+        [grep {defined $_} (split m[(\&[^;]*?;|$math_img|<span[^>]*?>$math_img</span>)?], $html_abstr)]);
+    my $abstract = '';
+    while ($diff->Next()) {
+        my $html = join('', $diff->Items(2));
+        $html =~ s[([{}])][\\$1]g; # Escape the HTML while we know it is still HTML
+        if ($html =~ m[$math_img]) {
+            # Replace images (and special characters surrounding it) with BibTeX.
+            # (By substituting we keep around things like </em> and the start or <em> at the end
+            $html =~ s[(\&[^;]*?;)*($math_img|<span[^>]*?>$math_img</span[^>]*?>)(\&[^;]*?;)*]
+                      [@{[join('', $diff->Items(1))]}]is;
+        }
+        $abstract .= $html;
+    }
+
+    # OK, we now have a clean abstract, so lets use that
+    $entry->set('abstract', $abstract);
+
+    update($entry, 'abstract', sub { s[\\documentclass\{article\} \\usepackage\{mathrsfs\} \\usepackage\{amsmath,amssymb,amsfonts\} \\pagestyle\{empty\} \\begin\{document\} \\begin\{align\*\}(.*?)\\end\{align\*\} \\end\{document\}][\\ensuremath{$1}]isg; });
+    update($entry, 'abstract', sub { s[<div class="para">(.*?)</div>][\n\n$1\n\n]isg });
     update($entry, 'abstract',
            sub { s[Copyright (.|&copy;) \d\d\d\d John Wiley (.|&amp;) Sons, Ltd\.\s*((</p>)?)$][$3] });
     update($entry, 'abstract',
