@@ -6,6 +6,7 @@ $|++;
 
 use Getopt::Long qw(:config auto_version auto_help);
 
+use Text::BibTeX qw(:metatypes);
 use Text::BibTeX::Fix;
 use Text::BibTeX::Name;
 use Text::BibTeX::Scrape;
@@ -18,7 +19,12 @@ bib-scrape.pl [options] <url> ...
 
 =head2 URL
 
-Formats are usually 'http://...', but 'doi:...' is also allowed.
+The url of the publisher's page for the paper to be scraped.
+
+Standard URL formats such as 'http://...' are allowed,
+but so is the format 'doi:...'.
+
+May be prefixed with '{key}' in order to specify an explicit key.
 
 =head2 OPTIONS
 
@@ -78,6 +84,13 @@ Whether to place a comma after the final field of each BibTeX entry.
 
 =item --field=STR
 
+=item --input=FILE
+
+FILE may be "-" to indicate stdin
+
+WARNING: "junk" and malformed entities will be omitted from the output
+(This is an upstream problem with the libraries we use.)
+
 =cut
 
 ############
@@ -100,8 +113,6 @@ Whether to place a comma after the final field of each BibTeX entry.
 # TODO:
 #  author as editors?
 #  detect fields that are already de-unicoded (e.g. {H}askell or $p$)
-#  move copyright from abstract to copyright field
-#  address based on publisher
 #  follow jstor links to original publisher
 #  add abstract to jstor
 #  get PDF
@@ -109,14 +120,12 @@ Whether to place a comma after the final field of each BibTeX entry.
 
 # TODO: omit type-regex field-regex (existing entry is in scope)
 
-# Warn about non-four-digit year
 # Omit:class/type
 # Include:class/type
 # no issn, no isbn
 # title-case after ":"
 # Warn if first alpha after ":" is not capitalized
 # Flag about whether to Unicode, HTML, or LaTeX encode
-# purify_string
 # Warning on duplicate names
 
 #my %RANGE = map {($_,1)} qw(chapter month number pages volume year);
@@ -138,18 +147,21 @@ for (<DATA>) {
 }
 @valid_names = map { @{$_} ? ($_) : () } @valid_names;
 
-my ($BIBTEX, $DEBUG, $GENERATE_KEY, $ISBN13, $ISBN_SEP, $COMMA, $ESCAPE_ACRONYMS) =
-   (      0,      0,             1,       0,       '-',      1,                1);
-my (@EXTRA_FIELDS, %NO_ENCODE, %NO_COLLAPSE, %OMIT, %OMIT_EMPTY);
+my ($DEBUG, $SCRAPE, $KEEP_OLD, $FIX) =
+   (      0,      1,         1,    1);
+my ($GENERATE_KEY, $ISBN13, $ISBN_SEP, $ISSN, $COMMA, $ESCAPE_ACRONYMS) =
+   (             1,       0,      '-','both',      1,                1);
+my (@INPUT, @EXTRA_FIELDS, %NO_ENCODE, %NO_COLLAPSE, %OMIT, %OMIT_EMPTY);
 
 GetOptions(
-    'bibtex!' => \$BIBTEX,
     'debug!' => \$DEBUG,
+    'fix!' => \$FIX,
     'field=s' => sub { push @EXTRA_FIELDS, $_[1] },
+    'input=s' => sub { push @INPUT, $_[1] },
 #    #no-defaults
-    'generate-keys!' => \$GENERATE_KEY,
     'isbn13=i' => \$ISBN13,
-    'isbn-sep=s' => $ISBN_SEP,
+    'isbn-sep=s' => \$ISBN_SEP,
+    'issn' => \$ISSN,
     'comma!' => \$COMMA,
     string_flag('no-encode', \%NO_ENCODE),
     string_flag('no-collapse', \%NO_COLLAPSE), # Whether to collapse contingues whitespace
@@ -164,43 +176,68 @@ my $fixer = Text::BibTeX::Fix->new(
     known_fields => [@EXTRA_FIELDS],
     isbn13 => $ISBN13,
     isbn_sep => $ISBN_SEP,
+    issn => $ISSN,
     final_comma => $COMMA,
     no_encode => \%NO_ENCODE,
     no_collapse => \%NO_COLLAPSE,
     omit => \%OMIT,
     omit_empty => \%OMIT_EMPTY,
     escape_acronyms => $ESCAPE_ACRONYMS);
+# ? ISSN (Print, Online, Both)
+# preserve key if from bib-tex?
+# warn about duplicate author names
 
-my @entries;
-
-if ($BIBTEX) {
 # TODO: whether to re-scrape bibtex
-    my $file = new Text::BibTeX::File "<-";
-    while (my $entry = new Text::BibTeX::Entry $file) {
-#    bib_scrape_url = dx.doi if doi and not bib_scrape_url
-#    $x->exists('doi') ? "http://dx.doi.org/".doi_clean($x->get('doi')) :
-#        $x->exists('bib-scrape-url') ? $x->get('bib-scrape-url') : warn "";
-#    push @entries, ...;
+for my $filename (@INPUT) {
+    my $bib = new Text::BibTeX::File $filename;
+    # TODO: print "junk" between entities
 
-#TODO(?): decode utf8
-        print $entry, "\n";
-        push @entries, $entry;
+    until ($bib->eof()) {
+        my $entry = new Text::BibTeX::Entry $bib;
+        next unless defined $entry and $entry->parse_ok;
+
+        if (not $entry->metatype == BTE_REGULAR) {
+            print $entry->print_s;
+        } else {
+            if (not $entry->exists('bib_scrape_url')) {
+                if ($entry->exists('doi') and $entry->get('doi') =~ m[http://[^/]+/(.*)]i) {
+                    (my $url = $1) =~ s[DOI:\s*][]ig;
+                    $entry->set('bib_scrape_url', "http://dx.doi.org/$url");
+                } elsif ($entry->exists('url') and $entry->get('url') =~ m[^http://dx.doi.org/.*$]) {
+                    $entry->set('bib_scrape_url', $entry->get('url'));
+                }
+            }
+###TODO(?): decode utf8
+            scrape_and_fix_entry($entry);
+        }
     }
 }
 
 for (@ARGV) {
     my $entry = new Text::BibTeX::Entry;
+    $entry->set_key($1) if $_ =~ s[^\{([^}]*)\}][];
     $_ =~ s[^doi:][http://dx.doi.org/]i;
     $entry->set('bib_scrape_url', $_);
-    push @entries, $entry;
+    scrape_and_fix_entry($entry);
 }
 
-for my $old_entry (@entries) {
-    my $entry = $old_entry->exists('bib_scrape_url') ?
+sub scrape_and_fix_entry {
+    my ($old_entry) = @_;
+
+#    warn if not exists bib_scrape_url
+    my $entry = (($old_entry->exists('bib_scrape_url') && $SCRAPE) ?
         Text::BibTeX::Scrape::scrape($old_entry->get('bib_scrape_url')) :
-        $old_entry;
-# TODO: whether to fix
-    print $fixer->fix($entry);
+        $old_entry);
+#    print $entry->print_s, "\n";
+    $entry->set_key($old_entry->key());
+# ALWAYS_GEN_KEY
+#no-SCRAPE = 0, 0, 0
+#SCRAPE = 1, 1, 1
+#    if ($KEEP_OLD) {
+#$PREFER_NEW 1
+#$ADD_NEW 1
+#$REMOVE_OLD 1
+    print $FIX ? $fixer->fix($entry) : $entry->print_s;
 }
 
 __DATA__
