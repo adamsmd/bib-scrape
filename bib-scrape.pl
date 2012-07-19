@@ -242,12 +242,12 @@ Strogatz, Steven H.
 # part of the name, but when they are upper case, bibtex treats them
 # as part of the last name.  Thus sometimes case insensitive match
 # isn't enough to find the name.
-Van Noort, Thomas
 
 van Straaten, Anton
 Van Straaten, Anton
 
 van Noort, Thomas
+Van Noort, Thomas
 
 Van Horn, David
 
@@ -330,9 +330,9 @@ Bhattacharya, P.
 
 Streicher, Th[omas]
 Streicher, Th.
+
 Reus, B[ernhard]
 Reus, B.
-
 
 # Cambridge press returns names in all upper case.  This forces us to
 # list lots of extra names that are in the "first last" form we would
