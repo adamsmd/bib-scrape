@@ -205,23 +205,116 @@ for my $old_entry (@entries) {
 
 __DATA__
 
+# Often publishers leave out the middle name even when it is a critial
+# part of the name
+
 Oliveira, Bruno C. d. S.
 Oliveira, Bruno
 
-de Paiva, Valeria
-
 Dybvig, R. Kent
+Dybvig, R.
+
+# We can't assume a three part name is "first middle last" as some
+# people have two words in their last name.  Further, publishers often
+# get this wrong (e.g. "Jones, Simon Peyton") Thus we explicitly
+# specify those names.
+
+Rodriguez Yakushev, Alexey
+
+Peyton Jones, Simon
+
+Magalhães, José Pedro
+
+Hernán, Miguel Ángel
+
+Klop, Jan Willem
+
+Hove, Siw Elisabeth
+
+Strogatz, Steven H.
+
+# Be careful with last names containing "van", "von", "di", "de", etc.
+# Sometimes these parts of the names are capitalized, while other
+# times they are not.  Always double check how the particular author
+# spells it.
+#
+# Note that when they are lower case, bibtex treats them as a seperate
+# part of the name, but when they are upper case, bibtex treats them
+# as part of the last name.  Thus sometimes case insensitive match
+# isn't enough to find the name.
+Van Noort, Thomas
 
 van Straaten, Anton
 Van Straaten, Anton
 
 van Noort, Thomas
 
-Rodriguez Yakushev, Alexey
+Van Horn, David
 
-Magalhães, José Pedro
+Van Hentenryck, Pascal
 
-Hove, Siw Elisabeth
+Di Gianantonio, Pietro
+
+de Paiva, Valeria
+
+De Bosschere, Koen
+
+DeBiasio, Louis
+
+# Sometimes the abbreviated form of a name is what was actually written
+# on the article, but other times it's due to the publisher reporting
+# the wrong data.  Here we can correct the publisher's error, mark the
+# abriviation as correct, or use "[]" to give the full name.  (You can
+# also just change it to the full name but then your bibliography
+# would be lying if the original paper used the abbreviated name.)
+
+Kierstead, H. A.
+Kierstead, H.A.
+
+Frigo, Matteo
+Frigo, M.
+
+Johnson, Steven G.
+Johnson, S.G.
+
+Rawlings, Christopher J.
+Rawlings, C.J.
+
+Clark, Dominic A.
+Clark, D.A.
+
+Barton, Geoffrey J.
+Barton, G.J.
+
+Archer, Iain
+Archer, I.
+
+Saldanha, José W.
+Saldanha, J.W.
+
+Singh, Gulab
+Singh, G.
+
+Venkataraman, G.
+
+kumar (\emph{sic}), V.
+kumar, V.
+
+Rao, Y. S.
+Rao, Y.S.
+
+Snehmani
+
+Riordon, J. S.
+
+Aho, A[lfred] V.
+Aho, A. V.
+
+Hopcroft, J[ohn] E.
+Hopcroft, J. E.
+
+Ullman, J[effrey] D.
+Ullman, J. D.
 
 Alhadidi, D[ima]
 Alhadidi, D.
@@ -235,21 +328,60 @@ Debbabi, M.
 Bhattacharya, P[rabir]
 Bhattacharya, P.
 
-Strogatz, Steven H.
+Streicher, Th[omas]
+Streicher, Th.
+Reus, B[ernhard]
+Reus, B.
 
 
-Van Horn, David
+# Cambridge press returns names in all upper case.  This forces us to
+# list lots of extra names that are in the "first last" form we would
+# normally automatically recognize.
 
-Di Gianantonio, Pietro
+McBride, Conor
 
-Hernán, Miguel Ángel
+McKinna, James
 
-De Bosschere, Koen
+Hinze, Ralf
 
-# Sadly cambridge returns names in all upper case
-# This forces us to list lots of extra names
-# Normally you wouldn't needs these extra names
-van Noort, Thomas
-Van Noort, Thomas
+Jeuring, Johan
 
-Peyton Jones, Simon
+Uustalu, Tarmo
+
+Wazny, Jeremy
+
+Kameyama, Yukiyoshi
+
+Kiselyov, Oleg
+
+Shan, Chung-chieh
+
+Holdermans, Stefan
+
+Heeren, Bastiaan
+
+Carette, Jacques
+
+Cebrián, Toni
+
+Fischer, Sebastian
+
+Arbiser, Ariel
+
+Miquel, Alexandre
+
+Ríos, Alejandro
+
+Sperber, Michael
+
+Flatt, Matthew
+
+Findler, Robby
+
+Matthews, Jacob
+
+Gibbons, Jeremy
+
+Chitil, Olaf
+
+Nykänen, Matti
