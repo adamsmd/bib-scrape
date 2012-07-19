@@ -387,7 +387,6 @@ sub parse_ios_press {
 
     return $entry;
 }
-    $mech->back(); $mech->back();
 
 sub parse_wiley {
     my ($mech) = @_;
@@ -396,6 +395,7 @@ sub parse_wiley {
     $mech->submit_form(with_fields => {
         'fileFormat' => 'BIBTEX', 'hasAbstract' => 'CITATION_AND_ABSTRACT'});
     my $entry = parse_bibtex(decode('utf8', $mech->content()));
+    $mech->back(); $mech->back();
 
     # Fill in the missing month
     my ($month) = ($mech->content() =~ m[<span id="issueDate">(\w*) \d*</span>]);
