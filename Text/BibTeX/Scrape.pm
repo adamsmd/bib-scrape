@@ -154,19 +154,30 @@ sub get_url {
     return $content;
 }
 
+sub get_mathml {
+    my ($str) = @_;
+    $str =~ s[<span\b[^>]*\bonclick="submitCitation\('(.*?)'\)"[^>]*>(<span\b[^>]*>.*?</span>|<img\b[^>]*>)</span>]
+        [@{[join(" ", split(/[\r\n]+/, get_url(decode_entities($1))))]}]g;
+    return $str;
+}
+
 sub parse_science_direct {
     my ($mech) = @_;
 
     # Find the title and reverse engineer the Unicode
     my ($title) = $mech->content() =~ m[<h1 class="svTitle">\s*(.*?)\s*</h1>]s;
+    my ($keywords) = $mech->content() =~ m[<ul class="keyword">\s*(.*?)\s*</ul>]s;
+    $keywords = "" unless defined $keywords;
+    $keywords =~ s[<li>(.*?)</li>][$1]sg;
+    $keywords = get_mathml($keywords);
+
     $title =~ s[<sup><a\b[^>]*\bclass="intra_ref"[^>]*>.*?</a></sup>][];
     $title =~ s[<span\b[^>]*\bonclick="submitCitation\('(.*?)'\)"[^>]*>(<span\b[^>]*>.*?</span>|<img\b[^>]*>)</span>]
         [@{[join(" ", split(/[\r\n]+/, get_url(decode_entities($1))))]}]g;
     my ($abst) = $mech->content() =~ m[<div class="abstract svAbstract">\s*(.*?)\s*</div>];
     $abst = "" unless defined $abst;
     $abst =~ s[<h2 class="secHeading" id="section_abstract">Abstract</h2>][]g;
-    $abst =~ s[<span\b[^>]*\bonclick="submitCitation\('(.*?)'\)"[^>]*>(<span\b[^>]*>.*?</span>|<img\b[^>]*>)</span>]
-        [@{[join(" ", split(/[\r\n]+/, get_url(decode_entities($1))))]}]g;
+    $abst = get_mathml($abst);
 
     $mech->follow_link(text => 'Export citation');
 
@@ -175,14 +186,15 @@ sub parse_science_direct {
     my $entry = parse_bibtex($mech->content());
     $entry->set('title', $title);
     $entry->set('abstract', $abst);
+    $entry->delete('keywords'); # Clear 'keywords' duplication that breaks Text::BibTeX
+    $entry->set('keywords', $keywords) if $keywords ne '';
     $mech->back();
 
     $mech->submit_form(with_fields => {
         'format' => 'cite-abs', 'citation-type' => 'RIS'});
     my $f = Text::RIS::parse(decode('utf8', $mech->content()))->bibtex();
     $entry->set('month', $f->get('month'));
-    $entry->delete('keywords');
-    $entry->set('keywords', $f->get('keywords')) if $f->get('keywords');
+
 # TODO: editor
 
     return $entry;
