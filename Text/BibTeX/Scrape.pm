@@ -297,13 +297,6 @@ sub parse_ieee_computer_society {
     my $entry = parse_bibtex($bibtex);
     update($entry, 'volume', sub { $_ = undef if $_ eq "0" });
 
-    my $html = Text::MetaBib::parse($mech->content());
-    $entry->set('abstract', $html->get('dc.description')->[0]) if $html->exists('dc.description');
-    if ($html->exists('dc.date')) {
-        my ($year, $month) = $html->date('dc.date');
-        $entry->set('month', $month);
-    }
-
     my ($ris) = $mech->content() =~ m[<div id="refWorksText-content">(.*?)</div>]si;
     $ris =~ s[<br>][\n]sig;
     $ris = decode_entities($ris); # Fix the HTML encoding
@@ -318,6 +311,13 @@ sub parse_ieee_computer_society {
             $entry->set('booktitle', $booktitle);
         }
     }
+
+    # Sometimes IEEE puts the month or abstract in MetaBib or RIS, but it is not
+    # consistent so we grab them from the HTML
+    my ($month) = ($mech->content() =~ m[<div class="abs-conf-location">\s*(\w+) \d\d-]is,
+                   $mech->content() =~ m[<div id="abs-issue-date-left">(\w+) \d\d\d\d]is);
+    $entry->set('month', $month);
+    $entry->set('abstract', $mech->content() =~ m[<div class="abs-articlesummary">(.*?)</div>]is);
 
     return $entry;
 }
@@ -354,7 +354,7 @@ sub parse_jstor {
                  'include'=>'abs', 'format'=>'bibtex', 'noDoi'=>'yesDoi'});
 
     my $cont = $mech->content();
-    $cont =~ s[\@comment{.*$][]gm; # hack to get around comments
+    $cont =~ s[\@comment{.*$][]gm; # hack to avoid comments
     $cont =~ s[JSTOR CITATION LIST][]g; # hack to avoid junk chars
     my $entry = parse_bibtex($cont);
     $entry->set('doi', '10.2307/' . $suffix);
