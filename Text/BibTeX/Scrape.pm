@@ -348,7 +348,7 @@ sub parse_jstor {
     # it hides the link for downloading BibTeX if we are not logged in.
     # We get around this by hard coding the URL that we know it should be at.
     my ($suffix) = $mech->content() =~
-        m[<div class="stable">Stable URL: .*www.jstor.org/stable/(\d+)</div>];
+        m[Stable URL: .*?://www.jstor.org/stable/(\d+)</a></div>];
     $mech->post("http://www.jstor.org/action/downloadSingleCitation",
                 {'singleCitation'=>'true', 'suffix'=>$suffix,
                  'include'=>'abs', 'format'=>'bibtex', 'noDoi'=>'yesDoi'});
@@ -362,7 +362,7 @@ sub parse_jstor {
     $entry->set('month', $month) if defined $month;
 
     $mech->back();
-    $entry->set('title', $mech->content() =~ m[(?<!<!--)<div class="hd title">(.*?)</div>]);
+    $entry->set('title', $mech->content() =~ m[<div class="mainCite"><h2 class="h3">(.*?)</h2>]);
     issn($entry,
          [$mech->content =~ m[>ISSN: (\d{7}[0-9X])<]],
          [$mech->content =~ m[>E-ISSN: (\d{7}[0-9X])<]]);
