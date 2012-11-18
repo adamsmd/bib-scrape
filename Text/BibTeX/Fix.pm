@@ -49,6 +49,7 @@ use Class::Struct 'Text::BibTeX::Fix::Impl' => {
   debug => '$', final_comma => '$',
   escape_acronyms => '$', isbn13 => '$', isbn_sep => '$', issn => '$',
   no_encode => '%', no_collapse => '%', omit => '%', omit_empty => '%',
+  title_action => '$',
 };
 
 sub Text::BibTeX::Fix::new {
@@ -75,6 +76,7 @@ sub Text::BibTeX::Fix::new {
     scalar_flag($cfg, \%options, 'isbn13', 0);
     scalar_flag($cfg, \%options, 'isbn_sep', '-');
     scalar_flag($cfg, \%options, 'issn', 'both');
+    scalar_flag($cfg, \%options, 'title_action', '');
 
     hash_flag($cfg, \%options, 'no_encode', qw(doi url eprint bib_scrape_url));
     hash_flag($cfg, \%options, 'no_collapse', qw());
@@ -199,8 +201,6 @@ sub Text::BibTeX::Fix::Impl::fix {
 #D[onald] Knuth
 #D. Knuth
 #Knuth, D.
-#
-#    }
 
     # Don't include pointless URLs to publisher's page
     # [][url][http://dx.doi.org/][];
@@ -239,6 +239,7 @@ sub Text::BibTeX::Fix::Impl::fix {
 
     # TODO: Title Capticalization: Initialisms, After colon, list of proper names
     update($entry, 'title', sub { s/((\d*[[:upper:]]\d*){2,})/{$1}/g; }) if $self->escape_acronyms;
+    update($entry, 'title', sub { eval $self->title_action });
 
     # Generate an entry key
     # TODO: Formats: author/editor1.last year title/journal.abbriv

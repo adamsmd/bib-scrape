@@ -178,6 +178,7 @@ my ($DEBUG, $SCRAPE, $FIX) =
 my ($ISBN13, $ISBN_SEP, $ISSN, $COMMA, $ESCAPE_ACRONYMS) =
    (      0,       '-','both',      1,                1);
 my (@NAME_FILE) = ('names.txt');
+my (@TITLE_ACTION_FILE) = ('nouns.txt');
 my (@INPUT, @EXTRA_FIELDS, %NO_ENCODE, %NO_COLLAPSE, %OMIT, %OMIT_EMPTY);
 
 GetOptions(
@@ -185,6 +186,8 @@ GetOptions(
     'input=s' => sub { push @INPUT, $_[1] },
     'names=s' => sub { if ($_[1] eq '') { @NAME_FILE=() }
                        else { push @NAME_FILE, $_[1] } },
+    'nouns=s' => sub { if ($_[1] eq '') { @TITLE_ACTION_FILE=() }
+                       else { push @TITLE_ACTION_FILE, $_[1] } },
 
     # Operating modes
     # TODO: make debug be verbose and go to STDERR
@@ -210,6 +213,7 @@ GetOptions(
 
 my $fixer = Text::BibTeX::Fix->new(
     valid_names => [map {read_valid_names($_)} @NAME_FILE],
+    title_action => join('\n', slurp_file(@TITLE_ACTION_FILE)),
     debug => $DEBUG,
     known_fields => [@EXTRA_FIELDS],
     isbn13 => $ISBN13,
@@ -280,4 +284,14 @@ sub read_valid_names {
     }
     close NAME_FILE;
     return map { @{$_} ? ($_) : () } @names;
+}
+
+sub slurp_file {
+    my @files = ();
+    for (@_) {
+        open(FILE, "<", $_) || die "Could not open file '$_': $!";
+        push @files, join('', <FILE>);
+        close FILE;
+    }
+    return @files;
 }
