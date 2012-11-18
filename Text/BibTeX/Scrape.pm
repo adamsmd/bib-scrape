@@ -398,7 +398,7 @@ sub parse_ios_press {
     my ($isbn) = ($mech->content() =~ m[>ISBN</td><td.*?>(.*?)</td>]i);
     $entry->set('isbn', $isbn) if defined $isbn;
 
-    my ($abstract) = ($mech->content() =~ m[>\s*Abstract\s*</h5>\s*<div class="blob">\s*<p>(.*?)</p>\s*</div>]i);
+    my ($abstract) = ($mech->content() =~ m[<div class="abstract">\s*<p>(.*?)</p>\s*</div>]i);
     $entry->set('abstract', $abstract) if defined $abstract;
 
     return $entry;
