@@ -156,7 +156,7 @@ sub get_url {
 
 sub get_mathml {
     my ($str) = @_;
-    $str =~ s[<span\b[^>]*\bonclick="submitCitation\('(.*?)'\)"[^>]*>(<span\b[^>]*>.*?</span>|<img\b[^>]*>)</span>]
+    $str =~ s[<span\b[^>]*\bonclick="submitCitation\('(.*?)'\)"[^>]*>(<span\b[^>]*>.*?</span>|<img\b[^>]*>.*?)</span>]
         [@{[join(" ", split(/[\r\n]+/, get_url(decode_entities($1))))]}]g;
     return $str;
 }
@@ -172,8 +172,7 @@ sub parse_science_direct {
     $keywords = get_mathml($keywords);
 
     $title =~ s[<sup><a\b[^>]*\bclass="intra_ref"[^>]*>.*?</a></sup>][];
-    $title =~ s[<span\b[^>]*\bonclick="submitCitation\('(.*?)'\)"[^>]*>(<span\b[^>]*>.*?</span>|<img\b[^>]*>)</span>]
-        [@{[join(" ", split(/[\r\n]+/, get_url(decode_entities($1))))]}]g;
+    $title = get_mathml($title);
     my ($abst) = $mech->content() =~ m[<div class="abstract svAbstract">\s*(.*?)\s*</div>];
     $abst = "" unless defined $abst;
     $abst =~ s[<h2 class="secHeading" id="section_abstract">Abstract</h2>][]g;
