@@ -153,7 +153,8 @@ sub Text::BibTeX::Fix::Impl::fix {
         m[^\d+$] || m[^\d+-\d+$] || m[^[A-Z]-\d+$] || m[^\d+-[A-Z]$] });
 
     check($entry, 'number', "suspect number", sub {
-        m[^\d+$] || m[^\d+--\d+$] || m[^\d+(/\d+)*$] || m[^\d+es$] });
+        m[^\d+$] || m[^\d+--\d+$] || m[^\d+(/\d+)*$] || m[^\d+es$] ||
+        m[^Special Issue \d+(--\d+)?$] || m[^Supplement S\d+$]});
 
     update($entry, 'isbn', sub { $_ = Text::ISBN::canonical($_, $self->isbn13, $self->isbn_sep) });
     # TODO: ISSN: Print vs electronic vs native, dash vs no-dash vs native
