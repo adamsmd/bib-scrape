@@ -2,7 +2,7 @@ http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=114969
 "Mc" name
 @article{McBride:2002:10.1017/S0956796802004355,
   author = {McBride, Conor},
-  title = {Faking it Simulating dependent types in Haskell},
+  title = {Faking it Simulating dependent types in {H}askell},
   journal = {Journal of Functional Programming},
   volume = {12},
   number = {4--5},

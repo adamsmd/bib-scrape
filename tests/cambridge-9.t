@@ -2,7 +2,7 @@ http://journals.cambridge.org/action/displayAbstract?aid=7916651
 Subtitle
 @article{Oliveira:2010:10.1017/S0956796810000171,
   author = {Oliveira, Bruno C. d. S. and Gibbons, Jeremy},
-  title = {Scala for generic programmers: Comparing Haskell and Scala support for generic programming},
+  title = {{S}cala for generic programmers: Comparing {H}askell and {S}cala support for generic programming},
   journal = {Journal of Functional Programming},
   volume = {20},
   number = {Special Issue 3--4},

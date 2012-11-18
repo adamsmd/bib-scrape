@@ -1,0 +1,13 @@
+# This file is just Perl code.
+# On entry, $_ will contain the contents of the 'title' field.
+# The value of $_ at the end of this file will be stored back in the 'title' field.
+
+# TIPS: Remember to put "\b", "/g" and/or "/i" if appropriate.
+
+s/\bHaskell\b/{H}askell/g;
+s/\bScheme\b/{S}cheme/g;
+s/\bScala\b/{S}cala/g;
+
+s/\bNaor\b/{N}aor/g;
+s/\bReingold\b/{R}eingold/g;
+s/\bC-Rules\b/{C}-Rules/g;
