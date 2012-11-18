@@ -255,15 +255,10 @@ sub Text::BibTeX::Fix::Impl::fix {
     }
 
     # Use bibtex month macros
-    update($entry, 'month', # Must be after field encoding
-           sub { my @x = split qr[\b];
-                 for (1..$#x) {
-                     $x[$_] = "" if $x[$_] eq "." and str2month(lc $x[$_-1]);
-                 }
-                 $_ = new Text::BibTeX::Value(
-                     map { (str2month(lc $_)) or ([Text::BibTeX::BTAST_STRING, $_]) }
-                     map { $_ ne "" ? $_ : () } @x)});
-
+    update($entry, 'month', # Must be after field encoding because we use macros
+           sub { s[\.$][]; # Remove dots due to abbriviations
+                 $_ = new Text::BibTeX::Value(str2month(lc $_) ||
+                     print "WARNING: Suspect month: $_\n"); });
 
     # Omit fields we don't want
     # TODO: controled per type or with other fields or regex matching
