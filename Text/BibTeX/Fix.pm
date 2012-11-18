@@ -501,6 +501,10 @@ sub canonical_names {
         push @names, decode('utf8', $name->format($name_format));
     }
 
+    # Warn about duplicate names
+    my %seen;
+    $seen{$_}++ and print "WARNING: Duplicate name $_\n" for @names;
+
     $entry->set($field, join(' and ', @names));
 }
 

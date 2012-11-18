@@ -1,7 +1,8 @@
 http://www.springerlink.com/content/l4m0g48020261740/about/
-Test ISBN
+Test ISBN and warning about duplicate names. (This paper actually has only one author.)
+WARNING: Duplicate name Duchowski, Andrew
 @incollection{Duchowski:2007:10.1007/978-1-84628-609-4_20,
-  author = {Duchowski, Andrew},
+  author = {Duchowski, Andrew and Duchowski, Andrew},
   affiliation = {Clemson University Department of Computer Science Clemson SC 29634},
   title = {Computer Science},
   booktitle = {Eye Tracking Methodology},
