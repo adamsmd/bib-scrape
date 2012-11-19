@@ -488,7 +488,7 @@ sub canonical_names {
           VALID_NAME:
             for my $_ (@$name_group) {
                 for my $part (qw(von last jr first)) {
-                    if (lc decode('utf8', join(' ', $name->part($part))) ne
+                    if (lc decode_entities(decode('utf8', join(' ', $name->part($part)))) ne
                         lc decode('utf8', join(' ', $_->part($part)))) {
                         next VALID_NAME;
                     }
@@ -500,8 +500,8 @@ sub canonical_names {
         print "WARNING: Suspect name @{[$name->format($name_format)]}\n" unless
             (not defined $name->part('von') and
              not defined $name->part('jr') and
-             first_name(decode('utf8', join(' ', $name->part('first')))) and
-             last_name(decode('utf8', join(' ', $name->part('last')))));
+             first_name(decode_entities(decode('utf8', join(' ', $name->part('first'))))) and
+             last_name(decode_entities(decode('utf8', join(' ', $name->part('last'))))));
 
         push @names, decode('utf8', $name->format($name_format));
     }
