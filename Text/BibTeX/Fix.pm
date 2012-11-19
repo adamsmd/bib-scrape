@@ -220,6 +220,11 @@ sub Text::BibTeX::Fix::Impl::fix {
     # regex delete if looks like doi
     # Fix Springer's use of 'note' to store 'doi'
     update($entry, 'note', sub { $_ = undef if $_ eq ($entry->get('doi') or "") });
+    # Remove series from note
+    update($entry, 'note', sub {
+        s/<ce:title>(.*?)<\/ce:title>//g; $_ = undef if $_ eq '';
+        $entry->set('series', $1) if $1 ne '' });
+    # TODO: canonicalize series PEPM'97 -> PEPM '97
 
     # Eliminate Unicode but not for doi and url fields (assuming \usepackage{url})
     for my $field ($entry->fieldlist()) {
