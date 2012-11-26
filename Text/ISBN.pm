@@ -38,7 +38,7 @@ sub canonical {
     my @digits = split(//, $isbn);
     my $was_isbn13;
 
-    if ($isbn =~ m/^[0-9]{10}$/) {
+    if ($isbn =~ m/^[0-9]{9}[0-9Xx]$/) {
         my $check = check_digit10($isbn); #check_digit(11, [10,9,8,7,6,5,4,3,2], @digits[0..8]);
         croak "Bad check digit in ISBN10.  Expecting $check in $isbn" unless $isbn =~ /$check$/;
         $isbn = '978' . $isbn;

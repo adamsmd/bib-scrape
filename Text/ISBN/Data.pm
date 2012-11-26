@@ -25,7 +25,7 @@ sub hyphenate {
     for (@hyphenations) {
         if ($isbn lt $_->[0]) {
             croak 'Bad ISBN range' if $isbn ge $_->[4];
-            $isbn =~ s[^(\d{$hyph[1]})(\d{$hyph[2]})(\d{$hyph[3]})(\d*)(\d)$][$1-$2-$3-$4-$5];
+            $isbn =~ s[^([0-9]{$hyph[1]})([0-9]{$hyph[2]})([0-9]{$hyph[3]})([0-9]*)([0-9Xx])$][$1-$2-$3-$4-$5];
             return $isbn;
         }
         @hyph = @$_;
