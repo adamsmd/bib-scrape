@@ -347,7 +347,7 @@ sub parse_jstor {
     # it hides the link for downloading BibTeX if we are not logged in.
     # We get around this by hard coding the URL that we know it should be at.
     my ($suffix) = $mech->content() =~
-        m[Stable URL: <a href=".*?://www.jstor.org/stable/(\d+)"];
+        m[Stable URL: .*?://www.jstor.org/stable/(\d+)\W];
     $mech->post("http://www.jstor.org/action/downloadCitation?userAction=export&format=bibtex&include=abs",
                 {'noDoi'=>$suffix, 'doi'=>"10.2307/$suffix"});
 
