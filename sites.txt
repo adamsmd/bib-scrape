@@ -1,7 +1,29 @@
+Publishers
+-------------
+
 http://ieeexplore.ieee.org/xpl/freeabs_all.jsp?arnumber=4567935&abstractAccess=no&userType=
 
 http://scitation.aip.org/getabs/servlet/GetabsServlet?prog=normal&id=SMJCAT000017000006001253000001&idtype=cvips&gifs=yes&ref=no
 
+MIT Press Journals
+http://www.mitpressjournals.org/doi/abs/10.1162/dmal.9780262562324.123
+
+Chicago Journals
+http://www.journals.uchicago.edu/doi/abs/10.1086/592572
+
+Usenix
+http://www.usenix.org/events/osdi04/tech/renesse.html
+http://www.usenix.org/events/osdi04/tech/swift.html
+http://www.usenix.org/events/osdi02/tech/madden.html
+http://www.usenix.org/publications/library/proceedings/sec98/paxson.html
+http://www.usenix.org/events/usenix04/tech/freenix/kreibich.html
+http://www.usenix.org/events/sec01/handley.html
+
+Wiley InterScience
++http://onlinelibrary.wiley.com/doi/10.1002/(SICI)1099-0526(199703/04)2:4%3C31::AID-CPLX8%3E3.0.CO;2-3/abstract
+
+Non-publishers
+-------------
 Amazon
 http://www.amazon.co.uk/Leviathan-Air-Pump-Hobbes-Boyle-Experimental/dp/0691024324/ref=sr_1_1?ie=UTF8&s=books&qid=1210959584&sr=1-1
 
@@ -33,41 +55,12 @@ http://dblp.uni-trier.de/rec/bibtex/journals/cacm/TaylorB01
 
 HighWire (multiple URLS?)
 
-MathSciNet
-http://www.ams.org/mathscinet/search/publdoc.html?=r=2&pg1=ISSI&s1=238619&r=1&l=20
-http://www.ams.org/mathscinet-getitem?mr=2262784
-
-MIT Press Journals
-http://www.mitpressjournals.org/doi/abs/10.1162/dmal.9780262562324.123
-
-Chicago Journals
-http://www.journals.uchicago.edu/doi/abs/10.1086/592572
-
-Usenix
-http://www.usenix.org/events/osdi04/tech/renesse.html
-http://www.usenix.org/events/osdi04/tech/swift.html
-http://www.usenix.org/events/osdi02/tech/madden.html
-http://www.usenix.org/publications/library/proceedings/sec98/paxson.html
-http://www.usenix.org/events/usenix04/tech/freenix/kreibich.html
-http://www.usenix.org/events/sec01/handley.html
-
-Wiley InterScience
-http://onlinelibrary.wiley.com/doi/10.1002/(SICI)1096-9071(199908)58:4%3C338::AID-JMV4%3E3.0.CO;2-5
-http://onlinelibrary.wiley.com/doi/10.1002/(SICI)1099-0526(199703/04)2:4%3
-C31::AID-CPLX8%3E3.0.CO;2-3/abstract
-
 WorldCat
 http://www.worldcat.org/isbn/9781844630158
 http://www.worldcat.org/oclc/52821313
 
-
- SpringerLink
-+http://www.springerlink.com/content/k7r7664443823655/about/
- 
-+Elsevier
-+http://www.elsevier.com/wps/find/journaldescription.cws_home/505625/description#description
-+http://www.elsevier.com/wps/find/journaldescription.cws_home/681021/description#description
-+
-+ScienceDirect
-+http://www.sciencedirect.com/science?_ob=ArticleURL&_udi=B75H1-5165HPB-2&_user=1105409&_coverDate=10%2F31%2F2010&_rdoc=1&_fmt=high&_orig=search&_origin=search&_sort=d&_docanchor=&view=c&_acct=C000051666&_version=1&_urlVersion=0&_userid=1105409&md5=3fa8419b522455368ac3abd6fd9184b2&searchtype=a
-
+Unsorted
+----------
+MathSciNet
+http://www.ams.org/mathscinet/search/publdoc.html?=r=2&pg1=ISSI&s1=238619&r=1&l=20
+http://www.ams.org/mathscinet-getitem?mr=2262784
