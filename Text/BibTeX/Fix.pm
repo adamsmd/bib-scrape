@@ -312,8 +312,9 @@ sub latex_encode
     $str =~ s[<a( .*?)?>(.*?)</a>][$2]isog; # Remove <a> links
     $str =~ s[<p(| [^>]*)>(.*?)</p>][$2\n\n]isg; # Replace <p> with "\n\n"
     $str =~ s[<par(| [^>]*)>(.*?)</par>][$2\n\n]isg; # Replace <par> with "\n\n"
-    $str =~ s[<span style="font-family:monospace\s*">(.*?)</span>][\\texttt{$1}]i; # Replace monospace spans with \texttt
-    $str =~ s[<span class="monospace\s*">(.*?)</span>][\\texttt{$1}]i; # Replace monospace spans with \texttt
+    $str =~ s[<span style="font-family:monospace\s*">(.*?)</span>][\\texttt{$1}]isg; # Replace monospace spans with \texttt
+    $str =~ s[<span class="monospace\s*">(.*?)</span>][\\texttt{$1}]isg; # Replace monospace spans with \texttt
+    $str =~ s[<span class="smallcaps\s*">(.*?)</span>][\\textsc{$1}]isg; # Replace small caps spans with \textsc
     $str =~ s[<span( .*?)?>(.*?)</span>][$2]isg; # Remove <span>
     $str =~ s[<span( .*?)?>(.*?)</span>][$2]isg; # Remove <span>
     $str =~ s[<i>(.*?)</i>][\\textit{$1}]isog; # Replace <i> with \textit
@@ -321,6 +322,8 @@ sub latex_encode
     $str =~ s[<em>(.*?)</em>][\\emph{$1}]isog; # Replace <em> with \emph
     $str =~ s[<strong>(.*?)</strong>][\\textbf{$1}]isog; # Replace <strong> with \textbf
     $str =~ s[<b>(.*?)</b>][\\textbf{$1}]isog; # Replace <b> with \textbf
+    $str =~ s[<tt>(.*?)</tt>][\\texttt{$1}]isog; # Replace <tt> with \texttt
+    $str =~ s[<code>(.*?)</code>][\\texttt{$1}]isog; # Replace <code> with \texttt
     $str =~ s[<small>(.*?)</small>][{\\small $1}]isog; # Replace <small> with \small
     $str =~ s[<sup>(.*?)</sup>][\\textsuperscript{$1}]isog; # Super scripts
     $str =~ s[<supscrpt>(.*?)</supscrpt>][\\textsuperscript{$1}]isog; # Super scripts
