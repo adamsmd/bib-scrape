@@ -259,6 +259,7 @@ sub parse_cambridge_university_press {
     $mech->back(); $mech->back();
 
     my ($abst) = $mech->content() =~ m[>Abstract</.*?><p>(<p>.*?</p>)\s*</p>]s;
+    $abst =~ s/\n+/\n/g if $abst;
     $entry->set('abstract', $abst) if $abst;
 
     $entry->set('title',
