@@ -224,7 +224,6 @@ sub Text::BibTeX::Fix::Impl::fix {
     update($entry, 'note', sub {
         s/<ce:title>(.*?)<\/ce:title>//g; $_ = undef if $_ eq '';
         $entry->set('series', $1) if $1 ne '' });
-    # TODO: canonicalize series PEPM'97 -> PEPM '97
 
     # Eliminate Unicode but not for doi and url fields (assuming \usepackage{url})
     for my $field ($entry->fieldlist()) {
@@ -232,6 +231,9 @@ sub Text::BibTeX::Fix::Impl::fix {
         $entry->set($field, latex_encode($entry->get($field)))
             unless exists $self->no_encode->{$field};
     }
+
+    # Canonicalize series: PEPM'97 -> PEPM~'97 (must be after Unicode escaping
+    update($entry, 'series', sub { s/([[:upper:]]+) *'(\d+)/$1~'$2/g; });
 
     # Collapse spaces and newlines
     $self->no_collapse->{$_} or update($entry, $_, sub {
