@@ -21,8 +21,8 @@ $months{'sept'} = 'sep';
 
 Text::BibTeX::add_macro_text($_, $months{$_}) for (keys %months);
 
-sub macro { [Text::BibTeX::BTAST_MACRO, shift()] }
+sub macro { my $x = shift; $x and [Text::BibTeX::BTAST_MACRO, $x] or undef }
 sub num2month { macro($macro_names[shift()-1]) or die "Invalid month number" }
-sub str2month { macro($months{shift()}) or die "Invalid month name" }
+sub str2month { macro($months{shift()}) }
 
 1;

@@ -268,8 +268,12 @@ sub Text::BibTeX::Fix::Impl::fix {
     # Use bibtex month macros
     update($entry, 'month', # Must be after field encoding because we use macros
            sub { s[\.$][]; # Remove dots due to abbriviations
-                 $_ = new Text::BibTeX::Value(str2month(lc $_) ||
-                     print "WARNING: Suspect month: $_\n"); });
+                 my @x = map {
+                     ($_ eq '/' || $_ eq '-') and [Text::BibTeX::BTAST_STRING, $_] or
+                     str2month(lc $_) or
+                     print "WARNING: Suspect month: $_\n" and [Text::BibTeX::BTAST_STRING, $_]}
+                   split /\b/;
+                 $_ = new Text::BibTeX::Value(@x)});
 
     # Omit fields we don't want
     # TODO: controled per type or with other fields or regex matching

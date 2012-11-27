@@ -413,8 +413,8 @@ sub parse_wiley {
     $mech->back(); $mech->back();
 
     # Fill in the missing month
-    my ($month) = ($mech->content() =~ m[<span id="issueDate">(\w*) \d*</span>]);
-    $entry->set('month', $month);
+    my ($month) = ($mech->content() =~ m[<span id="issueDate">((\w|\/)*) \d*</span>]);
+    $entry->set('month', $month) if $month;
     # Choose the title either from bibtex or HTML based on whether we thing the BibTeX has the proper math in it.
     $entry->set('title', $mech->content() =~ m[<h1 class="articleTitle">(.*?)</h1>]s)
         unless $entry->get('title') =~ /\$/;
