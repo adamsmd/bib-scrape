@@ -39,12 +39,12 @@ sub canonical {
     my $was_isbn13;
 
     if ($isbn =~ m/^[0-9]{9}[0-9Xx]$/) {
-        my $check = check_digit10($isbn); #check_digit(11, [10,9,8,7,6,5,4,3,2], @digits[0..8]);
+        my $check = check_digit10($isbn);
         croak "Bad check digit in ISBN10.  Expecting $check in $isbn" unless $isbn =~ /$check$/;
         $isbn = '978' . $isbn;
         $was_isbn13 = 0;
     } elsif ($isbn =~ m/^[0-9]{12}[0-9Xx]$/) {
-        my $check = check_digit13($isbn); #check_digit(10, [1,3,1,3,1,3,1,3,1,3,1,3], @digits[0..11]);
+        my $check = check_digit13($isbn);
         croak "Bad check digit in ISBN13.  Expecting $check in $isbn" unless $isbn =~ /$check$/;
         $was_isbn13 = 1;
     } else {

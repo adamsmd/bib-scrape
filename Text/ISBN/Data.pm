@@ -16,7 +16,7 @@ sub init {
   close *Text::ISBN::Data::DATA;
 }
 
-# Excepts ISBN 13 w/o dashes but w/ check digit
+# Accepts ISBN 13 w/o dashes but w/ check digit
 sub hyphenate {
     my ($isbn) = @_;
     init() unless @hyphenations;
