@@ -222,8 +222,10 @@ sub Text::BibTeX::Fix::Impl::fix {
     update($entry, 'note', sub { $_ = undef if $_ eq ($entry->get('doi') or "") });
     # Remove series from note
     update($entry, 'note', sub {
-        s/<ce:title>(.*?)<\/ce:title>//g; $_ = undef if $_ eq '';
-        $entry->set('series', $1) if $1 ne '' });
+        s/<xocs:full-name>(.*?)<\/xocs:full-name>//g;
+        s/<ce:title>(.*?)<\/ce:title>//g;
+        $entry->set('series', $1) if $1 ne '';
+        $_ = undef if /^\s*$/; });
 
     # Eliminate Unicode but not for doi and url fields (assuming \usepackage{url})
     for my $field ($entry->fieldlist()) {
