@@ -121,7 +121,7 @@ sub parse_acm {
 
     # Un-abbreviated journal title, but avoid spurious "journal" when
     # proceedings are published in SIGPLAN Not.
-     my $html = Text::MetaBib::parse($mech->content());
+    my $html = Text::MetaBib::parse($mech->content());
     $entry->set('journal', $html->get('citation_journal_title')->[0]) if $entry->exists('journal');
 
     $entry->set('author', $html->authors()) if $entry->exists('author');
@@ -451,7 +451,7 @@ sub parse_wiley {
     update($entry, 'abstract', sub { s[\\documentclass\{article\} \\usepackage\{mathrsfs\} \\usepackage\{amsmath,amssymb,amsfonts\} \\pagestyle\{empty\} \\begin\{document\} \\begin\{align\*\}(.*?)\\end\{align\*\} \\end\{document\}][\\ensuremath{$1}]isg; });
     update($entry, 'abstract', sub { s[<div class="para">(.*?)</div>][\n\n$1\n\n]isg });
     update($entry, 'abstract',
-           sub { s[Copyright (.|&copy;) \d\d\d\d John Wiley (.|&amp;) Sons, Ltd\.\s*][] });
+           sub { s[(Copyright )?(.|&copy;) \d\d\d\d John Wiley (.|&amp;) Sons, (Ltd|Inc)\.\s*][] });
     update($entry, 'abstract',
            sub { s[(.|&copy;) \d\d\d\d Wiley Periodicals, Inc\. Random Struct\. Alg\..*, \d\d\d\d][] });
     return $entry;
