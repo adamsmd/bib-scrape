@@ -1,15 +1,14 @@
 http://portal.acm.org/citation.cfm?id=908021&CFID=112731887&CFTOKEN=92268833&preflayout=tabs
  #^dissertation
  #^BUG (ACM's fault): download bibtex link is broken
-
-http://www.springerlink.com/content/m746t0/#section=281461&page=1
- #^broken? no export link?
+ #^Should follow to ProQuest
 http://portal.acm.org/citation.cfm?id=159531
  #^non ACM publication
 http://portal.acm.org/citation.cfm?id=1227145
  #^title is wrong (and not ACM publication)
-http://dx.doi.org/10.1145/53990.54007
- #^should use series to prefix booktitle
+
+http://www.springerlink.com/content/m746t0/#section=281461&page=1
+ #^broken? no export link?
 http://www.cambridge.org/gb/knowledge/isbn/item2705333/?site_locale=en_GB
  #^book
 
@@ -42,19 +41,4 @@ ieeexplore.ieee.org
  U(t,ab,au) S(t,ab) I(t,ab) x m
 onlinelibrary.wiley.com
  U(t,ab,Au) S(T,Ab) I(T,Ab) E m
-
-@article{scott:522,
-author = {Dana Scott},
-collaboration = {},
-title = {Data Types as Lattices},
-publisher = {SIAM},
-year = {1976},
-journal = {SIAM Journal on Computing},
-volume = {5},
-number = {3},
-pages = {522-587},
-keywords = {programming language semantics; lattice; continuous lattice; algebraic lattice; computability; retract; combinatory logic; lambda calculus; recursion theorem; enumeration degrees; continuous function; fixed-point theorem},
-url = {http://link.aip.org/link/?SMJ/5/522/1},
-doi = {10.1137/0205037}
-}
 

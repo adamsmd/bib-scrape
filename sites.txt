@@ -1,15 +1,18 @@
 Publishers
 -------------
 
-http://ieeexplore.ieee.org/xpl/freeabs_all.jsp?arnumber=4567935&abstractAccess=no&userType=
-
-http://scitation.aip.org/getabs/servlet/GetabsServlet?prog=normal&id=SMJCAT000017000006001253000001&idtype=cvips&gifs=yes&ref=no
+AIP / SIAM
+http://link.aip.org/link/?SMJ/5/522/1
+http://epubs.siam.org/doi/abs/10.1137/0205037
 
 MIT Press Journals
 http://www.mitpressjournals.org/doi/abs/10.1162/dmal.9780262562324.123
 
 Chicago Journals
 http://www.journals.uchicago.edu/doi/abs/10.1086/592572
+
+HighWire (Stanford)
+ multiple URLS and publishers (e.g. Science Mag). Identify by header data and "highwire-*-start" tag
 
 Usenix
 http://www.usenix.org/events/osdi04/tech/renesse.html
@@ -19,8 +22,15 @@ http://www.usenix.org/publications/library/proceedings/sec98/paxson.html
 http://www.usenix.org/events/usenix04/tech/freenix/kreibich.html
 http://www.usenix.org/events/sec01/handley.html
 
-Wiley InterScience
-+http://onlinelibrary.wiley.com/doi/10.1002/(SICI)1099-0526(199703/04)2:4%3C31::AID-CPLX8%3E3.0.CO;2-3/abstract
+ProQuest (Dissertations and Theses)
+http://search.proquest.com/pqdtft/docview/275952147/abstract/13AA872FF474C22B763/1?accountid=13265
+http://search.proquest.com/docview/914424665?accountid=13265
+http://search.proquest.com/docview/914424665/abstract?accountid=13265
+
+Cryptology ePrint Archive
+http://eprint.iacr.org/2006/125
+http://eprint.iacr.org/cgi-bin/cite.pl?entry=2006/014
+http://eprint.iacr.org/1998/002
 
 Non-publishers
 -------------
@@ -44,23 +54,46 @@ CrossRef
 http://dx.doi.org/10.1103/PhysRev.47.777
 http://dx.doi.org/10.1086/591837
 
-Cryptology ePrint Archive
-http://eprint.iacr.org/2006/125
-http://eprint.iacr.org/cgi-bin/cite.pl?entry=2006/014
-http://eprint.iacr.org/1998/002
-
 DBLP
 http://dblp.uni-trier.de/rec/bibtex/conf/iccS/TaylorDM02
 http://dblp.uni-trier.de/rec/bibtex/journals/cacm/TaylorB01
-
-HighWire (multiple URLS?)
 
 WorldCat
 http://www.worldcat.org/isbn/9781844630158
 http://www.worldcat.org/oclc/52821313
 
-Unsorted
-----------
 MathSciNet
+
+
+From DBLP: http://www.informatik.uni-trier.de/~ley/db/journals/publ/
+--------------
+Key: +Done, -Won't Do, *Many Publications
+
++   ACM
+    Academy Publisher
++   Cambridge University Press
++   Elsevier
+    Emerald
+    Hindawi
+    IBM Technical Journals
+    ICST
++   IEEE
+ *  IGI Global
+ *  Inderscience
+    INFORMS
+    Ingenta
++   IOS Press
+    MIT Press
+    NOW Publishers
+    Oldenbourg
++   Oxford University Press
+    Palgrave Macmillan
+    revues online
+    SAGE Publications
+    SIAM
++   Springer
+ *  Taylor & Francis
++   Wiley
+ *  World Scientific
 http://www.ams.org/mathscinet/search/publdoc.html?=r=2&pg1=ISSI&s1=238619&r=1&l=20
 http://www.ams.org/mathscinet-getitem?mr=2262784
