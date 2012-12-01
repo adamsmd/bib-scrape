@@ -267,9 +267,9 @@ sub Text::BibTeX::Fix::Impl::fix {
 
     # Use bibtex month macros
     update($entry, 'month', # Must be after field encoding because we use macros
-           sub { s[\.$][]; # Remove dots due to abbriviations
+           sub { s[\.($|-)][$1]g; # Remove dots due to abbriviations
                  my @x = map {
-                     ($_ eq '/' || $_ eq '-') and [Text::BibTeX::BTAST_STRING, $_] or
+                     ($_ eq '/' || $_ eq '-' || $_ eq '--') and [Text::BibTeX::BTAST_STRING, $_] or
                      str2month(lc $_) or
                      print "WARNING: Suspect month: $_\n" and [Text::BibTeX::BTAST_STRING, $_]}
                    split /\b/;
