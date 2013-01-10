@@ -6,7 +6,7 @@ http://www.sciencedirect.com/science/article/pii/S0304397500000499
   journal = {Theoretical Computer Science},
   volume = {248},
   number = {1--2},
-  series = {PEPM '97},
+  series = {PEPM~'97},
   pages = {29--98},
   month = oct,
   year = {2000},

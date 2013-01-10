@@ -165,15 +165,15 @@ sub parse_science_direct {
     my ($mech) = @_;
 
     # Find the title and reverse engineer the Unicode
-    my ($title) = $mech->content() =~ m[<h1 class="svTitle">\s*(.*?)\s*</h1>]s;
-    my ($keywords) = $mech->content() =~ m[<ul class="keyword">\s*(.*?)\s*</ul>]s;
+    my ($title) = $mech->content() =~ m[<h1 class="svTitle".*?>\s*(.*?)\s*</h1>]s;
+    my ($keywords) = $mech->content() =~ m[<ul class="keyword".*?>\s*(.*?)\s*</ul>]s;
     $keywords = "" unless defined $keywords;
-    $keywords =~ s[<li>(.*?)</li>][$1]sg;
+    $keywords =~ s[<li.*?>(.*?)</li>][$1]sg;
     $keywords = get_mathml($keywords);
 
     $title =~ s[<sup><a\b[^>]*\bclass="intra_ref"[^>]*>.*?</a></sup>][];
     $title = get_mathml($title);
-    my ($abst) = $mech->content() =~ m[<div class="abstract svAbstract">\s*(.*?)\s*</div>];
+    my ($abst) = $mech->content() =~ m[<div class="abstract svAbstract *">\s*(.*?)\s*</div>];
     $abst = "" unless defined $abst;
     $abst =~ s[<h2 class="secHeading" id="section_abstract">Abstract</h2>][]g;
     $abst = get_mathml($abst);

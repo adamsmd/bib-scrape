@@ -63,6 +63,8 @@ http://www.worldcat.org/isbn/9781844630158
 http://www.worldcat.org/oclc/52821313
 
 MathSciNet
+http://www.ams.org/mathscinet/search/publdoc.html?=r=2&pg1=ISSI&s1=238619&r=1&l=20
+http://www.ams.org/mathscinet-getitem?mr=2262784
 
 
 From DBLP: http://www.informatik.uni-trier.de/~ley/db/journals/publ/
@@ -95,5 +97,3 @@ Key: +Done, -Won't Do, *Many Publications
  *  Taylor & Francis
 +   Wiley
  *  World Scientific
-http://www.ams.org/mathscinet/search/publdoc.html?=r=2&pg1=ISSI&s1=238619&r=1&l=20
-http://www.ams.org/mathscinet-getitem?mr=2262784

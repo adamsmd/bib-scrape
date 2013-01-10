@@ -4,7 +4,7 @@ Subtitle and capitalization problems
   author = {Das, Manuvir and Lerner, Sorin and Seigle, Mark},
   title = {{ESP}: {P}ath-sensitive program verification in polynomial time},
   booktitle = {Proceedings of the ACM SIGPLAN 2002 Conference on Programming language design and implementation},
-  series = {PLDI '02},
+  series = {PLDI~'02},
   location = {Berlin, Germany},
   pages = {57--68},
   numpages = {12},

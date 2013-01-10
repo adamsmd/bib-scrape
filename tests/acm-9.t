@@ -4,7 +4,7 @@ No abstract
   author = {Banning, John P.},
   title = {An efficient way to find the side effects of procedure calls and the aliases of variables},
   booktitle = {Proceedings of the 6th ACM SIGACT-SIGPLAN symposium on Principles of programming languages},
-  series = {POPL '79},
+  series = {POPL~'79},
   location = {San Antonio, Texas},
   pages = {29--41},
   numpages = {13},

@@ -4,7 +4,7 @@ Subtitle
   author = {Might, Matthew and Shivers, Olin},
   title = {Improving Flow Analyses via {\textgreek{G}}{CFA}: Abstract Garbage Collection and Counting},
   booktitle = {Proceedings of the eleventh ACM SIGPLAN international conference on Functional programming},
-  series = {ICFP '06},
+  series = {ICFP~'06},
   location = {Portland, Oregon, USA},
   pages = {13--25},
   numpages = {13},

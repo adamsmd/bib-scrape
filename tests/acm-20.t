@@ -4,7 +4,7 @@ Bullets in abstract
   author = {Adams, Michael D. and Wise, David S.},
   title = {Seven at one stroke: results from a cache-oblivious paradigm for scalable matrix algorithms},
   booktitle = {Proceedings of the 2006 workshop on Memory system performance and correctness},
-  series = {MSPC '06},
+  series = {MSPC~'06},
   location = {San Jose, California},
   pages = {41--50},
   numpages = {10},

@@ -4,7 +4,7 @@ Italics and quotes in abstract
   author = {Di Gianantonio, Pietro and Honsell, Furio and Liquori, Luigi},
   title = {A lambda calculus of objects with self-inflicted extension},
   booktitle = {Proceedings of the 13th ACM SIGPLAN conference on Object-oriented programming, systems, languages, and applications},
-  series = {OOPSLA '98},
+  series = {OOPSLA~'98},
   location = {Vancouver, British Columbia, Canada},
   pages = {166--178},
   numpages = {13},

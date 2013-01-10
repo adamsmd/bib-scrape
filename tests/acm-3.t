@@ -4,7 +4,7 @@ Decodes HTML in abstract
   author = {Might, Matthew},
   title = {Logic-flow analysis of higher-order programs},
   booktitle = {Proceedings of the 34th annual ACM SIGPLAN-SIGACT symposium on Principles of programming languages},
-  series = {POPL '07},
+  series = {POPL~'07},
   location = {Nice, France},
   pages = {185--198},
   numpages = {14},

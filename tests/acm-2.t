@@ -4,7 +4,7 @@ Converts HTML italics to Tex, "Van" in author
   author = {Van Horn, David and Mairson, Harry G.},
   title = {Deciding \textit{k}{CFA} is complete for {EXPTIME}},
   booktitle = {Proceedings of the 13th ACM SIGPLAN international conference on Functional programming},
-  series = {ICFP '08},
+  series = {ICFP~'08},
   location = {Victoria, BC, Canada},
   pages = {275--282},
   numpages = {8},
