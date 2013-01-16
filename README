@@ -1,24 +1,30 @@
 Title: bib-scrape
-Version: 1.0
+Author: Michael D. Adams
 
 This is a BibTeX scraper for collecting BibTeX entries from the
 websites of computer-science academic publishers.  I use it personally
-to make preparing my BibTeX files easier.  Currently it supports ACM,
-Springer, IEEE Computer Society, IEEE Explore, Science Direct,
-Cambridge Journals (e.g. Journal of Functional Programming), JSTOR,
-IOS Press, and Wiley.
+to make preparing my BibTeX files easier.  Currently it supports
+ - ACM,
+ - Springer,
+ - Science Direct,
+ - IEEE Computer Society,
+ - IEEE Explore,
+ - Cambridge Journals (e.g. Journal of Functional Programming),
+ - JSTOR,
+ - IOS Press, and
+ - Wiley.
 
 In addition, this scraper fixes common problems with the BibTeX that
 these services provide.  For example, it fixes:
  - the handling of Unicode and other formatting (e.g. subscripts) in titles;
  - the incorrect use of the 'issue' field instead of the 'number' field;
- - the format of the 'doi' and 'pages' fields; and
+ - the format of the 'doi' and 'pages' fields;
  - the use of macros for the 'month' field; and
  - miscellaneous problems with specific publishers.
 
 Usage
 ================
-The usage is
+The basic usage is
   ./bib-scrape.pl URL ...
 
 Each URL is the page of an article you want to scrape.  Note that if
@@ -26,20 +32,29 @@ you have a DOI, then prefixing 'http://dx.doi.org/' on the DOI will
 form a usable URL.
 
 Examples:
-  ./bib-scrape.pl http://portal.acm.org/citation.cfm?id=1614435
-  ./bib-scrape.pl http://www.springerlink.com/content/nhw5736n75028853/
-  ./bib-scrape.pl http://dx.doi.org/10.1007/BF01975011
+  ./bib-scrape.pl 'http://portal.acm.org/citation.cfm?id=1614435'
+  ./bib-scrape.pl 'http://www.springerlink.com/content/nhw5736n75028853/'
+  ./bib-scrape.pl 'http://dx.doi.org/10.1007/BF01975011'
 
-Install
+For more details on usage and command-line flags run './bib-scrape.pl --help'.
+
+Installation
 ================
-HTML::Entities
-HTML::HeadParser
-cpan install Text::BibTeX
-cpan install WWW::Mechanize
-XML::Parser
+This program is not designed to be installed(*).  You just run it directly
+from where you unpacked it.  However, there are Perl modules that it depends
+on.  To install these dependancies run the following commands:
+  $ perl Build.PL
+  $ ./Build installdeps
+(Note that you may have to run the seccond command as root.)
 
-find -name \*.pl -o -name \*.pm |grep -v /unicode/ | xargs grep '^use'|perl -ne '/use ([^; ]+)/; print $1, "\n"'|sort -u|xargs corelist|grep 'not in CORE'
+IMPORTANT: Be sure to always run the program from the directory where
+you unpacked it.  If you run the program from any other directory, it
+will not be able to find the names.txt and nouns.txt files.
 
+(*) There are two reasons for this.  First, Perl doesn't have a very
+good method of packaging applications.  Second, I don't know how to
+make the program find names.txt and nouns.txt in such a packaging.  I
+would welcome help in preparing such a packaging.
 
 Disclaimer
 ================
@@ -65,11 +80,10 @@ and so forth.
 However, since I am the only maintainer and there are hundreds of
 publishers, I have to limit what publishers to support.  If you find a
 computer-science publisher that I forgot, let me know and I'll add it.
-I'm more hesitant to add other publishers.
-
-TODO: Also as a matter of policy, I tend to prefer the publisher's
-page over that of an aggregator (e.g. BibSonomy).  My rule of thumb
-is that I'll grab the data from where the DOI points.
+I'm more hesitant to add publishers from other fields.  Also, as a
+matter of policy, I prefer to scrape from publisher pages instead of
+from aggregators (e.g. BibSonomy) as aggregators are much less
+predictable in the sorts of errors they introduce.
 
 Features
 ================
@@ -110,21 +124,20 @@ Limitations
    Latex code that don't get preserved by the publishers. Though
    bib-scrape will do it's best, the results are often spotty.
    Example $O$$($n$)$.
-
-   - IOS press often doesn't preserve mathematical italics, and
-     you can get better results by visiting the corresponding page on SpringerLink.
-   
-
+ - IOS press often doesn't preserve mathematical italics, and
+   you can get better results by visiting the corresponding page on SpringerLink.
  - Formatting of author names is the biggest problem.  The data from
    the publishers is often incomplete or incorrect.  For example,
    I've found 'Blume' misspelled as 'Blu', 'Bruno C.d.S Oliviera'
    listed as 'Bruno Oliviera' and 'Simon Peyton Jones' listed as
    'Jones, Simon Peyton'.  
- - Data from the publishers if often wrong (e.g. incorrect author names: 'Blume' => 'Blu', Bruno C.d.S Oliviera, Simon Peyton Jones)
- - Many huristics are involved
+ - Data from the publishers is often wrong
+   (e.g. incorrect author names: 'Blu' instead of 'Blume').
+   Publishers seem to have particular trouble with Bruno C.d.S Oliviera and Simon Peyton Jones.
+ - Many huristics are involved in scraping and fixing the data.  This in an inherently fuzzy area.
  - Often 2-3 pages have to be loaded and publisher pages can be slow.
    In total it takes around 1 second per citation.
- - There are many BibTeX problems that it can't fix:
+ - There are many BibTeX problems that this program can't fix:
    - The howpublished field shouldn't be used for URLs.  Use the url field for that.
    - Names should be 'von last, first, jr' as it is the only unambiguous format in BibTeX.
    - Proper names in titles should be capitalized with braces (e.g. "{H}askell").
@@ -133,16 +146,17 @@ Limitations
 
 License
 ================
-Copyright (c) 2011, Michael D. Adams <http://www.cs.indiana.edu/~adamsmd/>
+Copyright (c) 2011-2013, Michael D. Adams <http://michaeldadams.org/>
 
-Permission to use, copy, modify, and/or distribute this software for any
-purpose with or without fee is hereby granted, provided that the above
-copyright notice and this permission notice appear in all copies.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.

@@ -1,0 +1,14 @@
+# This file is just Perl code.
+# On entry, $FIELD will contain the name of the current BibTeX field,
+# and $_ will contain the contents of the field.
+# The value of $_ at the end of this file will be stored back in the field.
+
+# TIPS: Remember to put "\b", "/g" and/or "/i" if appropriate.
+
+s/\bHaskell\b/{H}askell/g if $FIELD eq 'title';
+s/\bScheme\b/{S}cheme/g if $FIELD eq 'title';
+s/\bScala\b/{S}cala/g if $FIELD eq 'title';
+
+s/\bNaor\b/{N}aor/g if $FIELD eq 'title';
+s/\bReingold\b/{R}eingold/g if $FIELD eq 'title';
+s/\bC-Rules\b/{C}-Rules/g if $FIELD eq 'title';

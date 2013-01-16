@@ -4,6 +4,7 @@ use warnings;
 use strict;
 
 use Carp;
+use Safe;
 
 use Encode;
 use HTML::Entities qw(decode_entities);
@@ -18,6 +19,8 @@ use Text::BibTeX::Months qw(str2month);
 use Text::BibTeX::Name;
 use Text::BibTeX::NameFormat;
 use Text::BibTeX::Value;
+
+use vars ('$FIELD'); # Used to communicate with $self->field_action
 
 sub scalar_flag {
     my ($obj, $options, $field, $default) = @_;
@@ -49,7 +52,7 @@ use Class::Struct 'Text::BibTeX::Fix::Impl' => {
   debug => '$', final_comma => '$',
   escape_acronyms => '$', isbn13 => '$', isbn_sep => '$', issn => '$',
   no_encode => '%', no_collapse => '%', omit => '%', omit_empty => '%',
-  title_action => '$',
+  field_action => '$',
 };
 
 sub Text::BibTeX::Fix::new {
@@ -76,7 +79,7 @@ sub Text::BibTeX::Fix::new {
     scalar_flag($cfg, \%options, 'isbn13', 0);
     scalar_flag($cfg, \%options, 'isbn_sep', '-');
     scalar_flag($cfg, \%options, 'issn', 'both');
-    scalar_flag($cfg, \%options, 'title_action', '');
+    scalar_flag($cfg, \%options, 'field_action', '');
 
     hash_flag($cfg, \%options, 'no_encode', qw(doi url eprint bib_scrape_url));
     hash_flag($cfg, \%options, 'no_collapse', qw());
@@ -227,7 +230,7 @@ sub Text::BibTeX::Fix::Impl::fix {
         $entry->set('series', $1) if $1 ne '';
         $_ = undef if /^\s*$/; });
 
-    # Eliminate Unicode but not for doi and url fields (assuming \usepackage{url})
+    # Eliminate Unicode but not for no_encode fields (e.g. doi, url, etc.)
     for my $field ($entry->fieldlist()) {
         warn "Undefined $field" unless defined $entry->get($field);
         $entry->set($field, latex_encode($entry->get($field)))
@@ -249,7 +252,14 @@ sub Text::BibTeX::Fix::Impl::fix {
 
     # TODO: Title Capticalization: Initialisms, After colon, list of proper names
     update($entry, 'title', sub { s/((\d*[[:upper:]]\d*){2,})/{$1}/g; }) if $self->escape_acronyms;
-    update($entry, 'title', sub { eval $self->title_action });
+
+    for $FIELD ($entry->fieldlist()) {
+        my $compartment = new Safe;
+        $compartment->deny_only();
+        $compartment->share_from('Text::BibTeX::Fix', ['$FIELD']);
+        $compartment->share('$_');
+        update($entry, $FIELD, sub { $compartment->reval($self->field_action); });
+    }
 
     # Generate an entry key
     # TODO: Formats: author/editor1.last year title/journal.abbriv

@@ -1,0 +1,16 @@
+(!) Warn if wrong publisher
+ISSN needs to be added to springer (e.g. SYBR1)
+Take simple names from DBLP
+Nordic Journal of Computing: http://www.cs.helsinki.fi/njc/
+Control flow analysis in {S}cheme: http://dx.doi.org/10.1145/53990.54007
+  {S}cheme
+  abstract
+  month
+'https://dl.acm.org/citation.cfm?id=2175516'
+   Invalid digits or wrong number of digits in ISBN: 3642119565,9783642119569 at Text/BibTeX/Fix.pm line 159.
+   (Example of going wrong if using wrong publisher)
+Upper vs lower case after colon: https://dl.acm.org/citation.cfm?doid=78973.78977
+
+http://journals.cambridge.org/article_S0956796897002864: HTML entities in author name
+
+http://link.springer.com/chapter/10.1007/978-3-642-19718-5_14 -> http://www.springerlink.com/content/1qt504757p15u683/

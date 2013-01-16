@@ -11,7 +11,7 @@ use Text::BibTeX::Fix;
 use Text::BibTeX::Name;
 use Text::BibTeX::Scrape;
 
-$main::VERSION='1.1.2';
+$main::VERSION='2013.01.15';
 
 =head1 SYNOPSIS
 
@@ -40,6 +40,13 @@ Add <file> to the list of name files used to canonicalize author names.
 If <file> is the empty string, clears the list.
 
 See the L</NAME FILE> section for details on the format of name files.
+
+=item --action=<file>
+
+Add <file> to the list of action files used to canonicalize fields.
+If <file> is the empty string, clears the list.
+
+See the L</ACTION FILE> section for details on the format of action files.
 
 =head2 OPERATING MODES
 
@@ -85,15 +92,21 @@ an acronym) in braces to that BibTeX preserves their case.
 
 =head2 Per FIELD OPTIONS
 
-=item --field=STR
+=item --field=<field>
 
-=item --no-encode=STR
+Add a field to the list of known BibTeX fields.
 
-(TODO: --no-no-encode???)
+=item --no-encode=<field>
 
-=item --no-collapse=STR
+Add a field to the list of fields that should not be LaTeX encoded.
+By default this includes doi, url, eprint, and bib_scrape_url, but if
+this flag is specified on the command line, then only those explicitly
+listed on the command line are included.
 
-(TODO: remove no-collapse?)
+=item --no-collapse=<field>
+
+Add a filed to the list of fields that should not have their
+white space collapsed.
 
 =item --omit=<field>
 
@@ -124,9 +137,20 @@ Thus in some cases like a publisher using "Van Noort" instead of
 
 The default name file provides several examples and recommended practices.
 
-=cut
+=head2 ACTION FILES
 
-# TODO: nouns file (one per line, including renames but not case insensitivity?)
+An action file specifies transformations to be applied to each field.
+
+This file is just Perl code.
+On entry, $FIELD will contain the name of the current BibTeX field,
+and $_ will contain the contents of the field.
+The value of $_ at the end of this file will be stored back in the field.
+If it is undef then the field will be deleted.
+
+- TIP: Remember to check $FIELD so you transform only the correct fields.
+- TIP: Remember to put "\b", "/g" and/or "/i" on substitutions if appropriate.
+
+=cut
 
 ############
 # Options
@@ -163,9 +187,17 @@ The default name file provides several examples and recommended practices.
 # Flag about whether to Unicode, HTML, or LaTeX encode
 # Warning on duplicate names
 
+# ALWAYS_GEN_KEY
+#$PREFER_NEW 1 = use new when both new and old have a key
+#$ADD_NEW 1 = use new when only new has key
+#$REMOVE_OLD 1 = not use old when only new has key
+
 #my %RANGE = map {($_,1)} qw(chapter month number pages volume year);
 #my @REQUIRE_FIELDS = (...); # per type (optional regex on value)
 #my @RENAME
+
+# preserve key if from bib-tex?
+# warn about duplicate author names
 
 sub string_flag {
     my ($name, $HASH) = @_;
@@ -178,7 +210,7 @@ my ($DEBUG, $SCRAPE, $FIX) =
 my ($ISBN13, $ISBN_SEP, $ISSN, $COMMA, $ESCAPE_ACRONYMS) =
    (      0,       '-','both',      1,                1);
 my (@NAME_FILE) = ('names.txt');
-my (@TITLE_ACTION_FILE) = ('nouns.txt');
+my (@FIELD_ACTION_FILE) = ('action.txt');
 my (@INPUT, @EXTRA_FIELDS, %NO_ENCODE, %NO_COLLAPSE, %OMIT, %OMIT_EMPTY);
 
 GetOptions(
@@ -186,8 +218,8 @@ GetOptions(
     'input=s' => sub { push @INPUT, $_[1] },
     'names=s' => sub { if ($_[1] eq '') { @NAME_FILE=() }
                        else { push @NAME_FILE, $_[1] } },
-    'nouns=s' => sub { if ($_[1] eq '') { @TITLE_ACTION_FILE=() }
-                       else { push @TITLE_ACTION_FILE, $_[1] } },
+    'action=s' => sub { if ($_[1] eq '') { @FIELD_ACTION_FILE=() }
+                        else { push @FIELD_ACTION_FILE, $_[1] } },
 
     # Operating modes
     # TODO: make debug be verbose and go to STDERR
@@ -213,7 +245,7 @@ GetOptions(
 
 my $fixer = Text::BibTeX::Fix->new(
     valid_names => [map {read_valid_names($_)} @NAME_FILE],
-    title_action => join('\n', slurp_file(@TITLE_ACTION_FILE)),
+    field_action => join('\n', slurp_file(@FIELD_ACTION_FILE)),
     debug => $DEBUG,
     known_fields => [@EXTRA_FIELDS],
     isbn13 => $ISBN13,
