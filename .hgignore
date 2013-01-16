@@ -1,2 +1,11 @@
 syntax: glob
 *~
+Build
+Build.PL
+MANIFEST
+META.json
+META.yml
+MYMETA.json
+MYMETA.yml
+_build/*
+dist.sh
