@@ -11,7 +11,7 @@ use Text::BibTeX::Fix;
 use Text::BibTeX::Name;
 use Text::BibTeX::Scrape;
 
-$main::VERSION='2013.01.15';
+$main::VERSION='2013.01.16';
 
 =head1 SYNOPSIS
 
@@ -147,8 +147,9 @@ and $_ will contain the contents of the field.
 The value of $_ at the end of this file will be stored back in the field.
 If it is undef then the field will be deleted.
 
-- TIP: Remember to check $FIELD so you transform only the correct fields.
-- TIP: Remember to put "\b", "/g" and/or "/i" on substitutions if appropriate.
+TIP: Remember to check $FIELD so you transform only the correct fields.
+
+TIP: Remember to put "\b", "/g" and/or "/i" on substitutions if appropriate.
 
 =cut
 
@@ -187,6 +188,7 @@ If it is undef then the field will be deleted.
 # Flag about whether to Unicode, HTML, or LaTeX encode
 # Warning on duplicate names
 
+# TODO:
 # ALWAYS_GEN_KEY
 #$PREFER_NEW 1 = use new when both new and old have a key
 #$ADD_NEW 1 = use new when only new has key
@@ -196,6 +198,7 @@ If it is undef then the field will be deleted.
 #my @REQUIRE_FIELDS = (...); # per type (optional regex on value)
 #my @RENAME
 
+# TODO:
 # preserve key if from bib-tex?
 # warn about duplicate author names
 

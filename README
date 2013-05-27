@@ -87,7 +87,6 @@ predictable in the sorts of errors they introduce.
 
 Features
 ================
-
  - All fields except 'doi' and 'url' are escaped.  The 'doi' and 'url' fields
    are not escaped on the assumption that you are using the Latex url package.
 
@@ -117,6 +116,8 @@ Features
 
  - For ACM, the conference proceedings are preferred over SIGPLAN Notices.
 
+ - And much more ...
+
 Limitations
 ================
  - Basically don't trust the "title", "author" and "abstract" fields.
@@ -124,23 +125,30 @@ Limitations
    Latex code that don't get preserved by the publishers. Though
    bib-scrape will do it's best, the results are often spotty.
    Example $O$$($n$)$.
+
  - IOS press often doesn't preserve mathematical italics, and
    you can get better results by visiting the corresponding page on SpringerLink.
+
  - Formatting of author names is the biggest problem.  The data from
    the publishers is often incomplete or incorrect.  For example,
    I've found 'Blume' misspelled as 'Blu', 'Bruno C.d.S Oliviera'
    listed as 'Bruno Oliviera' and 'Simon Peyton Jones' listed as
    'Jones, Simon Peyton'.  
+
  - Data from the publishers is often wrong
    (e.g. incorrect author names: 'Blu' instead of 'Blume').
    Publishers seem to have particular trouble with Bruno C.d.S Oliviera and Simon Peyton Jones.
+
  - Many huristics are involved in scraping and fixing the data.  This in an inherently fuzzy area.
+
  - Often 2-3 pages have to be loaded and publisher pages can be slow.
    In total it takes around 1 second per citation.
+
  - There are many BibTeX problems that this program can't fix:
    - The howpublished field shouldn't be used for URLs.  Use the url field for that.
    - Names should be 'von last, first, jr' as it is the only unambiguous format in BibTeX.
    - Proper names in titles should be capitalized with braces (e.g. "{H}askell").
+
  - Complex math in titles or abstracts is likely to break.  A couple superscripts and
    greek charaters are fine, but more than that is trouble.
 
