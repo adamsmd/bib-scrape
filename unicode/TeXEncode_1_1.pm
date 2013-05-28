@@ -1,4 +1,4 @@
-package TeXEncode;
+package TeXEncode_1_1;
 
 use 5.008;
 use strict;

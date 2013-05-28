@@ -1,0 +1,1339 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{mathrsfs}
+\usepackage{mathabx}
+\usepackage{shuffle}
+\usepackage{textcomp}
+\begin{document}
+
+0022 X{\textquotedbl}X
+
+0023 X{\#{}}X
+
+0024 X{\${}}X
+
+0025 X{\%{}}X
+
+0026 X{\&{}}X
+
+003c X{\textless}X
+
+003e X{\textgreater}X
+
+005c X{\textbackslash}X
+
+005e X{\^{}}X
+
+005f X{\_{}}X
+
+007b X{\{{}}X
+
+007e X{\}{}}X
+
+007f X{\~{}}X
+
+00a0 X{~}X
+
+00a1 X{!`}X
+
+00a2 X{\textcent}X
+
+00a3 X{\pounds}X
+
+00a4 X{\textcurrency}X
+
+00a5 X{\textyen}X
+
+00a6 X{\textbrokenbar}X
+
+00a7 X{\S{}}X
+
+00a8 X{\textasciidieresis}X
+
+00a9 X{\textcopyright}X
+
+00aa X{\textordfeminine}X
+
+00ab X{\guillemotleft}X
+
+00ac X{\textlnot}X
+
+00ad X{\-{}}X
+
+00ae X{\textregistered}X
+
+00af X{\textasciimacron}X
+
+00b0 X{\textdegree}X
+
+00b1 X{\textpm}X
+
+00b2 X{\texttwosuperior}X
+
+00b3 X{\textthreesuperior}X
+
+00b4 X{\textasciiacute}X
+
+00b5 X{\textmu}X
+
+00b6 X{\P{}}X
+
+00b7 X{\textperiodcentered}X
+
+00b8 X{\c{}}X
+
+00b9 X{\textonesuperior}X
+
+00ba X{\textordmasculine}X
+
+00bb X{\guillemotright}X
+
+00bc X{\textonequarter}X
+
+00bd X{\textonehalf}X
+
+00be X{\textthreequarters}X
+
+00bf X{?`}X
+
+00c0 X{\`A}X
+
+00c1 X{\'A}X
+
+00c2 X{\^A}X
+
+00c3 X{\~A}X
+
+00c4 X{\"A}X
+
+00c5 X{\AA}X
+
+00c6 X{\AE}X
+
+00c7 X{\c{C}}X
+
+00c8 X{\`E}X
+
+00c9 X{\'E}X
+
+00ca X{\^E}X
+
+00cb X{\"E}X
+
+00cc X{\`I}X
+
+00cd X{\'I}X
+
+00ce X{\^I}X
+
+00cf X{\"I}X
+
+00d0 X{\DH}X
+
+00d1 X{\~N}X
+
+00d2 X{\`O}X
+
+00d3 X{\'O}X
+
+00d4 X{\^O}X
+
+00d5 X{\~O}X
+
+00d6 X{\"O}X
+
+00d7 X{\texttimes}X
+
+00d8 X{\O{}}X
+
+00d9 X{\`U}X
+
+00da X{\'U}X
+
+00db X{\^U}X
+
+00dc X{\"U}X
+
+00dd X{\'Y}X
+
+00de X{\TH}X
+
+00df X{\ss}X
+
+00e0 X{\`a}X
+
+00e1 X{\'a}X
+
+00e2 X{\^a}X
+
+00e3 X{\~a}X
+
+00e4 X{\"a}X
+
+00e5 X{\aa}X
+
+00e6 X{\ae}X
+
+00e7 X{\c{c}}X
+
+00e8 X{\`e}X
+
+00e9 X{\'e}X
+
+00ea X{\^e}X
+
+00eb X{\"e}X
+
+00ec X{\`i}X
+
+00ed X{\'i}X
+
+00ee X{\^i}X
+
+00ef X{\"i}X
+
+00f0 X{\dh}X
+
+00f1 X{\~n}X
+
+00f2 X{\`o}X
+
+00f3 X{\'o}X
+
+00f4 X{\^o}X
+
+00f5 X{\~o}X
+
+00f6 X{\"o}X
+
+00f7 X{\textdiv}X
+
+00f8 X{\o{}}X
+
+00f9 X{\`u}X
+
+00fa X{\'u}X
+
+00fb X{\^u}X
+
+00fc X{\"u}X
+
+00fd X{\'y}X
+
+00fe X{\th}X
+
+00ff X{\"y}X
+
+2002 X{\enspace}X
+
+2003 X{\quad}X
+
+2004 X{\hspace{0.33em}}X
+
+2005 X{\thickspace}X
+
+2006 X{\hspace{0.166em}}X
+
+2007 X{\hphantom{0}}X
+
+2008 X{\hphantom{,}}X
+
+2009 X{\thinspace}X
+
+200a X{\ensuremath{\mkern1mu}}X
+
+2010 X{-}X
+
+2013 X{--}X
+
+2014 X{---}X
+
+2015 X{\rule{1em}{1pt}}X
+
+2016 X{\ensuremath{\Vert}}X
+
+2018 X{\lq}X
+
+2019 X{\rq}X
+
+201a X{\quotesinglbase}X
+
+201c X{\textquotedblleft}X
+
+201d X{\textquotedblright}X
+
+201e X{\quotedblbase}X
+
+2020 X{\textdagger}X
+
+2021 X{\textdaggerdbl}X
+
+2022 X{\textbullet}X
+
+2024 X{.}X
+
+2025 X{..}X
+
+2026 X{\ldots}X
+
+2030 X{\textperthousand}X
+
+2031 X{\textpertenthousand}X
+
+2032 X{\ensuremath{\prime}}X
+
+2033 X{\ensuremath{''}}X
+
+2034 X{\ensuremath{'''}}X
+
+2035 X{\ensuremath{\backprime}}X
+
+2039 X{\guilsinglleft}X
+
+203a X{\guilsinglright}X
+
+2057 X{\ensuremath{''''}}X
+
+205f X{\ensuremath{\mkern4mu}}X
+
+2060 X{\ensuremath{\nolinebreak}}X
+
+2070 X{\ensuremath{^0}}X
+
+2071 X{\ensuremath{^i}}X
+
+2074 X{\ensuremath{^4}}X
+
+2075 X{\ensuremath{^5}}X
+
+2076 X{\ensuremath{^6}}X
+
+2077 X{\ensuremath{^7}}X
+
+2078 X{\ensuremath{^8}}X
+
+2079 X{\ensuremath{^9}}X
+
+207a X{\ensuremath{^+}}X
+
+207b X{\ensuremath{^-}}X
+
+207c X{\ensuremath{^=}}X
+
+207d X{\ensuremath{^(}}X
+
+207e X{\ensuremath{^)}}X
+
+207f X{\ensuremath{^n}}X
+
+2080 X{\ensuremath{_0}}X
+
+2081 X{\ensuremath{_1}}X
+
+2082 X{\ensuremath{_2}}X
+
+2083 X{\ensuremath{_3}}X
+
+2084 X{\ensuremath{_4}}X
+
+2085 X{\ensuremath{_5}}X
+
+2086 X{\ensuremath{_6}}X
+
+2087 X{\ensuremath{_7}}X
+
+2088 X{\ensuremath{_8}}X
+
+2089 X{\ensuremath{_9}}X
+
+208a X{\ensuremath{_+}}X
+
+208b X{\ensuremath{_-}}X
+
+208c X{\ensuremath{_=}}X
+
+208d X{\ensuremath{_(}}X
+
+208e X{\ensuremath{_)}}X
+
+20ac X{\texteuro}X
+
+20db X{\ensuremath{\dddot{}}}X
+
+20dc X{\ensuremath{\ddddot{}}}X
+
+2102 X{\ensuremath{\mathbb{C}}}X
+
+210a X{\ensuremath{\mathscr{g}}}X
+
+210b X{\ensuremath{\mathscr{H}}}X
+
+210c X{\ensuremath{\mathfrak{H}}}X
+
+210d X{\ensuremath{\mathbb{H}}}X
+
+210f X{\ensuremath{\hslash}}X
+
+2110 X{\ensuremath{\mathscr{I}}}X
+
+2111 X{\ensuremath{\Im}}X
+
+2112 X{\ensuremath{\mathscr{L}}}X
+
+2113 X{\ensuremath{\ell}}X
+
+2115 X{\ensuremath{\mathbb{N}}}X
+
+2116 X{\textnumero}X
+
+2118 X{\ensuremath{\wp}}X
+
+2119 X{\ensuremath{\mathbb{P}}}X
+
+211a X{\ensuremath{\mathbb{Q}}}X
+
+211b X{\ensuremath{\mathscr{R}}}X
+
+211c X{\ensuremath{\Re}}X
+
+211d X{\ensuremath{\mathbb{R}}}X
+
+2122 X{\texttrademark}X
+
+2124 X{\ensuremath{\mathbb{Z}}}X
+
+2126 X{\ensuremath{\Omega}}X
+
+2127 X{\ensuremath{\mho}}X
+
+2128 X{\ensuremath{\mathfrak{Z}}}X
+
+212b X{\AA}X
+
+212c X{\ensuremath{\mathscr{B}}}X
+
+212d X{\ensuremath{\mathfrak{C}}}X
+
+212f X{\ensuremath{\mathscr{e}}}X
+
+2130 X{\ensuremath{\mathscr{E}}}X
+
+2131 X{\ensuremath{\mathscr{F}}}X
+
+2133 X{\ensuremath{\mathscr{M}}}X
+
+2134 X{\ensuremath{\mathscr{o}}}X
+
+2135 X{\ensuremath{\aleph}}X
+
+2136 X{\ensuremath{\beth}}X
+
+2137 X{\ensuremath{\gimel}}X
+
+2138 X{\ensuremath{\daleth}}X
+
+213f X{\ensuremath{\BbbPi}}X
+
+2140 X{\ensuremath{\bbsum}}X
+
+2141 X{\ensuremath{\Game}}X
+
+2153 X{\ensuremath{\frac{1}{3}}}X
+
+2154 X{\ensuremath{\frac{2}{3}}}X
+
+2155 X{\ensuremath{\frac{1}{5}}}X
+
+2156 X{\ensuremath{\frac{2}{5}}}X
+
+2157 X{\ensuremath{\frac{3}{5}}}X
+
+2158 X{\ensuremath{\frac{4}{5}}}X
+
+2159 X{\ensuremath{\frac{1}{6}}}X
+
+215a X{\ensuremath{\frac{5}{6}}}X
+
+215b X{\ensuremath{\frac{1}{8}}}X
+
+215c X{\ensuremath{\frac{3}{8}}}X
+
+215d X{\ensuremath{\frac{5}{8}}}X
+
+215e X{\ensuremath{\frac{7}{8}}}X
+
+2190 X{\ensuremath{\leftarrow}}X
+
+2191 X{\ensuremath{\uparrow}}X
+
+2192 X{\ensuremath{\rightarrow}}X
+
+2193 X{\ensuremath{\downarrow}}X
+
+2194 X{\ensuremath{\leftrightarrow}}X
+
+2195 X{\ensuremath{\updownarrow}}X
+
+2196 X{\ensuremath{\nwarrow}}X
+
+2197 X{\ensuremath{\nearrow}}X
+
+2198 X{\ensuremath{\searrow}}X
+
+2199 X{\ensuremath{\swarrow}}X
+
+219a X{\ensuremath{\nleftarrow}}X
+
+219b X{\ensuremath{\nrightarrow}}X
+
+219c X{\ensuremath{\arrowwaveleft}}X
+
+219d X{\ensuremath{\arrowwaveright}}X
+
+219e X{\ensuremath{\twoheadleftarrow}}X
+
+21a0 X{\ensuremath{\twoheadrightarrow}}X
+
+21a2 X{\ensuremath{\leftarrowtail}}X
+
+21a3 X{\ensuremath{\rightarrowtail}}X
+
+21a6 X{\ensuremath{\mapsto}}X
+
+21a9 X{\ensuremath{\hookleftarrow}}X
+
+21aa X{\ensuremath{\hookrightarrow}}X
+
+21ab X{\ensuremath{\looparrowleft}}X
+
+21ac X{\ensuremath{\looparrowright}}X
+
+21ad X{\ensuremath{\leftrightsquigarrow}}X
+
+21ae X{\ensuremath{\nleftrightarrow}}X
+
+21b0 X{\ensuremath{\Lsh}}X
+
+21b1 X{\ensuremath{\Rsh}}X
+
+21b6 X{\ensuremath{\curvearrowleft}}X
+
+21b7 X{\ensuremath{\curvearrowright}}X
+
+21ba X{\ensuremath{\circlearrowleft}}X
+
+21bb X{\ensuremath{\circlearrowright}}X
+
+21bc X{\ensuremath{\leftharpoonup}}X
+
+21bd X{\ensuremath{\leftharpoondown}}X
+
+21be X{\ensuremath{\upharpoonright}}X
+
+21bf X{\ensuremath{\upharpoonleft}}X
+
+21c0 X{\ensuremath{\rightharpoonup}}X
+
+21c1 X{\ensuremath{\rightharpoondown}}X
+
+21c2 X{\ensuremath{\downharpoonright}}X
+
+21c3 X{\ensuremath{\downharpoonleft}}X
+
+21c4 X{\ensuremath{\rightleftarrows}}X
+
+21c5 X{\ensuremath{\dblarrowupdown}}X
+
+21c6 X{\ensuremath{\leftrightarrows}}X
+
+21c7 X{\ensuremath{\leftleftarrows}}X
+
+21c8 X{\ensuremath{\upuparrows}}X
+
+21c9 X{\ensuremath{\rightrightarrows}}X
+
+21ca X{\ensuremath{\downdownarrows}}X
+
+21cb X{\ensuremath{\leftrightharpoons}}X
+
+21cc X{\ensuremath{\rightleftharpoons}}X
+
+21cd X{\ensuremath{\nLeftarrow}}X
+
+21ce X{\ensuremath{\nLeftrightarrow}}X
+
+21cf X{\ensuremath{\nRightarrow}}X
+
+21d0 X{\ensuremath{\Leftarrow}}X
+
+21d1 X{\ensuremath{\Uparrow}}X
+
+21d2 X{\ensuremath{\Rightarrow}}X
+
+21d3 X{\ensuremath{\Downarrow}}X
+
+21d4 X{\ensuremath{\Leftrightarrow}}X
+
+21d5 X{\ensuremath{\Updownarrow}}X
+
+21da X{\ensuremath{\Lleftarrow}}X
+
+21db X{\ensuremath{\Rrightarrow}}X
+
+21dd X{\ensuremath{\rightsquigarrow}}X
+
+21f5 X{\ensuremath{\DownArrowUpArrow}}X
+
+21fd X{\ensuremath{\leftarrowtriangle}}X
+
+21fe X{\ensuremath{\rightarrowtriangle}}X
+
+21ff X{\ensuremath{\leftrightarrowtria*}}X
+
+2200 X{\ensuremath{\forall}}X
+
+2201 X{\ensuremath{\complement}}X
+
+2202 X{\ensuremath{\partial}}X
+
+2203 X{\ensuremath{\exists}}X
+
+2204 X{\ensuremath{\nexists}}X
+
+2205 X{\ensuremath{\varnothing}}X
+
+2207 X{\ensuremath{\nabla}}X
+
+2208 X{\ensuremath{\in}}X
+
+2209 X{\ensuremath{\notin}}X
+
+220a X{\ensuremath{\in}}X
+
+220b X{\ensuremath{\ni}}X
+
+220c X{\ensuremath{\not\ni}}X
+
+220f X{\ensuremath{\prod}}X
+
+2210 X{\ensuremath{\coprod}}X
+
+2211 X{\ensuremath{\sum}}X
+
+2213 X{\ensuremath{\mp}}X
+
+2214 X{\ensuremath{\dotplus}}X
+
+2216 X{\ensuremath{\setminus}}X
+
+2217 X{\ensuremath{\ast}}X
+
+2218 X{\ensuremath{\circ}}X
+
+2219 X{\ensuremath{\bullet}}X
+
+221a X{\ensuremath{\surd}}X
+
+221d X{\ensuremath{\propto}}X
+
+221e X{\ensuremath{\infty}}X
+
+221f X{\ensuremath{\rightangle}}X
+
+2220 X{\ensuremath{\angle}}X
+
+2221 X{\ensuremath{\measuredangle}}X
+
+2222 X{\ensuremath{\sphericalangle}}X
+
+2223 X{\ensuremath{\mid}}X
+
+2224 X{\ensuremath{\nmid}}X
+
+2225 X{\ensuremath{\parallel}}X
+
+2226 X{\ensuremath{\nparallel}}X
+
+2227 X{\ensuremath{\wedge}}X
+
+2228 X{\ensuremath{\vee}}X
+
+2229 X{\ensuremath{\cap}}X
+
+222a X{\ensuremath{\cup}}X
+
+222b X{\ensuremath{\int}}X
+
+222c X{\ensuremath{\iint}}X
+
+222d X{\ensuremath{\iiint}}X
+
+222e X{\ensuremath{\oint}}X
+
+222f X{\ensuremath{\surfintegral}}X
+
+2230 X{\ensuremath{\volintegral}}X
+
+2231 X{\ensuremath{\clwintegral}}X
+
+2234 X{\ensuremath{\therefore}}X
+
+2235 X{\ensuremath{\because}}X
+
+2237 X{\ensuremath{\Colon}}X
+
+2238 X{\ensuremath{\dotminus}}X
+
+223a X{\ensuremath{\mathbin{{:}\!\!{-}\!\!{:}}}}X
+
+223b X{\ensuremath{\homothetic}}X
+
+223c X{\ensuremath{\sim}}X
+
+223d X{\ensuremath{\backsim}}X
+
+223e X{\ensuremath{\lazysinv}}X
+
+2240 X{\ensuremath{\wr}}X
+
+2241 X{\ensuremath{\nsim}}X
+
+2242 X{\ensuremath{\eqsim}}X
+
+2243 X{\ensuremath{\simeq}}X
+
+2244 X{\ensuremath{\nsimeq}}X
+
+2245 X{\ensuremath{\cong}}X
+
+2246 X{\ensuremath{\approxnotequal}}X
+
+2247 X{\ensuremath{\ncong}}X
+
+2248 X{\ensuremath{\approx}}X
+
+2249 X{\ensuremath{\napprox}}X
+
+224a X{\ensuremath{\approxeq}}X
+
+224b X{\ensuremath{\tildetrpl}}X
+
+224c X{\ensuremath{\allequal}}X
+
+224d X{\ensuremath{\asymp}}X
+
+224e X{\ensuremath{\Bumpeq}}X
+
+224f X{\ensuremath{\bumpeq}}X
+
+2250 X{\ensuremath{\doteq}}X
+
+2251 X{\ensuremath{\doteqdot}}X
+
+2252 X{\ensuremath{\fallingdotseq}}X
+
+2253 X{\ensuremath{\risingdotseq}}X
+
+2254 X{\ensuremath{\coloneq}}X
+
+2255 X{\ensuremath{\eqcolon}}X
+
+2256 X{\ensuremath{\eqcirc}}X
+
+2257 X{\ensuremath{\circeq}}X
+
+2259 X{\ensuremath{\estimates}}X
+
+225b X{\ensuremath{\starequal}}X
+
+225c X{\ensuremath{\triangleq}}X
+
+225f X{\ensuremath{\questeq}}X
+
+2260 X{\ensuremath{\ne}}X
+
+2261 X{\ensuremath{\equiv}}X
+
+2262 X{\ensuremath{\nequiv}}X
+
+2264 X{\ensuremath{\leq}}X
+
+2265 X{\ensuremath{\geq}}X
+
+2266 X{\ensuremath{\leqq}}X
+
+2267 X{\ensuremath{\geqq}}X
+
+2268 X{\ensuremath{\lneqq}}X
+
+2269 X{\ensuremath{\gneqq}}X
+
+226a X{\ensuremath{\ll}}X
+
+226b X{\ensuremath{\gg}}X
+
+226c X{\ensuremath{\between}}X
+
+226d X{\ensuremath{\not\kern-0.3em\times}}X
+
+226e X{\ensuremath{\nless}}X
+
+226f X{\ensuremath{\ngtr}}X
+
+2270 X{\ensuremath{\nleq}}X
+
+2271 X{\ensuremath{\ngeq}}X
+
+2272 X{\ensuremath{\lesssim}}X
+
+2273 X{\ensuremath{\gtrsim}}X
+
+2276 X{\ensuremath{\lessgtr}}X
+
+2277 X{\ensuremath{\gtrless}}X
+
+2278 X{\ensuremath{\notlessgreater}}X
+
+2279 X{\ensuremath{\notgreaterless}}X
+
+227a X{\ensuremath{\prec}}X
+
+227b X{\ensuremath{\succ}}X
+
+227c X{\ensuremath{\preccurlyeq}}X
+
+227d X{\ensuremath{\succcurlyeq}}X
+
+227e X{\ensuremath{\precapprox}}X
+
+227f X{\ensuremath{\succapprox}}X
+
+2280 X{\ensuremath{\nprec}}X
+
+2281 X{\ensuremath{\nsucc}}X
+
+2282 X{\ensuremath{\subset}}X
+
+2283 X{\ensuremath{\supset}}X
+
+2284 X{\ensuremath{\nsubset}}X
+
+2285 X{\ensuremath{\nsupset}}X
+
+2286 X{\ensuremath{\subseteq}}X
+
+2287 X{\ensuremath{\supseteq}}X
+
+2288 X{\ensuremath{\nsubseteq}}X
+
+2289 X{\ensuremath{\nsupseteq}}X
+
+228a X{\ensuremath{\subsetneq}}X
+
+228b X{\ensuremath{\supsetneq}}X
+
+228d X{\ensuremath{\cupdot}}X
+
+228e X{\ensuremath{\uplus}}X
+
+228f X{\ensuremath{\sqsubset}}X
+
+2290 X{\ensuremath{\sqsupset}}X
+
+2291 X{\ensuremath{\sqsubseteq}}X
+
+2292 X{\ensuremath{\sqsupseteq}}X
+
+2293 X{\ensuremath{\sqcap}}X
+
+2294 X{\ensuremath{\sqcup}}X
+
+2295 X{\ensuremath{\oplus}}X
+
+2296 X{\ensuremath{\ominus}}X
+
+2297 X{\ensuremath{\otimes}}X
+
+2298 X{\ensuremath{\oslash}}X
+
+2299 X{\ensuremath{\odot}}X
+
+229a X{\ensuremath{\circledcirc}}X
+
+229b X{\ensuremath{\circledast}}X
+
+229d X{\ensuremath{\circleddash}}X
+
+229e X{\ensuremath{\boxplus}}X
+
+229f X{\ensuremath{\boxminus}}X
+
+22a0 X{\ensuremath{\boxtimes}}X
+
+22a1 X{\ensuremath{\boxdot}}X
+
+22a2 X{\ensuremath{\vdash}}X
+
+22a3 X{\ensuremath{\dashv}}X
+
+22a4 X{\ensuremath{\top}}X
+
+22a5 X{\ensuremath{\perp}}X
+
+22a7 X{\ensuremath{\truestate}}X
+
+22a8 X{\ensuremath{\forcesextra}}X
+
+22a9 X{\ensuremath{\Vdash}}X
+
+22aa X{\ensuremath{\Vvdash}}X
+
+22ab X{\ensuremath{\VDash}}X
+
+22ac X{\ensuremath{\nvdash}}X
+
+22ad X{\ensuremath{\nvDash}}X
+
+22ae X{\ensuremath{\nVdash}}X
+
+22af X{\ensuremath{\nVDash}}X
+
+22b2 X{\ensuremath{\vartriangleleft}}X
+
+22b3 X{\ensuremath{\vartriangleright}}X
+
+22b4 X{\ensuremath{\trianglelefteq}}X
+
+22b5 X{\ensuremath{\trianglerighteq}}X
+
+22b6 X{\ensuremath{\original}}X
+
+22b7 X{\ensuremath{\image}}X
+
+22b8 X{\ensuremath{\multimap}}X
+
+22b9 X{\ensuremath{\hermitconjmatrix}}X
+
+22ba X{\ensuremath{\intercal}}X
+
+22bb X{\ensuremath{\veebar}}X
+
+22be X{\ensuremath{\rightanglearc}}X
+
+22c0 X{\ensuremath{\bigwedge}}X
+
+22c1 X{\ensuremath{\bigvee}}X
+
+22c2 X{\ensuremath{\bigcap}}X
+
+22c3 X{\ensuremath{\bigcup}}X
+
+22c4 X{\ensuremath{\diamond}}X
+
+22c5 X{\ensuremath{\cdot}}X
+
+22c6 X{\ensuremath{\star}}X
+
+22c7 X{\ensuremath{\divideontimes}}X
+
+22c8 X{\ensuremath{\bowtie}}X
+
+22c9 X{\ensuremath{\ltimes}}X
+
+22ca X{\ensuremath{\rtimes}}X
+
+22cb X{\ensuremath{\leftthreetimes}}X
+
+22cc X{\ensuremath{\rightthreetimes}}X
+
+22cd X{\ensuremath{\backsimeq}}X
+
+22ce X{\ensuremath{\curlyvee}}X
+
+22cf X{\ensuremath{\curlywedge}}X
+
+22d0 X{\ensuremath{\Subset}}X
+
+22d1 X{\ensuremath{\Supset}}X
+
+22d2 X{\ensuremath{\Cap}}X
+
+22d3 X{\ensuremath{\Cup}}X
+
+22d4 X{\ensuremath{\pitchfork}}X
+
+22d6 X{\ensuremath{\lessdot}}X
+
+22d7 X{\ensuremath{\gtrdot}}X
+
+22d8 X{\ensuremath{\verymuchless}}X
+
+22d9 X{\ensuremath{\verymuchgreater}}X
+
+22da X{\ensuremath{\lesseqgtr}}X
+
+22db X{\ensuremath{\gtreqless}}X
+
+22de X{\ensuremath{\curlyeqprec}}X
+
+22df X{\ensuremath{\curlyeqsucc}}X
+
+22e2 X{\ensuremath{\not\sqsubseteq}}X
+
+22e3 X{\ensuremath{\not\sqsupseteq}}X
+
+22e6 X{\ensuremath{\lnsim}}X
+
+22e7 X{\ensuremath{\gnsim}}X
+
+22e8 X{\ensuremath{\precedesnotsimilar}}X
+
+22e9 X{\ensuremath{\succnsim}}X
+
+22ea X{\ensuremath{\ntriangleleft}}X
+
+22eb X{\ensuremath{\ntriangleright}}X
+
+22ec X{\ensuremath{\ntrianglelefteq}}X
+
+22ed X{\ensuremath{\ntrianglerighteq}}X
+
+22ee X{\ensuremath{\vdots}}X
+
+22ef X{\ensuremath{\cdots}}X
+
+22f0 X{\ensuremath{\upslopeellipsis}}X
+
+22f1 X{\ensuremath{\downslopeellipsis}}X
+
+2305 X{\ensuremath{\barwedge}}X
+
+2306 X{\ensuremath{\perspcorrespond}}X
+
+2308 X{\ensuremath{\lceil}}X
+
+2309 X{\ensuremath{\rceil}}X
+
+230a X{\ensuremath{\lfloor}}X
+
+230b X{\ensuremath{\rfloor}}X
+
+2315 X{\ensuremath{\recorder}}X
+
+2316 X{\ensuremath{\mathchar"2208}}X
+
+231c X{\ensuremath{\ulcorner}}X
+
+231d X{\ensuremath{\urcorner}}X
+
+231e X{\ensuremath{\llcorner}}X
+
+231f X{\ensuremath{\lrcorner}}X
+
+2322 X{\ensuremath{\frown}}X
+
+2323 X{\ensuremath{\smile}}X
+
+2329 X{\ensuremath{\langle}}X
+
+232a X{\ensuremath{\rangle}}X
+
+233d X{\ensuremath{\obar}}X
+
+23b0 X{\ensuremath{\lmoustache}}X
+
+23b1 X{\ensuremath{\rmoustache}}X
+
+27e8 X{\ensuremath{\langle}}X
+
+27e9 X{\ensuremath{\rangle}}X
+
+27f5 X{\ensuremath{\longleftarrow}}X
+
+27f6 X{\ensuremath{\longrightarrow}}X
+
+27f7 X{\ensuremath{\longleftrightarrow}}X
+
+27f8 X{\ensuremath{\Longleftarrow}}X
+
+27f9 X{\ensuremath{\Longrightarrow}}X
+
+27fa X{\ensuremath{\Longleftrightarrow}}X
+
+27fc X{\ensuremath{\longmapsto}}X
+
+27ff X{\ensuremath{\sim\joinrel\leadsto}}X
+
+2906 X{\ensuremath{\Mapsfrom}}X
+
+2907 X{\ensuremath{\Mapsto}}X
+
+290a X{\ensuremath{\Uuparrow}}X
+
+290b X{\ensuremath{\Ddownarrow}}X
+
+290d X{\ensuremath{\bkarow}}X
+
+290f X{\ensuremath{\dbkarow}}X
+
+2910 X{\ensuremath{\drbkarrow}}X
+
+2912 X{\ensuremath{\UpArrowBar}}X
+
+2913 X{\ensuremath{\DownArrowBar}}X
+
+2916 X{\ensuremath{\twoheadrightarrowtail}}X
+
+2925 X{\ensuremath{\hksearow}}X
+
+2926 X{\ensuremath{\hkswarow}}X
+
+2927 X{\ensuremath{\tona}}X
+
+2928 X{\ensuremath{\toea}}X
+
+2929 X{\ensuremath{\tosa}}X
+
+292a X{\ensuremath{\towa}}X
+
+292b X{\ensuremath{\rdiagovfdiag}}X
+
+292c X{\ensuremath{\fdiagovrdiag}}X
+
+292d X{\ensuremath{\seovnearrow}}X
+
+292e X{\ensuremath{\neovsearrow}}X
+
+292f X{\ensuremath{\fdiagovnearrow}}X
+
+2930 X{\ensuremath{\rdiagovsearrow}}X
+
+2931 X{\ensuremath{\neovnwarrow}}X
+
+2932 X{\ensuremath{\nwovnearrow}}X
+
+2940 X{\ensuremath{\circlearrowleft}}X
+
+2941 X{\ensuremath{\circlearrowright}}X
+
+294e X{\ensuremath{\LeftRightVector}}X
+
+294f X{\ensuremath{\RightUpDownVector}}X
+
+2950 X{\ensuremath{\DownLeftRightVector}}X
+
+2951 X{\ensuremath{\LeftUpDownVector}}X
+
+2952 X{\ensuremath{\LeftVectorBar}}X
+
+2953 X{\ensuremath{\RightVectorBar}}X
+
+2954 X{\ensuremath{\RightUpVectorBar}}X
+
+2955 X{\ensuremath{\RightDownVectorBar}}X
+
+2956 X{\ensuremath{\DownLeftVectorBar}}X
+
+2957 X{\ensuremath{\DownRightVectorBar}}X
+
+2958 X{\ensuremath{\LeftUpVectorBar}}X
+
+2959 X{\ensuremath{\LeftDownVectorBar}}X
+
+295a X{\ensuremath{\LeftTeeVector}}X
+
+295b X{\ensuremath{\RightTeeVector}}X
+
+295c X{\ensuremath{\RightUpTeeVector}}X
+
+295d X{\ensuremath{\RightDownTeeVector}}X
+
+295e X{\ensuremath{\DownLeftTeeVector}}X
+
+295f X{\ensuremath{\DownRightTeeVector}}X
+
+2960 X{\ensuremath{\LeftUpTeeVector}}X
+
+2961 X{\ensuremath{\LeftDownTeeVector}}X
+
+296e X{\ensuremath{\UpEquilibrium}}X
+
+296f X{\ensuremath{\ReverseUpEquilibrium}}X
+
+2970 X{\ensuremath{\RoundImplies}}X
+
+2980 X{\ensuremath{\Vvert}}X
+
+2993 X{\ensuremath{<\kern-0.58em(}}X
+
+299c X{\ensuremath{\Angle}}X
+
+29b8 X{\ensuremath{\obslash}}X
+
+29c4 X{\ensuremath{\boxdiag}}X
+
+29c5 X{\ensuremath{\boxbslash}}X
+
+29c6 X{\ensuremath{\boxast}}X
+
+29c7 X{\ensuremath{\boxcircle}}X
+
+29cf X{\ensuremath{\LeftTriangleBar}}X
+
+29d0 X{\ensuremath{\RightTriangleBar}}X
+
+29df X{\ensuremath{\dualmap}}X
+
+29e2 X{\ensuremath{\shuffle}}X
+
+29eb X{\ensuremath{\blacklozenge}}X
+
+29f4 X{\ensuremath{\RuleDelayed}}X
+
+2a00 X{\ensuremath{\bigodot}}X
+
+2a01 X{\ensuremath{\bigoplus}}X
+
+2a02 X{\ensuremath{\bigotimes}}X
+
+2a04 X{\ensuremath{\biguplus}}X
+
+2a05 X{\ensuremath{\bigsqcap}}X
+
+2a06 X{\ensuremath{\bigsqcup}}X
+
+2a07 X{\ensuremath{\conjquant}}X
+
+2a08 X{\ensuremath{\disjquant}}X
+
+2a09 X{\ensuremath{\bigtimes}}X
+
+2a0c X{\ensuremath{\iiiint}}X
+
+2a0d X{\ensuremath{\intbar}}X
+
+2a0e X{\ensuremath{\intBar}}X
+
+2a0f X{\ensuremath{\clockoint}}X
+
+2a16 X{\ensuremath{\sqrint}}X
+
+2a18 X{\ensuremath{\intx}}X
+
+2a19 X{\ensuremath{\intcap}}X
+
+2a1a X{\ensuremath{\intcup}}X
+
+2a1b X{\ensuremath{\upint}}X
+
+2a1c X{\ensuremath{\lowint}}X
+
+2a25 X{\ensuremath{\plusdot}}X
+
+2a2a X{\ensuremath{\minusdot}}X
+
+2a32 X{\ensuremath{\btimes}}X
+
+2a3c X{\ensuremath{\intprod}}X
+
+2a3d X{\ensuremath{\intprodr}}X
+
+2a3f X{\ensuremath{\amalg}}X
+
+2a5e X{\ensuremath{\perspcorrespond}}X
+
+2a6e X{\ensuremath{\stackrel{*}{=}}}X
+
+2a75 X{\ensuremath{\Equal}}X
+
+2a77 X{\ensuremath{\ddotseq}}X
+
+2a7d X{\ensuremath{\leqslant}}X
+
+2a7e X{\ensuremath{\geqslant}}X
+
+2a85 X{\ensuremath{\lessapprox}}X
+
+2a86 X{\ensuremath{\gtrapprox}}X
+
+2a87 X{\ensuremath{\lneq}}X
+
+2a88 X{\ensuremath{\gneq}}X
+
+2a89 X{\ensuremath{\lnapprox}}X
+
+2a8a X{\ensuremath{\gnapprox}}X
+
+2a8b X{\ensuremath{\lesseqqgtr}}X
+
+2a8c X{\ensuremath{\gtreqqless}}X
+
+2a95 X{\ensuremath{\eqslantless}}X
+
+2a96 X{\ensuremath{\eqslantgtr}}X
+
+2a9d X{\ensuremath{\Pisymbol{ppi020}{117}}}X
+
+2a9e X{\ensuremath{\Pisymbol{ppi020}{105}}}X
+
+2aa1 X{\ensuremath{\NestedLessLess}}X
+
+2aa2 X{\ensuremath{\NestedGreaterGreater}}X
+
+2aa3 X{\ensuremath{\partialmeetcontraction}}X
+
+2aae X{\ensuremath{\bumpeqq}}X
+
+2aaf X{\ensuremath{\preceq}}X
+
+2ab0 X{\ensuremath{\succeq}}X
+
+2ab5 X{\ensuremath{\precneqq}}X
+
+2ab6 X{\ensuremath{\succneqq}}X
+
+2ab7 X{\ensuremath{\precapprox}}X
+
+2ab8 X{\ensuremath{\succapprox}}X
+
+2ab9 X{\ensuremath{\precnapprox}}X
+
+2aba X{\ensuremath{\succnapprox}}X
+
+2ac5 X{\ensuremath{\subseteqq}}X
+
+2ac6 X{\ensuremath{\supseteqq}}X
+
+2acb X{\ensuremath{\subsetneqq}}X
+
+2acc X{\ensuremath{\supsetneqq}}X
+
+2adb X{\ensuremath{\mlcp}}X
+
+2add X{\ensuremath{\forksnot}}X
+
+2ae3 X{\ensuremath{\dashV}}X
+
+2ae4 X{\ensuremath{\Dashv}}X
+
+2af4 X{\ensuremath{\interleave}}X
+
+2afd X{\ensuremath{{{/}\!\!{/}}}}X
+
+301a X{\ensuremath{\openbracketleft}}X
+
+301b X{\ensuremath{\openbracketright}}X
+
+fb00 X{ff}X
+
+fb01 X{fi}X
+
+fb02 X{fl}X
+
+fb03 X{ffi}X
+
+fb04 X{ffl}X
+
+\end{document}

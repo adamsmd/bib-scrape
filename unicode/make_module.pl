@@ -1,11 +1,77 @@
 #!/usr/bin/perl
 
-# http://www.w3.org/TR/xml-entity-names/
-# XML: http://www.w3.org/2003/entities/2007xml/unicode.xml
-# XML.old: http://www.w3.org/Math/characters/unicode.xml
+# This module creates module that maps unicode characters to their
+# equivalent LaTeX escapes.  This program is organized into four phases.
+# In the first phase, the character mapping is calculated.
+# In the second phase, TeX files for testing the mapping are created (but only if $TEST_TEX is true).
+# In the third phase, the mapping is compared to 
 
-# TeX::Encode 1.3 uses http://www-sop.inria.fr/marelle/tralics/
-# TeX::Encode 1.1 uses other modules to reconstruct it
+
+
+# TODO: this file is newer than unicode-xml, but we still need to pull out the parsing of unicode.xml from that file for use in the $COMPARE code.
+
+# TODO: \i
+# TODO: 0x2254 (:= not :-)        
+# TODO: 0x2afg (has extra {})
+#
+## IPA extensions
+#025b X{\ensuremath{\varepsilon}}X
+#
+#0261 X{g}X
+#
+#0278 X{\ensuremath{\phi}}X
+#
+#029e X{\textturnk}X
+#
+## Spacing modifiers
+#
+#02bc X{\rasp}X
+#
+#02c6 X{\^{}}X
+#
+#02c7 X{\textasciicaron}X
+#
+#02d8 X{\textasciibreve}X
+#
+#02d9 X{\textperiodcentered}X
+#
+#02da X{\r{}}X
+#
+#02db X{\k{}}X
+#
+#02dc X{\~{}}X
+#
+#02dd X{\H{}}X
+#
+#02e5 X{\tone{55}}X
+#
+#02e6 X{\tone{44}}X
+#
+#02e7 X{\tone{33}}X
+#
+#02e8 X{\tone{22}}X
+#
+#02e9 X{\tone{11}}X
+#
+#$codes{0x00ad} = '\-'; # Don't want extra {} at the end
+#$codes{0x0192} = '\textflorin'; # Wrong: \ensuremath{f}
+#$codes{0x0195} = '\texthvlig'; # Missing
+#$codes{0x019e} = '\textnrleg'; # Missing
+##$codes{0x01aa} = '\ensuremath{\eth}'; # Wrong
+#$codes{0x01c2} = '\textdoublepipe'; # Missing
+#$codes{0x0237} = '\j'; # Missing
+#$codes{0x02c6} = '\^{}'; # Missing
+#$codes{0x02dc} = '\~{}'; # Wrong: \texttildelow
+#$codes{0x2013} = '--'; # Wrong: \textendash
+#$codes{0x2014} = '---'; # Wrong: \textemdash
+#$codes{0x201a} = '\quotesinglbase'; # Wrong: ,
+#$codes{0x201e} = '\quotedblbase'; # Wrong: ,,
+#$codes{0x2329} = '\ensuremath{\langle}'; # Missing
+#$codes{0x232a} = '\ensuremath{\rangle}'; # Missing
+#$codes{0x219c} = '\ensuremath{\arrowwaveleft}'; # Wrong: \arrowwaveright
+#$codes{0x2244} = '\ensuremath{\nsimeq}'; # Wrong: \nsime
+#delete $codes{0x03d0}; # Wrong: \Pisymbol{ppi022}{87}
+
 
 use warnings;
 use strict;
@@ -14,12 +80,10 @@ $|++;
 use IO::File;
 
 use Encode;
-use TeXEncode;
-use TeX::Encode;
+#use TeXEncode;
+#use TeX::Encode;
 #use XML::Parser;
 use List::MoreUtils qw(uniq);
-
-my ($TEST_TEX, $COMPARE, $MAKE_MODULE) = (0, 0, 1);
 
 my %codes;
 my %ccc;
@@ -39,7 +103,6 @@ other(); # 2000-2e7f, fb00-fb4f
 math_alpha(); # 1d400-1d4ff
 
 # Decomp
-# TODO: \i
 for (0x0000 .. 0xffff) {
     next if in_range($_, 0x0400, 0x04ff);
     next if in_range($_, 0x0600, 0x06ff);
@@ -93,6 +156,8 @@ sub set_codes {
 ########################################
 # Output
 
+########################
+# DEBUGGING CODE
 #for my $num (0x00a0 .. 0x03ff) {
 #    printf("%04x %s\n", $num, encode_utf8(chr($num))) if not exists $codes{$num};
 #}
@@ -101,133 +166,10 @@ sub set_codes {
 #    printf("%04x %s %s\n", $num, encode_utf8(chr($num)), $codes{$num}) if exists $ccc{$num} and $ccc{$num} != 0;
 #    
 #}
+# END DEBUGGING CODE
+########################
 
-sub start {
-    my ($file, @packages) = @_;
-    print $file "\\documentclass[11pt]{article}\n\\usepackage[T1]{fontenc}\n";
-    print $file "\\usepackage$_\n" for @packages;
-    print $file "\\begin{document}\n\n";
-}
-
-if ($TEST_TEX) {
-    my ($latin, $main, $greek, $ding, $math_alpha) =
-        map { IO::File->new("test/$_.tex", 'w') } qw(latin main greek ding math_alpha);
-
-    start($latin, qw({textcomp} {tipx}));
-    print $latin "\\renewcommand{\\|}{} % \\usepackage{fc}\n";
-    print $latin "\\newcommand{\\B}{} % \\usepackage{fc}\n";
-    print $latin "\\newcommand{\\G}{} % \\usepackage{fc}\n";
-    print $latin "\\newcommand{\\U}{} % \\usepackage{fc}\n";
-    print $latin "\\newcommand{\\h}{} % \\usepackage{vntex}\n";
-    print $latin "\\newcommand{\\OHORN}{} % \\usepackage{vntex}\n";
-    print $latin "\\newcommand{\\ohorn}{} % \\usepackage{vntex}\n";
-    print $latin "\\newcommand{\\UHORN}{} % \\usepackage{vntex}\n";
-    print $latin "\\newcommand{\\uhorn}{} % \\usepackage{vntex}\n";
-    print $latin "\\newcommand{\\textsubbreve}{} % DOES NOT EXIST\n";
-    print $latin "\\newcommand{\\cb}{} % \\usepackage{combelow}\n";
-
-    start($greek, qw({amssymb} [greek,english]{babel} {teubner}));
-    print $math_alpha "% Note: {amssymb} is for \\backepsilon and \\varkappa\n";
-
-    start($math_alpha, qw({amsmath} {amssymb} {bbold} {mathrsfs} {sansmath}));
-    print $math_alpha "% Note \\mathscr is defined only for upper case letters\n";
-    print $math_alpha "\\newcommand{\\mathbfscr}{} % Doesn't actually exist\n";
-    print $math_alpha "\\newcommand{\\mathbffrak}{} % Doesn't actually exist\n";
-    print $math_alpha "\\newcommand{\\mathsfbfsl}{} % Doesn't actually exist\n";
-
-    start($ding, qw({amssymb} {pifont} {pxfonts} {skak} {wasysym}));
-
-    start($main, qw({metre} {amsmath} {fixltx2e} {mathrsfs} {stmaryrd}
-                    {txfonts} {marvosym} {mathdots} {mathbbol}
-                    {shuffle} {tipa} {wasysym} {xfrac}));
-    print $main "% Note: {metre} must load before {amsmath}\n";
-    print $main "% {metre} is for \\metra\n";
-    print $main "% {fixltx2e} is for \\textsubscript\n";
-    print $main "% {mathrsfs} is for \\mathscr\n";
-    print $main "% {marvosym} is for \\Pfund and \\fax\n";
-    print $main "% {mathdots} is for \\iddots\n";
-    print $main "% {mathbbol} is for \\Lparen and \\Rparen\n";
-    print $main "% {shuffle} is for \\shuffle\n";
-    print $main "% {tipa} is for \\textschwa\n";
-    print $main "% {wasysym} is for \\diameter, \\invneg, \\wasylozenge, and \\recorder\n";
-
-    for (sort {$a <=> $b} keys %codes) {
-        my $file = (
-            in_range($_, 0x0000, 0x036f) ? $latin :
-            in_range($_, 0x0370, 0x03ff) ? $greek :
-            in_range($_, 0x0400, 0x01df) ? undef : # omitted: hebrew, arabic, etc.
-            in_range($_, 0x1e00, 0x1eff) ? $latin :
-            in_range($_, 0x1f00, 0x1fff) ? $greek :
-            in_range($_, 0x2000, 0x23ff) ? $main :
-            in_range($_, 0x2400, 0x27bf) ? $ding :
-            #   2400.. 27bf ding
-            #     2400 control
-            #     2460 digits
-            #     2500 box drawing
-            #     25a0 shapes
-            #     2600 misc
-            #     2700 ding
-            #     2733 -> 01..60 [05,0A,0B,28,4c,4e,53,54,55,57,5f,60,68-75,95,96,97,b0,bf]
-            #             13 [\checkmark]
-            #       
-            #   301a.. 301b open brackets
-            #   fb00.. fb04 *ffil
-            in_range($_, 0x27c0, 0x2e7f) ? $main :
-            in_range($_, 0xfb00, 0xfb04) ? $latin :
-            $_ >=0x1d400 && $_ <=0x1d7ff ? $math_alpha :
-            undef);
-
-        print $file sprintf("%04x X{%s}X\n\n", $_, $codes{$_});
-    }
-
-    print $_ "\\end{document}\n" for ($latin, $main, $greek, $ding, $math_alpha);
-}
-
-if ($COMPARE) {
-    my %unimath;
-    my $fh = IO::File->new("unimathsymbols.txt", 'r');
-    while (<$fh>) {
-        next if /^#/;
-        my @fields = split / *\^ */;
-        $unimath{hex($fields[0])} = $fields[2] if $fields[2] ne '';
-        #print "$fields[0]:$fields[2].\n";
-    }
-
-    for (sort {$a <=> $b}
-             (uniq(map {0+$_}   (keys %codes),
-                   map {0+$_}   (keys %unimath),
-                   map {ord $_} (keys %TeX::Encode::charmap::CHAR_MAP),
-                   map {ord $_} (keys %TeXEncode::LATEX_Escapes)))) {
-        my $num = $_;
-        my $str = chr($_);
-        my $self = $codes{$num};
-        my $other1 = $TeX::Encode::charmap::CHAR_MAP{$str};
-        my $other2 = $TeXEncode::LATEX_Escapes{$str};
-        my $other3 = $unimath{$num};
-        $self =~ s[\\ensuremath{(.*)}][$1] if defined $self;
-        $other1 =~ s[^\$(.*)\$$][\\ensuremath{$1}] if defined $other1;
-        $other2 =~ s[^\$(.*)\$$][\\ensuremath{$1}] if defined $other2;
-        $other3 =~ s[^\$(.*)\$$][\\ensuremath{$1}] if defined $other3;
-        if (defined $other3) {
-        unless (defined $self and defined $other3 and $other3 eq $self) {
-            printf("%04x %s", $num, encode_utf8(chr($num)));
-            # XML is better than XML.old
-            # XML is better than LATEX_Escapes when they conflict
-            # XML is a superset of LATEX_Escapes
-            #print(" ($other2)") if defined $other2;
-            # XML is better than CHAR_MAP when they conflict
-            # There are some in CHARP_MAP that are missing from XML
-            #print(" ($other1)") if defined $other1;
-            print(" ($other3)") if defined $other3;
-            print(" [$self]") if defined $self;
-            print("\n");
-        }
-        }
-    }
-}
-
-if ($MAKE_MODULE) {
-    print <<'EOT';
+print <<'EOT';
 package TeX::Unicode;
 use warnings;
 use strict;
@@ -236,10 +178,10 @@ use Carp;
 use Exporter qw(import);
 
 our @EXPORT = qw(unicode2tex);
-our @EXPORT_OK = qw();
+our @EXPORT_OK = qw(%CODES %CCC);
 
-my %CODES;
-my %CCC;
+our %CODES;
+our %CCC;
 
 #sub unicode2tex_old {
 #    my ($str) =  @_;
@@ -297,10 +239,12 @@ EOT
     );
 1;
 EOT
-}
 
 # END Output
 ########################################
+
+########################################
+# The following code to calculates the mapping.
 
 sub decomp {
     my ($char) = @_;

@@ -1,0 +1,176 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{amssymb}
+\usepackage[greek,english]{babel}
+\usepackage{teubner}
+\begin{document}
+
+\textgreek{\ensuremath{\varkappa} \ensuremath{\varrho}}
+
+0386 X{\'A}X
+
+0388 X{\'E}X
+
+0389 X{\'H}X
+
+038a X{\'{}{I}}X
+
+038c X{\'{}O}X
+
+038e X{\ensuremath{\mathrm{'Y}}}X
+
+038f X{\ensuremath{\mathrm{'\Omega}}}X
+
+0390 X{\ensuremath{\acute{\ddot{\iota}}}}X
+
+0391 X{\ensuremath{A}}X
+
+0392 X{\ensuremath{B}}X
+
+0393 X{\ensuremath{\Gamma}}X
+
+0394 X{\ensuremath{\Delta}}X
+
+0395 X{\ensuremath{E}}X
+
+0396 X{\ensuremath{Z}}X
+
+0397 X{\ensuremath{H}}X
+
+0398 X{\ensuremath{\Theta}}X
+
+0399 X{\ensuremath{I}}X
+
+039a X{\ensuremath{K}}X
+
+039b X{\ensuremath{\Lambda}}X
+
+039c X{\ensuremath{M}}X
+
+039d X{\ensuremath{N}}X
+
+039e X{\ensuremath{\Xi}}X
+
+039f X{\ensuremath{O}}X
+
+03a0 X{\ensuremath{\Pi}}X
+
+03a1 X{\ensuremath{R}}X
+
+03a3 X{\ensuremath{\Sigma}}X
+
+03a4 X{\ensuremath{T}}X
+
+03a5 X{\ensuremath{\Upsilon}}X
+
+03a6 X{\ensuremath{\Phi}}X
+
+03a7 X{\ensuremath{X}}X
+
+03a8 X{\ensuremath{\Psi}}X
+
+03a9 X{\ensuremath{\Omega}}X
+
+03aa X{\ensuremath{\mathrm{\ddot{I}}}}X
+
+03ab X{\ensuremath{\mathrm{\ddot{Y}}}}X
+
+03ac X{\'{$\alpha$}}X
+
+03ad X{\ensuremath{\acute{\epsilon}}}X
+
+03ae X{\ensuremath{\acute{\eta}}}X
+
+03af X{\ensuremath{\acute{\iota}}}X
+
+03b0 X{\ensuremath{\acute{\ddot{\upsilon}}}}X
+
+03b1 X{\ensuremath{\alpha}}X
+
+03b2 X{\ensuremath{\beta}}X
+
+03b3 X{\ensuremath{\gamma}}X
+
+03b4 X{\ensuremath{\delta}}X
+
+03b5 X{\ensuremath{\epsilon}}X
+
+03b6 X{\ensuremath{\zeta}}X
+
+03b7 X{\ensuremath{\eta}}X
+
+03b8 X{\ensuremath{\theta}}X
+
+03b9 X{\ensuremath{\iota}}X
+
+03ba X{\ensuremath{\kappa}}X
+
+03bb X{\ensuremath{\lambda}}X
+
+03bc X{\ensuremath{\mu}}X
+
+03bd X{\ensuremath{\nu}}X
+
+03be X{\ensuremath{\xi}}X
+
+03bf X{\ensuremath{o}}X
+
+03c0 X{\ensuremath{\pi}}X
+
+03c1 X{\ensuremath{\rho}}X
+
+03c2 X{\ensuremath{\varsigma}}X
+
+03c3 X{\ensuremath{\sigma}}X
+
+03c4 X{\ensuremath{\tau}}X
+
+03c5 X{\ensuremath{\upsilon}}X
+
+03c6 X{\ensuremath{\varphi}}X
+
+03c7 X{\ensuremath{\chi}}X
+
+03c8 X{\ensuremath{\psi}}X
+
+03c9 X{\ensuremath{\omega}}X
+
+03ca X{\ensuremath{\ddot{\iota}}}X
+
+03cb X{\ensuremath{\ddot{\upsilon}}}X
+
+03cc X{\'o}X
+
+03cd X{\ensuremath{\acute{\upsilon}}}X
+
+03ce X{\ensuremath{\acute{\omega}}}X
+
+03d1 X{\ensuremath{\vartheta}}X
+
+03d2 X{\ensuremath{\Upsilon}}X
+
+03d5 X{\ensuremath{\phi}}X
+
+03d6 X{\ensuremath{\varpi}}X
+
+03da X{\ensuremath{\Stigma}}X
+
+03dc X{\ensuremath{\Digamma}}X
+
+03dd X{\ensuremath{\digamma}}X
+
+03de X{\ensuremath{\Koppa}}X
+
+03e0 X{\ensuremath{\Sampi}}X
+
+03f0 X{\ensuremath{\varkappa}}X
+
+03f1 X{\ensuremath{\varrho}}X
+
+03f4 X{\ensuremath{\Theta}}X
+
+03f5 X{\ensuremath{\epsilon}}X
+
+03f6 X{\ensuremath{\backepsilon}}X
+
+\end{document}

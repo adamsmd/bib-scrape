@@ -1,0 +1,387 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{stmaryrd}
+\usepackage{xfrac}
+\usepackage{txfonts}
+\usepackage{mathdots}
+\usepackage{wasysym}
+% \usepackage{mathabx} Causes conflicts
+\usepackage{mathbbol}
+\usepackage{shuffle}
+\begin{document}
+
+% Avoid MnSymbol b/c it leads to conflicts
+
+2000:
+
+% General Punctuation
+
+00 \enskip \quad \enspace \quad
+04 \thickspace \medspace \hspace{0.166em} \hphantom{0}
+08 \hphantom{.} \thinspace \ensuremath{\mkern1mu} \hspace{0em}
+0c
+
+10 - \mbox{-} ++ {--}
+14 {---} {---} \ensuremath{\Vert} ++
+18 \textquoteleft \textquoteright \quotesinglbase ++
+1c \textquotedblleft \textquotedblright \quotedblbase ++
+
+20 \dag \ddag \textbullet ++
+24 . .. \ldots \textperiodcentered
+25 \\ \par ++ ++
+2c ++ ++ ++ ++
+
+30 \textperthousand \textpertenthousand \ensuremath{^{\prime}} \ensuremath{^{\prime\prime}}
+34 \ensuremath{^{\prime\prime\prime}} \ensuremath{^{\backprime}} \ensuremath{^{\backprime\backprime}} \ensuremath{^{\backprime\backprime\backprime}}
+38 \^{} \guilsinglleft \guilsinglright \textreferencemark
+3c {!!} \textinterrobang ++ ++
+
+54 ++ ++ ++ \ensuremath{^{\prime\prime\prime\prime}}
+58
+5c ++ ++ ++ \ensuremath{\mkern4mu}
+
+60 {}
+
+% Currency Symbols
+
+a0 ++ \textcolonmonetary
+a4 \textlira ++ \textnaira ++
+a8 ++ \textwon ++ \textdong
+ac \texteuro ++ ++ ++
+
+b0 ++ \textpeso \textguarani ++
+
+% Combining diacriticals for symbols
+
+2100:
+
+\def\mathscr{}
+\def\Pfund{}
+\def\fax{}
+
+00 ++ ++ \ensuremath{\mathbb{C}} {\textcelsius}
+04 ++ ++ ++ ++
+08 ++ {\textdegree{}F} \ensuremath{\mathscr{g}} \ensuremath{\mathscr{H}}
+0c \ensuremath{\mathfrak{H}} \ensuremath{\mathbb{H}} \ensuremath{h} \ensuremath{\hslash}
+
+10 \ensuremath{\mathscr{I}} \ensuremath{\Im} \ensuremath{\mathscr{L}} \ensuremath{\ell}
+14 \Pfund \ensuremath{\mathbb{N}} \textnumero \textcircledP
+18 \ensuremath{\wp} \ensuremath{\mathbb{P}} \ensuremath{\mathbb{Q}} \ensuremath{\mathscr{R}}
+1c \ensuremath{\Re} \ensuremath{\mathbb{R}} \textrecipe ++
+
+20 \textservicemark ++ \texttrademark ++
+24 \ensuremath{\mathbb{Z}} ++ \textohm \textmho
+28 \ensuremath{\mathfrak{Z}} ++ {K} \AA
+2c \ensuremath{\mathscr{B}} \ensuremath{\mathfrak{C}} \textestimated \ensuremath{\mathscr{e}}
+
+30 \ensuremath{\mathscr{E}} \ensuremath{\mathscr{F}} ++ \ensuremath{\mathscr{M}}
+34 \ensuremath{\mathscr{o}} \ensuremath{\aleph} \ensuremath{\beth} \ensuremath{\gimel}
+38 \ensuremath{\daleth} ++ ++ \fax
+3c \ensuremath{\mathbb{\pi}} \ensuremath{\mathbb{\gamma}} \ensuremath{\mathbb{\Gamma}} \ensuremath{\mathbb{\Pi}}
+
+40 \ensuremath{\mathbb{\sum}} \ensuremath{\Game} ++ ++
+44 ++ \ensuremath{\mathbb{D}} \ensuremath{\mathbb{d}} \ensuremath{\mathbb{e}}
+48 \ensuremath{\mathbb{i}} \ensuremath{\mathbb{j}} ++ ++
+
+% Number forms
+
+50 \sfrac{1}{7} \sfrac{1}{9} \sfrac{1}{10} \sfrac{1}{3}
+54 \sfrac{2}{3} \sfrac{1}{5} \sfrac{2}{5} \sfrac{3}{5}
+58 \sfrac{4}{5} \sfrac{1}{6} \sfrac{5}{6} \sfrac{1}{8}
+5c \sfrac{3}{8} \sfrac{5}{8} \sfrac{7}{8} \sfrac{1}{}
+
+60 I II III IV V VI VII VIII IX X XI XII L C D M
+
+70 i ii iii iv v vi vii viii ix x xi xii l c d m
+
+89 \sfrac{0}{3}
+
+% Arrows
+
+90 \ensuremath{\leftarrow} \ensuremath{\uparrow} \ensuremath{\rightarrow} \ensuremath{\downarrow}
+94 \ensuremath{\leftrightarrow} \ensuremath{\updownarrow} \ensuremath{\nwarrow} \ensuremath{\nearrow}
+98 \ensuremath{\searrow} \ensuremath{\swarrow} \ensuremath{\nleftarrow} \ensuremath{\nrightarrow} 
+9c ++ ++ \ensuremath{\twoheadleftarrow} \ensuremath{\twoheadrightarrow}
+
+a0 \ensuremath{\leftarrowtail} \ensuremath{\rightarrowtail} \ensuremath{\mapsto} \ensuremath{\mapsfrom}
+a4
+a8 ++ \ensuremath{\hookleftarrow} \ensuremath{\hookrightarrow} \ensuremath{\looparrowleft}
+ac \ensuremath{\looparrowright} \ensuremath{\leftrightsquigarrow} \ensuremath{\nleftrightarrow} \ensuremath{\lightning}
+
+b0 \ensuremath{\Lsh} \ensuremath{\Rsh} ++ ++
+b4 ++ ++ \ensuremath{\curvearrowleft} \ensuremath{\curvearrowright}
+b8 ++ ++ \ensuremath{\circlearrowleft} \ensuremath{\circlearrowright}
+bc \ensuremath{\leftharpoonup} \ensuremath{\leftharpoondown} \ensuremath{\upharpoonright} \ensuremath{\upharpoonleft}
+
+c0 \ensuremath{\rightharpoonup} \ensuremath{\rightharpoondown} \ensuremath{\downharpoonright} \ensuremath{\downharpoonleft}
+c4 \ensuremath{\rightleftarrows} ++ \ensuremath{\leftrightarrows} \ensuremath{\leftleftarrows}
+c8 \ensuremath{\upuparrows} \ensuremath{\rightrightarrows} \ensuremath{\downdownarrows} \ensuremath{\leftrightharpoons}
+cc \ensuremath{\rightleftharpoons} \ensuremath{\nLeftarrow} \ensuremath{\nLeftrightarrow} \ensuremath{\nRightarrow}
+
+d0 \ensuremath{\Leftarrow} \ensuremath{\Uparrow} \ensuremath{\Rightarrow} \ensuremath{\Downarrow}
+d4 \ensuremath{\Leftrightarrow} \ensuremath{\Updownarrow} \ensuremath{\Nwarrow} \ensuremath{\Nearrow}
+d8 \ensuremath{\Searrow} \ensuremath{\Swarrow} \ensuremath{\Lleftarrow} \ensuremath{\Rrightarrow}
+dd \ensuremath{\leftsquigarrow} \ensuremath{\rightsquigarrow} ++ ++
+
+e0 \ensuremath{\dashleftarrow} \ensuremath{\dashrightarrow} ++ ++
+
+fc ++ \ensuremath{\leftarrowtriangle} \ensuremath{\rightarrowtriangle} \ensuremath{\leftrightarrowtriangle} 
+
+2200:
+
+% Math operators
+
+00 \ensuremath{\forall} \ensuremath{\complement} \ensuremath{\partial} \ensuremath{\exists}
+04 \ensuremath{\nexists} \ensuremath{\varnothing} \ensuremath{\Delta} \ensuremath{\nabla}
+08 \ensuremath{\in} \ensuremath{\notin} ++ \ensuremath{\ni}
+0a \ensuremath{\notni} ++ \ensuremath{\Box} \ensuremath{\prod}
+
+10 \ensuremath{\coprod} \ensuremath{\sum} \ensuremath{-} \ensuremath{\mp}
+14 \ensuremath{\dotplus} \ensuremath{/} \ensuremath{\setminus} \ensuremath{\ast}
+18 \ensuremath{\circ} \ensuremath{\bullet} \ensuremath{\surd} \ensuremath{\sqrt[3]{}}
+1c \ensuremath{\sqrt[4]{}} \ensuremath{\propto} \ensuremath{\infty} ++
+
+20 \ensuremath{\angle} \ensuremath{\measuredangle} \ensuremath{\sphericalangle} \ensuremath{\mid}
+24 \ensuremath{\nmid} \ensuremath{\parallel} \ensuremath{\nparallel} \ensuremath{\wedge}
+28 \ensuremath{\vee} \ensuremath{\cap} \ensuremath{\cup} \ensuremath{\int}
+2c \ensuremath{\iint} \ensuremath{\iiint} \ensuremath{\oint} \ensuremath{\oiint}
+
+30 \ensuremath{\oiiint} ++ \ensuremath{\ointclockwise} \ensuremath{\ointctrclockwise}
+34 \ensuremath{\therefore} \ensuremath{\because} \ensuremath{\mathrel{:}} \ensuremath{\mathrel{::}}
+38 \ensuremath{\dot{-}} \ensuremath{\eqcolon} ++ ++
+3c \ensuremath{\sim} \ensuremath{\backsim} ++ ++
+
+40 \ensuremath{\wr} \ensuremath{\nsim} \ensuremath{\eqsim} \ensuremath{\simeq}
+44 \ensuremath{\nsimeq} \ensuremath{\cong} ++ \ensuremath{\ncong}
+48 \ensuremath{\approx} \ensuremath{\napprox} \ensuremath{\approxeq} ++
+4c ++ \ensuremath{\asymp} \ensuremath{\Bumpeq} \ensuremath{\bumpeq}
+
+50 \ensuremath{\doteq} \ensuremath{\doteqdot} \ensuremath{\fallingdotseq} \ensuremath{\risingdotseq}
+54 \ensuremath{\coloneq} \ensuremath{\eqcolon} \ensuremath{\eqcirc} \ensuremath{\circeq}
+58 ++ ++ ++ ++
+5c \ensuremath{\triangleq} ++ ++ ++
+
+60 \ensuremath{\ne} \ensuremath{\equiv} \ensuremath{\nequiv} ++
+64 \ensuremath{\leq} \ensuremath{\geq} \ensuremath{\leqq} \ensuremath{\geqq}
+68 \ensuremath{\lneqq} \ensuremath{\gneqq} \ensuremath{\ll} \ensuremath{\gg}
+6c \ensuremath{\between} \ensuremath{\not\asymp} \ensuremath{\nless} \ensuremath{\ngtr}
+
+70 \ensuremath{\nleq} \ensuremath{\ngeq} \ensuremath{\lesssim} \ensuremath{\gtrsim}
+74 \ensuremath{\nlesssim} \ensuremath{\ngtrsim} \ensuremath{\lessgtr} \ensuremath{\gtrless}
+78 \ensuremath{\ngtrless} \ensuremath{\nlessgtr} \ensuremath{\prec} \ensuremath{\succ}
+7c \ensuremath{\preccurlyeq} \ensuremath{\succcurlyeq} \ensuremath{\precsim} \ensuremath{\succsim}
+
+80 \ensuremath{\nprec} \ensuremath{\nsucc} \ensuremath{\subset} \ensuremath{\supset}
+84 \ensuremath{\nsubset} \ensuremath{\nsupset} \ensuremath{\subseteq} \ensuremath{\supseteq}
+88 \ensuremath{\nsubseteq} \ensuremath{\nsupseteq} \ensuremath{\subsetneq} \ensuremath{\supsetneq}
+8c ++ ++ \ensuremath{\uplus} \ensuremath{\sqsubset}
+
+90 \ensuremath{\sqsupset} \ensuremath{\sqsubseteq} \ensuremath{\sqsupseteq} \ensuremath{\sqcap}
+94 \ensuremath{\sqcup} \ensuremath{\oplus} \ensuremath{\ominus} \ensuremath{\otimes}
+98 \ensuremath{\oslash} \ensuremath{\odot} \ensuremath{\circledcirc} \ensuremath{\circledast}
+9c ++ \ensuremath{\circleddash} \ensuremath{\boxplus} \ensuremath{\boxminus}
+
+a0 \ensuremath{\boxtimes} \ensuremath{\boxdot} \ensuremath{\vdash} \ensuremath{\dashv}
+a4 \ensuremath{\top} \ensuremath{\bot} ++ ++
+a8 \ensuremath{\vDash} \ensuremath{\Vdash} \ensuremath{\Vvdash} \ensuremath{\VDash}
+ac \ensuremath{\nvdash} \ensuremath{\nvDash} \ensuremath{\nVdash} \ensuremath{\nVDash}
+
+b0 ++ ++ \ensuremath{\vartriangleleft} \ensuremath{\vartriangleright}
+b4 \ensuremath{\trianglelefteq} \ensuremath{\trianglerighteq} \ensuremath{\multimapdotbothA} \ensuremath{\multimapdotbothB}
+b8 \ensuremath{\multimap} ++ \ensuremath{\intercal} \ensuremath{\veebar}
+bc \ensuremath{\barwedge} \ensuremath{\overline{\vee}} ++ ++
+
+c0 \ensuremath{\bigwedge} \ensuremath{\bigvee} \ensuremath{\bigcap} \ensuremath{\bigcup}
+c4 \ensuremath{\diamond} \ensuremath{\cdot} \ensuremath{\star} \ensuremath{\divideontimes}
+c8 \ensuremath{\bowtie} \ensuremath{\ltimes} \ensuremath{\rtimes} \ensuremath{\leftthreetimes}
+cc \ensuremath{\rightthreetimes} \ensuremath{\backsimeq} \ensuremath{\curlyvee} \ensuremath{\curlywedge}
+
+d0 \ensuremath{\Subset} \ensuremath{\Supset} \ensuremath{\Cap} \ensuremath{\Cup}
+d4 \ensuremath{\pitchfork} ++ \ensuremath{\lessdot} \ensuremath{\gtrdot} 
+d8 \ensuremath{\lll} \ensuremath{\ggg} \ensuremath{\lesseqgtr} \ensuremath{\gtreqless}
+dc ++ ++ \ensuremath{\curlyeqprec} \ensuremath{\curlyeqsucc}
+
+e0 \ensuremath{\not\curlyeqprec} \ensuremath{\not\curlyeqsucc} \ensuremath{\not\sqsubseteq} \ensuremath{\not\sqsupseteq}
+e4 ++ ++ \ensuremath{\lnsim} \ensuremath{\gnsim}
+e8 \ensuremath{\precnsim} \ensuremath{\succnsim} \ensuremath{\ntriangleleft} \ensuremath{\ntriangleright}
+ec \ensuremath{\ntrianglelefteq} \ensuremath{\ntrianglerighteq} \ensuremath{\vdots} \ensuremath{\cdots}
+
+f0 \ensuremath{\iddots} \ensuremath{\ddots} ++ ++
+f4 ++ \ensuremath{\dot{\in}} \ensuremath{\overline{\in}}
+f8 \ensuremath{\underline{\in}} ++ ++
+fc ++ \ensuremath{\overline{\ni}} ++ ++
+
+2300:
+
+% Misc Technical
+
+00 \ensuremath{\diameter} ++ ++ ++
+04 ++ \ensuremath{\barwedge} \ensuremath{\doublebarwedge} ++
+08 \ensuremath{\lceil} \ensuremath{\rceil} \ensuremath{\lfloor} \ensuremath{\rfloor}
+0c ++ ++ ++ ++
+
+10 \ensuremath{\invneg} \ensuremath{\wasylozenge} ++ ++
+14 ++ \ensuremath{\recorder} ++ ++
+18 ++ ++ ++ ++
+1c \ensuremath{\ulcorner} \ensuremath{\urcorner} \ensuremath{\llcorner} \ensuremath{\lrcorner}
+
+20 ++ ++ \ensuremath{\frown} \ensuremath{\smile}
+24 ++ ++ ++ ++
+28 ++ \ensuremath{\langle} \ensuremath{\rangle} ++
+2c
+
+23d1: metre.tex
+
+% 2500 Box drawing (and shapes)
+% 2600 Misc shapes
+
+% 27c0 Misc math
+
+2700:
+
+e4 ++ ++ \textlbrackdbl \textrbrackdbl
+e8 \ensuremath{\langle} \ensuremath{\rangle} ++
+
+% 27f0 Suplemental arrows
+
+f4 ++ \ensuremath{\longleftarrow} \ensuremath{\longrightarrow} \ensuremath{\longleftrightarrow}
+f8 \ensuremath{\Longleftarrow} \ensuremath{\Longrightarrow} \ensuremath{\Longleftrightarrow} \ensuremath{\longmapsfrom}
+7c \ensuremath{\longmapsto} \ensuremath{\Longmapsfrom} \ensuremath{\Longmapsto} ++
+
+2900:
+
+% 2900 Suplemental arrows
+
+00
+04 ++ \ensuremath{\Mapsfrom} \ensuremath{\Mapsto}
+
+33 \ensuremath{\leadsto}
+
+40 \ensuremath{\circlearrowleft}
+41 \ensuremath{\circlearrowright}
+
+7c \ensuremath{\strictfi} \ensuremath{\strictif}
+
+85 \ensuremath{\Lparen}
+86 \ensuremath{\Rparen}
+
+b1 \ensuremath{\bar{\varnothing}}
+b3 \ensuremath{\vec{\varnothing}}
+
+b6 \ensuremath{\obar}
+b8 \ensuremath{\obslash}
+
+c0 \ensuremath{\olessthan}
+c1 \ensuremath{\ogreaterthan}
+c4 \ensuremath{\boxslash}
+c5 \ensuremath{\boxbslash}
+c6 \ensuremath{\boxast}
+c7 \ensuremath{\boxcircle}
+c8 \ensuremath{\boxbox}
+
+df \ensuremath{\multimapboth}
+
+e2 \ensuremath{\shuffle}
+eb \ensuremath{\blacklozenge}
+
+f5 \ensuremath{\setminus}
+f6 \ensuremath{\bar{/}}
+
+f8 \ensuremath{\big{/}}
+
+2a00:
+
+% Suplemental math operators
+
+00 \ensuremath{\bigodot} \ensuremath{\bigoplus} \ensuremath{\bigotimes} ++
+04 \ensuremath{\biguplus} \ensuremath{\bigsqcap} \ensuremath{\bigsqcup} ++
+08 ++ \ensuremath{\varprod} ++ ++
+0c \ensuremath{\iiiint} ++ ++ \ensuremath{\fint}
+
+16 \ensuremath{\sqint}
+1b \ensuremath{\overline{\int}}
+1c \ensuremath{\underline{\int}}
+1d \ensuremath{\Join}
+1e \ensuremath{\lhd}
+1f \ensuremath{\fatsemi}
+
+23 \ensuremath{\hat{+}}
+24 \ensuremath{\tilde{+}}
+
+27 \ensuremath{+_2}
+
+30 \ensuremath{\dot{\times}}
+31 \ensuremath{\underline{\times}}
+3f \ensuremath{\amalg}
+
+42 \ensuremath{\bar{\cup}}
+43 \ensuremath{\bar{\cap}}
+
+51 \ensuremath{\dot{\wedge}}
+52 \ensuremath{\dot{\vee}}
+
+5e \ensuremath{\doublebarwedge}
+5f \ensuremath{\underline{\wedge}}
+6d \ensuremath{\dot{\cong}}
+6f \ensuremath{\hat{\approx}}
+
+74 \ensuremath{\Coloneqq}
+7d \ensuremath{\leqslant}
+7e \ensuremath{\geqslant}
+
+85 \ensuremath{\lessapprox}
+86 \ensuremath{\gtrapprox}
+87 \ensuremath{\lneq}
+88 \ensuremath{\gneq}
+89 \ensuremath{\lnapprox}
+8a \ensuremath{\gnapprox}
+8b \ensuremath{\lesseqqgtr}
+8c \ensuremath{\gtreqqless}
+
+95 \ensuremath{\eqslantless}
+96 \ensuremath{\eqslantgtr}
+
+a3 \ensuremath{\underline{\ll}}
+a6 \ensuremath{\leftslice}
+a7 \ensuremath{\rightslice}
+af \ensuremath{\preceq}
+b0 \ensuremath{\succeq}
+
+b3 \ensuremath{\preceqq}
+b4 \ensuremath{\succeqq}
+b5 \ensuremath{\precneqq}
+b6 \ensuremath{\succneqq}
+b7 \ensuremath{\precapprox}
+b8 \ensuremath{\succapprox}
+b9 \ensuremath{\precnapprox}
+ba \ensuremath{\succnapprox}
+
+c3 \ensuremath{\dot{\subseteq}}
+c4 \ensuremath{\dot{\supseteq}}
+c5 \ensuremath{\subseteqq}
+c6 \ensuremath{\supseteqq}
+cb \ensuremath{\subsetneqq}
+cc \ensuremath{\supsetneqq}
+
+eb \ensuremath{\Perp}
+
+f4 \ensuremath{\interleave}
+fc \ensuremath{\biginterleave}
+fd \ensuremath{\sslash}
+fe \ensuremath{\talloblong}
+
+2e00:
+
+18 \textinterrobangdown
+1a \"{-}
+1e \ensuremath{\dot{\sim}}
+
+fb00:
+
+00 {ff} {fi} {fl} {ffi}
+04 {ffl}
+
+\end{document}

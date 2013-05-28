@@ -1,0 +1,28 @@
+This directory contains the files for generating the TeX::Unicode module.
+This mapping is compiled from a number of sources.
+
+A related project is the W3C effort to build a database of XML/HTML entity names for Unicode.
+(See http://www.w3.org/TR/xml-entity-names/).
+
+************
+* MANIFEST *
+************
+- Notes:
+  - README: This file. Describes the program and directory layout.
+  - unicode-conflicts.txt: Notes on parts of the mapping to fix
+
+- Programs:
+  - TeX/Unicode.pm: The main module.
+  - make_module.pl: The program that calculates the mapping and creates the main module.
+  - make_tests.pl: The program to generate the tests/*.tex files for testing.
+  - compare.pl: The program to compare our computed results against other mappings out there.
+
+- text/*.tex: 
+- UnicodeData.txt: Used to calculate category codes and decompositions. Obtained from TODO
+
+The files used by compare.pl to test the completeness/correctness of the computed mapping:
+- TeXEncode_1_1.pm: a copy of version 1.1 of TeX::Encode which in turn used http://www-sop.inria.fr/marelle/tralics/
+- TeXEncode_1_3.pm: a copy of version 1.3 of TeX::Encode which in turn computes a mapping based on other modules
+- unicode.xml: Obtained from http://www.w3.org/2003/entities/2007xml/unicode.xml, 
+- unicode.xml.old: Obtained from http://www.w3.org/Math/characters/unicode.xml
+- unimathsymbols.txt: Obtained from http://milde.users.sourceforge.net/LUCR/Math/data/unimathsymbols.txt

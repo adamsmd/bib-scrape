@@ -1,0 +1,983 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{amssymb}
+\usepackage{combelow}
+\usepackage{textcomp}
+\usepackage[tone]{tipa}
+\usepackage{tipx}
+\begin{document}
+
+\newcommand{\C}{\textdoublegrave}
+\newcommand{\f}{\textroundcap}
+\newcommand{\D}{\textsubring}
+\newcommand{\V}{\textsubcircum}
+\newcommand{\T}{\textsubtilde}
+0100 X{\=A}X
+
+0101 X{\=a}X
+
+0102 X{\u{A}}X
+
+0103 X{\u{a}}X
+
+0104 X{\k{A}}X
+
+0105 X{\k{a}}X
+
+0106 X{\'C}X
+
+0107 X{\'c}X
+
+0108 X{\^C}X
+
+0109 X{\^c}X
+
+010a X{\.C}X
+
+010b X{\.c}X
+
+010c X{\v{C}}X
+
+010d X{\v{c}}X
+
+010e X{\v{D}}X
+
+010f X{\v{d}}X
+
+0110 X{\DJ}X
+
+0111 X{\dj}X
+
+0112 X{\=E}X
+
+0113 X{\=e}X
+
+0114 X{\u{E}}X
+
+0115 X{\u{e}}X
+
+0116 X{\.E}X
+
+0117 X{\.e}X
+
+0118 X{\k{E}}X
+
+0119 X{\k{e}}X
+
+011a X{\v{E}}X
+
+011b X{\v{e}}X
+
+011c X{\^G}X
+
+011d X{\^g}X
+
+011e X{\u{G}}X
+
+011f X{\u{g}}X
+
+0120 X{\.G}X
+
+0121 X{\.g}X
+
+0122 X{\c{G}}X
+
+0123 X{\c{g}}X
+
+0124 X{\^H}X
+
+0125 X{\^h}X
+
+0128 X{\~I}X
+
+0129 X{\~i}X
+
+012a X{\=I}X
+
+012b X{\=i}X
+
+012c X{\u{I}}X
+
+012d X{\u{i}}X
+
+012e X{\k{I}}X
+
+012f X{\k{i}}X
+
+0130 X{\.I}X
+
+0131 X{\i{}}X
+
+0132 X{\IJ}X
+
+0133 X{\ij}X
+
+0134 X{\^J}X
+
+0135 X{\^j}X
+
+0136 X{\c{K}}X
+
+0137 X{\c{k}}X
+
+0139 X{\'L}X
+
+013a X{\'l}X
+
+013b X{\c{L}}X
+
+013c X{\c{l}}X
+
+013d X{\v{L}}X
+
+013e X{\v{l}}X
+
+0141 X{\L{}}X
+
+0142 X{\l{}}X
+
+0143 X{\'N}X
+
+0144 X{\'n}X
+
+0145 X{\c{N}}X
+
+0146 X{\c{n}}X
+
+0147 X{\v{N}}X
+
+0148 X{\v{n}}X
+
+0149 X{'n}X
+
+014a X{\NG}X
+
+014b X{\ng}X
+
+014c X{\=O}X
+
+014d X{\=o}X
+
+014e X{\u{O}}X
+
+014f X{\u{o}}X
+
+0150 X{\H{O}}X
+
+0151 X{\H{o}}X
+
+0152 X{\OE}X
+
+0153 X{\oe}X
+
+0154 X{\'R}X
+
+0155 X{\'r}X
+
+0156 X{\c{R}}X
+
+0157 X{\c{r}}X
+
+0158 X{\v{R}}X
+
+0159 X{\v{r}}X
+
+015a X{\'S}X
+
+015b X{\'s}X
+
+015c X{\^S}X
+
+015d X{\^s}X
+
+015e X{\c{S}}X
+
+015f X{\c{s}}X
+
+0160 X{\v{S}}X
+
+0161 X{\v{s}}X
+
+0162 X{\c{T}}X
+
+0163 X{\c{t}}X
+
+0164 X{\v{T}}X
+
+0165 X{\v{t}}X
+
+0168 X{\~U}X
+
+0169 X{\~u}X
+
+016a X{\=U}X
+
+016b X{\=u}X
+
+016c X{\u{U}}X
+
+016d X{\u{u}}X
+
+016e X{\r{U}}X
+
+016f X{\r{u}}X
+
+0170 X{\H{U}}X
+
+0171 X{\H{u}}X
+
+0172 X{\k{U}}X
+
+0173 X{\k{u}}X
+
+0174 X{\^W}X
+
+0175 X{\^w}X
+
+0176 X{\^Y}X
+
+0177 X{\^y}X
+
+0178 X{\"Y}X
+
+0179 X{\'Z}X
+
+017a X{\'z}X
+
+017b X{\.Z}X
+
+017c X{\.z}X
+
+017d X{\v{Z}}X
+
+017e X{\v{z}}X
+
+01a0 X{\OHORN}X
+
+01a1 X{\ohorn}X
+
+01af X{\UHORN}X
+
+01b0 X{\uhorn}X
+
+01cd X{\v{A}}X
+
+01ce X{\v{a}}X
+
+01cf X{\v{I}}X
+
+01d0 X{\v{i}}X
+
+01d1 X{\v{O}}X
+
+01d2 X{\v{o}}X
+
+01d3 X{\v{U}}X
+
+01d4 X{\v{u}}X
+
+01d5 X{\={\"{U}}}X
+
+01d6 X{\={\"{u}}}X
+
+01d7 X{\'{\"{U}}}X
+
+01d8 X{\'{\"{u}}}X
+
+01d9 X{\v{\"{U}}}X
+
+01da X{\v{\"{u}}}X
+
+01db X{\`{\"{U}}}X
+
+01dc X{\`{\"{u}}}X
+
+01de X{\={\"{A}}}X
+
+01df X{\={\"{a}}}X
+
+01e0 X{\={\.{A}}}X
+
+01e1 X{\={\.{a}}}X
+
+01e2 X{\={\AE}}X
+
+01e3 X{\={\ae}}X
+
+01e6 X{\v{G}}X
+
+01e7 X{\v{g}}X
+
+01e8 X{\v{K}}X
+
+01e9 X{\v{k}}X
+
+01ea X{\k{O}}X
+
+01eb X{\k{o}}X
+
+01ec X{\={\k{O}}}X
+
+01ed X{\={\k{o}}}X
+
+01f0 X{\v{j}}X
+
+01f4 X{\'G}X
+
+01f5 X{\'g}X
+
+01f8 X{\`N}X
+
+01f9 X{\`n}X
+
+01fa X{\'{\AA}}X
+
+01fb X{\'{\aa}}X
+
+01fc X{\'{\AE}}X
+
+01fd X{\'{\ae}}X
+
+01fe X{\'{\O}}X
+
+01ff X{\'{\o}}X
+
+0200 X{\G{A}}X
+
+0201 X{\G{a}}X
+
+0202 X{\textroundcap{A}}X
+
+0203 X{\textroundcap{a}}X
+
+0204 X{\G{E}}X
+
+0205 X{\G{e}}X
+
+0206 X{\textroundcap{E}}X
+
+0207 X{\textroundcap{e}}X
+
+0208 X{\G{I}}X
+
+0209 X{\G{i}}X
+
+020a X{\textroundcap{I}}X
+
+020b X{\textroundcap{i}}X
+
+020c X{\G{O}}X
+
+020d X{\G{o}}X
+
+020e X{\textroundcap{O}}X
+
+020f X{\textroundcap{o}}X
+
+0210 X{\G{R}}X
+
+0211 X{\G{r}}X
+
+0212 X{\textroundcap{R}}X
+
+0213 X{\textroundcap{r}}X
+
+0214 X{\G{U}}X
+
+0215 X{\G{u}}X
+
+0216 X{\textroundcap{U}}X
+
+0217 X{\textroundcap{u}}X
+
+0218 X{\cb{S}}X
+
+0219 X{\cb{s}}X
+
+021a X{\cb{T}}X
+
+021b X{\cb{t}}X
+
+021e X{\v{H}}X
+
+021f X{\v{h}}X
+
+0226 X{\.A}X
+
+0227 X{\.a}X
+
+0228 X{\c{E}}X
+
+0229 X{\c{e}}X
+
+022a X{\={\"{O}}}X
+
+022b X{\={\"{o}}}X
+
+022c X{\={\~{O}}}X
+
+022d X{\={\~{o}}}X
+
+022e X{\.O}X
+
+022f X{\.o}X
+
+0230 X{\={\.{O}}}X
+
+0231 X{\={\.{o}}}X
+
+0232 X{\=Y}X
+
+0233 X{\=y}X
+
+025b X{\ensuremath{\varepsilon}}X
+
+0261 X{g}X
+
+0278 X{\ensuremath{\phi}}X
+
+029e X{\textturnk}X
+
+02bc X{\rasp}X
+
+02c6 X{\^{}}X
+
+02c7 X{\textasciicaron}X
+
+02d8 X{\textasciibreve}X
+
+02d9 X{\textperiodcentered}X
+
+02da X{\r{}}X
+
+02db X{\k{}}X
+
+02dc X{\~{}}X
+
+02dd X{\H{}}X
+
+02e5 X{\tone{55}}X
+
+02e6 X{\tone{44}}X
+
+02e7 X{\tone{33}}X
+
+02e8 X{\tone{22}}X
+
+02e9 X{\tone{11}}X
+
+0300 X{\`{}}X
+
+0301 X{\'{}}X
+
+0302 X{\^{}}X
+
+0303 X{\~{}}X
+
+0304 X{\={}}X
+
+0306 X{\u{}}X
+
+0307 X{\.{}}X
+
+0308 X{\"{}}X
+
+030a X{\r{}}X
+
+030b X{\H{}}X
+
+030c X{\v{}}X
+
+0327 X{\c{}}X
+
+0328 X{\k{}}X
+
+1e00 X{\textsubring{A}}X
+
+1e01 X{\textsubring{a}}X
+
+1e02 X{\.B}X
+
+1e03 X{\.b}X
+
+1e04 X{\d{B}}X
+
+1e05 X{\d{b}}X
+
+1e06 X{\b{B}}X
+
+1e07 X{\b{b}}X
+
+1e08 X{\'{\c{C}}}X
+
+1e09 X{\'{\c{c}}}X
+
+1e0a X{\.D}X
+
+1e0b X{\.d}X
+
+1e0c X{\d{D}}X
+
+1e0d X{\d{d}}X
+
+1e0e X{\b{D}}X
+
+1e0f X{\b{d}}X
+
+1e10 X{\c{D}}X
+
+1e11 X{\c{d}}X
+
+1e12 X{\textsubcircum{D}}X
+
+1e13 X{\textsubcircum{d}}X
+
+1e14 X{\`{\={E}}}X
+
+1e15 X{\`{\={e}}}X
+
+1e16 X{\'{\={E}}}X
+
+1e17 X{\'{\={e}}}X
+
+1e18 X{\textsubcircum{E}}X
+
+1e19 X{\textsubcircum{e}}X
+
+1e1a X{\textsubtilde{E}}X
+
+1e1b X{\textsubtilde{e}}X
+
+1e1c X{\u{\c{E}}}X
+
+1e1d X{\u{\c{e}}}X
+
+1e1e X{\.F}X
+
+1e1f X{\.f}X
+
+1e20 X{\=G}X
+
+1e21 X{\=g}X
+
+1e22 X{\.H}X
+
+1e23 X{\.h}X
+
+1e24 X{\d{H}}X
+
+1e25 X{\d{h}}X
+
+1e26 X{\"H}X
+
+1e27 X{\"h}X
+
+1e28 X{\c{H}}X
+
+1e29 X{\c{h}}X
+
+1e2a X{\textsubbreve{H}}X
+
+1e2b X{\textsubbreve{h}}X
+
+1e2c X{\textsubtilde{I}}X
+
+1e2d X{\textsubtilde{i}}X
+
+1e2e X{\'{\"{I}}}X
+
+1e2f X{\'{\"{i}}}X
+
+1e30 X{\'K}X
+
+1e31 X{\'k}X
+
+1e32 X{\d{K}}X
+
+1e33 X{\d{k}}X
+
+1e34 X{\b{K}}X
+
+1e35 X{\b{k}}X
+
+1e36 X{\d{L}}X
+
+1e37 X{\d{l}}X
+
+1e38 X{\={\d{L}}}X
+
+1e39 X{\={\d{l}}}X
+
+1e3a X{\b{L}}X
+
+1e3b X{\b{l}}X
+
+1e3c X{\textsubcircum{L}}X
+
+1e3d X{\textsubcircum{l}}X
+
+1e3e X{\'M}X
+
+1e3f X{\'m}X
+
+1e40 X{\.M}X
+
+1e41 X{\.m}X
+
+1e42 X{\d{M}}X
+
+1e43 X{\d{m}}X
+
+1e44 X{\.N}X
+
+1e45 X{\.n}X
+
+1e46 X{\d{N}}X
+
+1e47 X{\d{n}}X
+
+1e48 X{\b{N}}X
+
+1e49 X{\b{n}}X
+
+1e4a X{\textsubcircum{N}}X
+
+1e4b X{\textsubcircum{n}}X
+
+1e4c X{\'{\~{O}}}X
+
+1e4d X{\'{\~{o}}}X
+
+1e4e X{\"{\~{O}}}X
+
+1e4f X{\"{\~{o}}}X
+
+1e50 X{\`{\={O}}}X
+
+1e51 X{\`{\={o}}}X
+
+1e52 X{\'{\={O}}}X
+
+1e53 X{\'{\={o}}}X
+
+1e54 X{\'P}X
+
+1e55 X{\'p}X
+
+1e56 X{\.P}X
+
+1e57 X{\.p}X
+
+1e58 X{\.R}X
+
+1e59 X{\.r}X
+
+1e5a X{\d{R}}X
+
+1e5b X{\d{r}}X
+
+1e5c X{\={\d{R}}}X
+
+1e5d X{\={\d{r}}}X
+
+1e5e X{\b{R}}X
+
+1e5f X{\b{r}}X
+
+1e60 X{\.S}X
+
+1e61 X{\.s}X
+
+1e62 X{\d{S}}X
+
+1e63 X{\d{s}}X
+
+1e64 X{\.{\'{S}}}X
+
+1e65 X{\.{\'{s}}}X
+
+1e66 X{\.{\v{S}}}X
+
+1e67 X{\.{\v{s}}}X
+
+1e68 X{\.{\d{S}}}X
+
+1e69 X{\.{\d{s}}}X
+
+1e6a X{\.T}X
+
+1e6b X{\.t}X
+
+1e6c X{\d{T}}X
+
+1e6d X{\d{t}}X
+
+1e6e X{\b{T}}X
+
+1e6f X{\b{t}}X
+
+1e70 X{\textsubcircum{T}}X
+
+1e71 X{\textsubcircum{t}}X
+
+1e72 X{\textsubumlaut{U}}X
+
+1e73 X{\textsubumlaut{u}}X
+
+1e74 X{\textsubtilde{U}}X
+
+1e75 X{\textsubtilde{u}}X
+
+1e76 X{\textsubcircum{U}}X
+
+1e77 X{\textsubcircum{u}}X
+
+1e78 X{\'{\~{U}}}X
+
+1e79 X{\'{\~{u}}}X
+
+1e7a X{\"{\={U}}}X
+
+1e7b X{\"{\={u}}}X
+
+1e7c X{\~V}X
+
+1e7d X{\~v}X
+
+1e7e X{\d{V}}X
+
+1e7f X{\d{v}}X
+
+1e80 X{\`W}X
+
+1e81 X{\`w}X
+
+1e82 X{\'W}X
+
+1e83 X{\'w}X
+
+1e84 X{\"W}X
+
+1e85 X{\"w}X
+
+1e86 X{\.W}X
+
+1e87 X{\.w}X
+
+1e88 X{\d{W}}X
+
+1e89 X{\d{w}}X
+
+1e8a X{\.X}X
+
+1e8b X{\.x}X
+
+1e8c X{\"X}X
+
+1e8d X{\"x}X
+
+1e8e X{\.Y}X
+
+1e8f X{\.y}X
+
+1e90 X{\^Z}X
+
+1e91 X{\^z}X
+
+1e92 X{\d{Z}}X
+
+1e93 X{\d{z}}X
+
+1e94 X{\b{Z}}X
+
+1e95 X{\b{z}}X
+
+1e96 X{\b{h}}X
+
+1e97 X{\"t}X
+
+1e98 X{\r{w}}X
+
+1e99 X{\r{y}}X
+
+1ea0 X{\d{A}}X
+
+1ea1 X{\d{a}}X
+
+1ea2 X{\h{A}}X
+
+1ea3 X{\h{a}}X
+
+1ea4 X{\'{\^{A}}}X
+
+1ea5 X{\'{\^{a}}}X
+
+1ea6 X{\`{\^{A}}}X
+
+1ea7 X{\`{\^{a}}}X
+
+1ea8 X{\h{\^{A}}}X
+
+1ea9 X{\h{\^{a}}}X
+
+1eaa X{\~{\^{A}}}X
+
+1eab X{\~{\^{a}}}X
+
+1eac X{\^{\d{A}}}X
+
+1ead X{\^{\d{a}}}X
+
+1eae X{\'{\u{A}}}X
+
+1eaf X{\'{\u{a}}}X
+
+1eb0 X{\`{\u{A}}}X
+
+1eb1 X{\`{\u{a}}}X
+
+1eb2 X{\h{\u{A}}}X
+
+1eb3 X{\h{\u{a}}}X
+
+1eb4 X{\~{\u{A}}}X
+
+1eb5 X{\~{\u{a}}}X
+
+1eb6 X{\u{\d{A}}}X
+
+1eb7 X{\u{\d{a}}}X
+
+1eb8 X{\d{E}}X
+
+1eb9 X{\d{e}}X
+
+1eba X{\h{E}}X
+
+1ebb X{\h{e}}X
+
+1ebc X{\~E}X
+
+1ebd X{\~e}X
+
+1ebe X{\'{\^{E}}}X
+
+1ebf X{\'{\^{e}}}X
+
+1ec0 X{\`{\^{E}}}X
+
+1ec1 X{\`{\^{e}}}X
+
+1ec2 X{\h{\^{E}}}X
+
+1ec3 X{\h{\^{e}}}X
+
+1ec4 X{\~{\^{E}}}X
+
+1ec5 X{\~{\^{e}}}X
+
+1ec6 X{\^{\d{E}}}X
+
+1ec7 X{\^{\d{e}}}X
+
+1ec8 X{\h{I}}X
+
+1ec9 X{\h{i}}X
+
+1eca X{\d{I}}X
+
+1ecb X{\d{i}}X
+
+1ecc X{\d{O}}X
+
+1ecd X{\d{o}}X
+
+1ece X{\h{O}}X
+
+1ecf X{\h{o}}X
+
+1ed0 X{\'{\^{O}}}X
+
+1ed1 X{\'{\^{o}}}X
+
+1ed2 X{\`{\^{O}}}X
+
+1ed3 X{\`{\^{o}}}X
+
+1ed4 X{\h{\^{O}}}X
+
+1ed5 X{\h{\^{o}}}X
+
+1ed6 X{\~{\^{O}}}X
+
+1ed7 X{\~{\^{o}}}X
+
+1ed8 X{\^{\d{O}}}X
+
+1ed9 X{\^{\d{o}}}X
+
+1eda X{\'{\OHORN}}X
+
+1edb X{\'{\ohorn}}X
+
+1edc X{\`{\OHORN}}X
+
+1edd X{\`{\ohorn}}X
+
+1ede X{\h{\OHORN}}X
+
+1edf X{\h{\ohorn}}X
+
+1ee0 X{\~{\OHORN}}X
+
+1ee1 X{\~{\ohorn}}X
+
+1ee2 X{\d{\OHORN}}X
+
+1ee3 X{\d{\ohorn}}X
+
+1ee4 X{\d{U}}X
+
+1ee5 X{\d{u}}X
+
+1ee6 X{\h{U}}X
+
+1ee7 X{\h{u}}X
+
+1ee8 X{\'{\UHORN}}X
+
+1ee9 X{\'{\uhorn}}X
+
+1eea X{\`{\UHORN}}X
+
+1eeb X{\`{\uhorn}}X
+
+1eec X{\h{\UHORN}}X
+
+1eed X{\h{\uhorn}}X
+
+1eee X{\~{\UHORN}}X
+
+1eef X{\~{\uhorn}}X
+
+1ef0 X{\d{\UHORN}}X
+
+1ef1 X{\d{\uhorn}}X
+
+1ef2 X{\`Y}X
+
+1ef3 X{\`y}X
+
+1ef4 X{\d{Y}}X
+
+1ef5 X{\d{y}}X
+
+1ef6 X{\h{Y}}X
+
+1ef7 X{\h{y}}X
+
+1ef8 X{\~Y}X
+
+1ef9 X{\~y}X
+
+\end{document}

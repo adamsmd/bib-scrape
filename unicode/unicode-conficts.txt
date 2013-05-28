@@ -1,0 +1,364 @@
+
+Low range = special case
+if only latex use latex
+if mathlatex use latex
+if no latex use AMS and assert IEEE is the same
+
+If \ElsevierGlyph{...} or \El... or \ding{..} in latex, use AMS
+If \not in latex use AMS
+If { in latex use AMS
+If no \ in latex use AMS
+Special cases:
+  222c ∬ <latex> \int\!\int <AMS> \iint
+  222d ∭ <latex> \int\!\int\!\int <AMS> \iiint
+Otherwise use latex
+
+
+Otherwise avoid '{'
+
+2993 ⦓ <latex> <\kern-0.58em(
+2254 ≔ <latex> := <AMS> \coloneq
+2255 ≕ <latex> =: <AMS> \eqcolon
+2212 − <latex> - <AMS> \minus
+02bc ʼ <latex> ' <AMS> \rasp
+222c ∬ <latex> \int\!\int <AMS> \iint
+222d ∭ <latex> \int\!\int\!\int <AMS> \iiint
+2018 ‘ <latex> ` <AMS> \lq
+2019 ’ <latex> ' <AMS> \rq
+200a   <latex> \mkern1mu <AMS> \hspace
+
+0024 $ <latex> \textdollar <mathlatex> \$
+002e . <latex> . <IEEE> \ldotp
+003a : <latex> : <AMS> \colon <IEEE> \colon
+003c < <latex> < <AMS> \less
+003e > <latex> > <AMS> \greater
+005b [ <latex> [ <AMS> \lbrack <IEEE> \lbrack
+005c \ <latex> \textbackslash <mathlatex> \backslash <AMS> \backslash <IEEE> \backslash
+005d ] <latex> ] <AMS> \rbrack <IEEE> \rbrack
+005e ^ <latex> \^{} <AMS> \textasciicircumflex
+
+00a2 � <latex> \textcent <mathlatex> \mbox{\textcent}
+00a3 � <latex> \textsterling <mathlatex> \pounds <AMS> \sterling
+00a4 � <latex> \textcurrency <mathlatex> \mbox{\textcurrency}
+00a5 � <latex> \textyen <mathlatex> \yen <AMS> \yen
+00a7 � <latex> \textsection <mathlatex> \S <AMS> \S
+00a9 � <latex> \textcopyright <mathlatex> \copyright <AMS> \copyright
+00ab � <latex> \guillemotleft <mathlatex> \mbox{\guillemotleft}
+00ac � <latex> \lnot <AMS> \neg <IEEE> \neg
+00ae � <latex> \textregistered <mathlatex> \circledR <AMS> \circledR
+00b0 � <latex> \textdegree <mathlatex> \mbox{\textdegree} <AMS> \degree
+00b6 � <latex> \textparagraph <mathlatex> \P <AMS> \P
+00b7 � <latex> \cdot <AMS> \cdotp <IEEE> \cdotp
+00b8 � <latex> \c{} <mathlatex> \mbox{\c{}}
+00bb � <latex> \guillemotright <mathlatex> \mbox{\guillemotright}
+00c0 � <latex> \`{A} <mathlatex> \grave{A}
+00c1 � <latex> \'{A} <mathlatex> \acute{A}
+00c2 � <latex> \^{A} <mathlatex> \hat{A}
+00c3 � <latex> \~{A} <mathlatex> \tilde{A}
+00c4 � <latex> \"{A} <mathlatex> \ddot{A}
+00c7 � <latex> \c{C} <mathlatex> \mbox{\c{C}}
+00c8 � <latex> \`{E} <mathlatex> \grave{E}
+00c9 � <latex> \'{E} <mathlatex> \acute{E}
+00ca � <latex> \^{E} <mathlatex> \hat{E}
+00cb � <latex> \"{E} <mathlatex> \ddot{E}
+00cc � <latex> \`{I} <mathlatex> \grave{I}
+00cd � <latex> \'{I} <mathlatex> \acute{I}
+00ce � <latex> \^{I} <mathlatex> \hat{I}
+00cf � <latex> \"{I} <mathlatex> \ddot{I}
+00d1 � <latex> \~{N} <mathlatex> \tilde{N}
+00d2 � <latex> \`{O} <mathlatex> \grave{O}
+00d3 � <latex> \'{O} <mathlatex> \acute{O}
+00d4 � <latex> \^{O} <mathlatex> \hat{O}
+00d5 � <latex> \~{O} <mathlatex> \tilde{O}
+00d6 � <latex> \"{O} <mathlatex> \ddot{O}
+00d7 � <latex> \texttimes <mathlatex> \times <AMS> \times <IEEE> \times
+00d9 � <latex> \`{U} <mathlatex> \grave{U}
+00da � <latex> \'{U} <mathlatex> \acute{U}
+00db � <latex> \^{U} <mathlatex> \hat{U}
+00dc � <latex> \"{U} <mathlatex> \ddot{U}
+00dd � <latex> \'{Y} <mathlatex> \acute{Y}
+00e0 � <latex> \`{a} <mathlatex> \grave{a}
+00e1 � <latex> \'{a} <mathlatex> \acute{a}
+00e2 � <latex> \^{a} <mathlatex> \hat{a}
+00e3 � <latex> \~{a} <mathlatex> \tilde{a}
+00e4 � <latex> \"{a} <mathlatex> \ddot{a}
+00e7 � <latex> \c{c} <mathlatex> \mbox{\c{c}}
+00e8 � <latex> \`{e} <mathlatex> \grave{e}
+00e9 � <latex> \'{e} <mathlatex> \acute{e}
+00ea � <latex> \^{e} <mathlatex> \hat{e}
+00eb � <latex> \"{e} <mathlatex> \ddot{e}
+00ec � <latex> \`{\i} <mathlatex> \grave{\imath}
+00ed � <latex> \'{\i} <mathlatex> \acute{\imath}
+00ee � <latex> \^{\i} <mathlatex> \hat{\imath}
+00ef � <latex> \"{\i} <mathlatex> \ddot{\imath}
+00f0 � <latex> \dh <AMS> \eth
+00f1 � <latex> \~{n} <mathlatex> \tilde{n}
+00f2 � <latex> \`{o} <mathlatex> \grave{o}
+00f3 � <latex> \'{o} <mathlatex> \acute{o}
+00f4 � <latex> \^{o} <mathlatex> \hat{o}
+00f5 � <latex> \~{o} <mathlatex> \tilde{o}
+00f6 � <latex> \"{o} <mathlatex> \ddot{o}
+00f9 � <latex> \`{u} <mathlatex> \grave{u}
+00fa � <latex> \'{u} <mathlatex> \acute{u}
+00fb � <latex> \^{u} <mathlatex> \hat{u}
+00fc � <latex> \"{u} <mathlatex> \ddot{u}
+00fd � <latex> \'{y} <mathlatex> \acute{y}
+00ff � <latex> \"{y} <mathlatex> \ddot{y}
+0100 Ā <latex> \={A} <mathlatex> \bar{A}
+0101 ā <latex> \={a} <mathlatex> \bar{a}
+0102 Ă <latex> \u{A} <mathlatex> \breve{A}
+0103 ă <latex> \u{a} <mathlatex> \u{a}
+0106 Ć <latex> \'{C} <mathlatex> \acute{C}
+0107 ć <latex> \'{c} <mathlatex> \acute{c}
+0108 Ĉ <latex> \^{C} <mathlatex> \hat{C}
+0109 ĉ <latex> \^{c} <mathlatex> \hat{c}
+010a Ċ <latex> \.{C} <mathlatex> \dot{C}
+010b ċ <latex> \.{c} <mathlatex> \dot{c}
+010c Č <latex> \v{C} <mathlatex> \check{C}
+010d č <latex> \v{c} <mathlatex> \check{c}
+010e Ď <latex> \v{D} <mathlatex> \check{D}
+010f ď <latex> \v{d} <mathlatex> \check{d}
+0112 Ē <latex> \={E} <mathlatex> \bar{E}
+0113 ē <latex> \={e} <mathlatex> \bar{e}
+0114 Ĕ <latex> \u{E} <mathlatex> \breve{E}
+0115 ĕ <latex> \u{e} <mathlatex> \breve{e}
+0116 Ė <latex> \.{E} <mathlatex> \dot{E}
+0117 ė <latex> \.{e} <mathlatex> \dot{e}
+0118 Ę <latex> \k{E} <mathlatex> \k{E}
+011a Ě <latex> \v{E} <mathlatex> \check{E}
+011b ě <latex> \v{e} <mathlatex> \check{e}
+011c Ĝ <latex> \^{G} <mathlatex> \hat{G}
+011d ĝ <latex> \^{g} <mathlatex> \hat{g}
+011e Ğ <latex> \u{G} <mathlatex> \breve{G}
+011f ğ <latex> \u{g} <mathlatex> \breve{g}
+0120 Ġ <latex> \.{G} <mathlatex> \dot{G}
+0121 ġ <latex> \.{g} <mathlatex> \dot{g}
+0122 Ģ <latex> \c{G} <mathlatex> \mbox{\c{G}}
+0123 ģ <latex> \c{g} <mathlatex> \mbox{\c{g}}
+0124 Ĥ <latex> \^{H} <mathlatex> \hat{H}
+0125 ĥ <latex> \^{h} <mathlatex> \hat{h}
+0128 Ĩ <latex> \~{I} <mathlatex> \tilde{I}
+0129 ĩ <latex> \~{\i} <mathlatex> \tilde{\imath}
+012a Ī <latex> \={I} <mathlatex> \bar{I}
+012b ī <latex> \={\i} <mathlatex> \bar{\imath}
+012c Ĭ <latex> \u{I} <mathlatex> \breve{I}
+012d ĭ <latex> \u{\i} <mathlatex> \breve{\imath}
+0130 İ <latex> \.{I} <mathlatex> \dot{I}
+0131 ı <latex> \i <mathlatex> \imath <AMS> \imath <IEEE> \imath
+0134 Ĵ <latex> \^{J} <mathlatex> \hat{J}
+0135 ĵ <latex> \^{\j} <mathlatex> \hat{\jmath}
+0136 Ķ <latex> \c{K} <mathlatex> \mbox{\c{K}}
+0137 ķ <latex> \c{k} <mathlatex> \mbox{\c{k}}
+0139 Ĺ <latex> \'{L} <mathlatex> \acute{L}
+013a ĺ <latex> \'{l} <mathlatex> \acute{l}
+013b Ļ <latex> \c{L} <mathlatex> \mbox{\c{L}}
+013c ļ <latex> \c{l} <mathlatex> \mbox{\c{l}}
+013d Ľ <latex> \v{L} <mathlatex> \check{L}
+013e ľ <latex> \v{l} <mathlatex> \check{l}
+0143 Ń <latex> \'{N} <mathlatex> \acute{N}
+0144 ń <latex> \'{n} <mathlatex> \acute{n}
+0145 Ņ <latex> \c{N} <mathlatex> \mbox{\c{N}}
+0146 ņ <latex> \c{n} <mathlatex> \mbox{\c{n}}
+0147 Ň <latex> \v{N} <mathlatex> \check{N}
+0148 ň <latex> \v{n} <mathlatex> \check{n}
+014c Ō <latex> \={O} <mathlatex> \bar{O}
+014d ō <latex> \={o} <mathlatex> \bar{o}
+014e Ŏ <latex> \u{O} <mathlatex> \breve{O}
+014f ŏ <latex> \u{o} <mathlatex> \breve{o}
+0150 Ő <latex> \H{O} <mathlatex> \mbox{\H{O}}
+0151 ő <latex> \H{o} <mathlatex> \mbox{\H{o}}
+0154 Ŕ <latex> \'{R} <mathlatex> \acute{R}
+0155 ŕ <latex> \'{r} <mathlatex> \acute{r}
+0156 Ŗ <latex> \c{R} <mathlatex> \mbox{\c{R}}
+0157 ŗ <latex> \c{r} <mathlatex> \mbox{\c{r}}
+0158 Ř <latex> \v{R} <mathlatex> \check{R}
+0159 ř <latex> \v{r} <mathlatex> \check{r}
+015a Ś <latex> \'{S} <mathlatex> \acute{S}
+015b ś <latex> \'{s} <mathlatex> \acute{s}
+015c Ŝ <latex> \^{S} <mathlatex> \hat{S}
+015d ŝ <latex> \^{s} <mathlatex> \hat{s}
+015e Ş <latex> \c{S} <mathlatex> \mbox{\c{S}}
+015f ş <latex> \c{s} <mathlatex> \mbox{\c{s}}
+0160 Š <latex> \v{S} <mathlatex> \check{S}
+0161 š <latex> \v{s} <mathlatex> \check{s}
+0162 Ţ <latex> \c{T} <mathlatex> \mbox{\c{T}}
+0163 ţ <latex> \c{t} <mathlatex> \mbox{\c{t}}
+0164 Ť <latex> \v{T} <mathlatex> \check{T}
+0165 ť <latex> \v{t} <mathlatex> \check{t}
+0168 Ũ <latex> \~{U} <mathlatex> \tilde{U}
+0169 ũ <latex> \~{u} <mathlatex> \tilde{u}
+016a Ū <latex> \={U} <mathlatex> \bar{U}
+016b ū <latex> \={u} <mathlatex> \bar{u}
+016c Ŭ <latex> \u{U} <mathlatex> \breve{U}
+016d ŭ <latex> \u{u} <mathlatex> \breve{u}
+016e Ů <latex> \r{U} <mathlatex> \mathring{U}
+016f ů <latex> \r{u} <mathlatex> \mathring{u}
+0170 Ű <latex> \H{U} <mathlatex> \mbox{\H{U}}
+0171 ű <latex> \H{u} <mathlatex> \mbox{\H{u}}
+0172 Ų <latex> \k{U} <mathlatex> \k{U}
+0174 Ŵ <latex> \^{W} <mathlatex> \hat{W}
+0175 ŵ <latex> \^{w} <mathlatex> \hat{w}
+0176 Ŷ <latex> \^{Y} <mathlatex> \hat{Y}
+0177 ŷ <latex> \^{y} <mathlatex> \hat{y}
+0178 Ÿ <latex> \"{Y} <mathlatex> \ddot{Y}
+0179 Ź <latex> \'{Z} <mathlatex> \acute{Z}
+017a ź <latex> \'{z} <mathlatex> \acute{z}
+017b Ż <latex> \.{Z} <mathlatex> \dot{Z}
+017c ż <latex> \.{z} <mathlatex> \dot{z}
+017d Ž <latex> \v{Z} <mathlatex> \check{Z}
+017e ž <latex> \v{z} <mathlatex> \check{z}
+01f5 ǵ <latex> \'{g} <mathlatex> \acute{g}
+02bc ʼ <latex> ' <AMS> \rasp
+02d8 ˘ <latex> \textasciibreve <mathlatex> \u
+02d9 ˙ <latex> \textperiodcentered <mathlatex> \dot{}
+02da ˚ <latex> \r{} <mathlatex> \mathring{}
+02db ˛ <latex> \k{} <mathlatex> \mbox{\k{}}
+02dd ˝ <latex> \H{} <mathlatex> \mbox{\H{}}
+0300 ̀ <latex> \` <mathlatex> \grave <AMS> \grave <IEEE> \grave
+0301 ́ <latex> \' <mathlatex> \acute <AMS> \acute <IEEE> \acute
+0302 ̂ <latex> \^ <mathlatex> \hat <AMS> \hat <IEEE> \hat
+0303 ̃ <latex> \~ <mathlatex> \tilde <AMS> \tilde <IEEE> \tilde
+0304 ̄ <latex> \= <mathlatex> \bar <AMS> \bar <IEEE> \bar
+0306 ̆ <latex> \u <mathlatex> \breve <AMS> \breve <IEEE> \breve
+0307 ̇ <latex> \. <mathlatex> \dot <AMS> \dot <IEEE> \dot
+0308 ̈ <latex> \" <mathlatex> \ddot <AMS> \ddot <IEEE> \ddot
+030a ̊ <latex> \r <AMS> \ocirc
+030c ̌ <latex> \v <mathlatex> \check <AMS> \check <IEEE> \check
+0386 Ά <latex> \'{A} <mathlatex> \acute{A}
+0388 Έ <latex> \'{E} <mathlatex> \acute{E}
+0389 Ή <latex> \'{H} <mathlatex> \grave{H}
+038a Ί <latex> \'{}{I} <mathlatex> \mathrm{'I}
+038c Ό <latex> \'{}O <mathlatex> \mathrm{'O}
+03ac ά <latex> \'{$\alpha$} <mathlatex> \acute{\alpha}
+03b5 ε <latex> \epsilon <AMS> \varepsilon <IEEE> \varepsilon
+03b8 θ <latex> \texttheta <mathlatex> \theta <AMS> \theta <IEEE> \theta
+03cc ό <latex> \'{o} <mathlatex> \acute{o}
+03d1 ϑ <latex> \textvartheta <mathlatex> \vartheta <IEEE> \vartheta
+03f5 ϵ <AMS> \epsilon <IEEE> \epsilon
+
+2002   <latex> \hspace{0.6em} <AMS> \enspace
+2003   <latex> \hspace{1em} <AMS> \quad
+2005   <latex> \hspace{0.25em} <AMS> \thickspace
+2009   <latex> \hspace{0.167em} <AMS> \thinspace
+200a   <latex> \mkern1mu <AMS> \hspace
+2013 – <latex> \textendash <AMS> \endash
+2014 — <latex> \textemdash <mathlatex> --- <AMS> \emdash
+2018 ‘ <latex> ` <AMS> \lq
+2019 ’ <latex> ' <AMS> \rq
+
+2020 † <latex> \textdagger <mathlatex> \dag <AMS> \dagger <IEEE> \dagger
+2021 ‡ <latex> \textdaggerdbl <mathlatex> \ddag <AMS> \ddagger <IEEE> \ddagger
+2022 • <latex> \textbullet <mathlatex> \bullet
+2026 … <latex> \ldots <AMS> \dots <IEEE> \ldots
+2032 ′ <latex> {'} <AMS> \prime <IEEE> \prime
+20a7 ₧ <latex> \ensuremath{\Elzpes} <mathlatex> \Elzpes
+210f ℏ <latex> \hslash <AMS> \hslash <IEEE> \hbar
+2111 ℑ <latex> \mathfrak{I} <AMS> \Im <IEEE> \Im
+2113 ℓ <latex> \mathscr{l} <AMS> \ell <IEEE> \ell
+2116 № <latex> \cyrchar\textnumero <AMS> \textnumero
+211c ℜ <latex> \mathfrak{R} <AMS> \Re <IEEE> \Re
+219c ↜ <latex> \arrowwaveright <AMS> \leftsquigarrow
+219d ↝ <latex> \arrowwaveright <AMS> \rightsquigarrow
+21be ↾ <latex> \upharpoonright <AMS> \upharpoonleft
+21bf ↿ <latex> \upharpoonleft <AMS> \upharpoonright
+21ce ⇎ <latex> \nLeftrightarrow <AMS> \nleftrightarrow
+2209 ∉ <latex> \not\in <AMS> \notin <IEEE> \nonit
+2212 − <latex> - <AMS> \minus
+2217 ∗ <latex> {_\ast} <AMS> \ast <IEEE> \ast
+221d ∝ <latex> \propto <varlatex> \varpropto <AMS> \propto <IEEE> \propto
+222c ∬ <latex> \int\!\int <AMS> \iint
+222d ∭ <latex> \int\!\int\!\int <AMS> \iiint
+222f ∯ <latex> \surfintegral <AMS> \oiint
+2230 ∰ <latex> \volintegral <AMS> \oiiint
+2238 ∸ <latex> \ElsevierGlyph{2238} <AMS> \dotminus
+223b ∻ <latex> \homothetic <AMS> \kernelcontraction
+2241 ≁ <latex> \not\sim <AMS> \nsim <IEEE> \not\sim
+2242 ≂ <latex> \ElsevierGlyph{2242} <AMS> \eqsim
+2242 ≂ <latex> \NotEqualTilde <AMS> \neqsim
+2244 ≄ <latex> \not\simeq <AMS> \nsime <IEEE> \not\simeq
+2247 ≇ <latex> \not\cong <AMS> \ncong <IEEE> \not\cong
+2249 ≉ <latex> \not\approx <AMS> \napprox <IEEE> \not\approx
+224e ≎ <latex> \NotHumpDownHump <AMS> \nBumpeq
+224f ≏ <latex> \NotHumpEqual <AMS> \nbumpeq
+2251 ≑ <latex> \doteqdot <AMS> \Doteq
+2254 ≔ <latex> := <AMS> \coloneq
+2255 ≕ <latex> =: <AMS> \eqcolon
+2259 ≙ <latex> \estimates <AMS> \wedgeq
+225f ≟ <latex> \ElsevierGlyph{225F} <AMS> \questeq
+2260 ≠ <latex> \not = <AMS> \ne <IEEE> \ne
+2262 ≢ <latex> \not\equiv <AMS> \nequiv <IEEE> \not\equiv
+2264 ≤ <latex> \leq <AMS> \le <IEEE> \le
+2265 ≥ <latex> \geq <AMS> \ge <IEEE> \ge
+2268 ≨ <latex> \lneqq <varlatex> \lneq <AMS> \lneqq
+2269 ≩ <latex> \gneqq <varlatex> \gneq <AMS> \gneqq
+226e ≮ <latex> \not< <AMS> \nless
+226f ≯ <latex> \not> <AMS> \ngtr
+2270 ≰ <latex> \not\leq <AMS> \nleq <IEEE> \not\le
+2271 ≱ <latex> \not\geq <AMS> \ngeq <IEEE> \not\ge
+2272 ≲ <latex> \lessequivlnt <AMS> \lesssim
+2273 ≳ <latex> \greaterequivlnt <AMS> \gtrsim
+227d ≽ <latex> \succcurlyeq <varlatex> \succeq <AMS> \succcurlyeq
+227e ≾ <latex> \precapprox <varlatex> \precsim <AMS> \precsim
+227e ≾ <latex> \NotPrecedesTilde <AMS> \nprecsim
+227f ≿ <latex> \succapprox <varlatex> \succsim <AMS> \succsim
+227f ≿ <latex> \NotSucceedsTilde <AMS> \nsuccsim
+2280 ⊀ <latex> \not\prec <AMS> \nprec <IEEE> \not\prec
+2281 ⊁ <latex> \not\succ <AMS> \nsucc <IEEE> \not\succ
+2284 ⊄ <latex> \not\subset <AMS> \nsubset <IEEE> \not\subset
+2285 ⊅ <latex> \not\supset <AMS> \nsupset <IEEE> \not\supset
+2286 ⊆ <latex> \subseteq <varlatex> \subseteqq <AMS> \subseteq <IEEE> \subseteq
+2287 ⊇ <latex> \supseteq <varlatex> \supseteqq <AMS> \supseteq <IEEE> \supseteq
+2288 ⊈ <latex> \not\subseteq <varlatex> \nsubseteqq <AMS> \nsubseteq <IEEE> \not\subseteq
+2289 ⊉ <latex> \not\supseteq <varlatex> \nsupseteqq <AMS> \nsupseteq <IEEE> \not\supseteq
+228a ⊊ <latex> \subsetneq <varlatex> \subsetneqq <AMS> \subsetneq
+228b ⊋ <latex> \supsetneq <varlatex> \supsetneqq <AMS> \supsetneq
+22a5 ⊥ <latex> \perp <varlatex> \bot <AMS> \perp <IEEE> \perp
+22a7 ⊧ <latex> \truestate <AMS> \models
+22a8 ⊨ <latex> \forcesextra <AMS> \vDash <IEEE> \models
+22c0 ⋀ <latex> \ElsevierGlyph{22C0} <AMS> \bigwedge <IEEE> \bigwedge
+22c1 ⋁ <latex> \ElsevierGlyph{22C1} <AMS> \bigvee <IEEE> \bigvee
+22d9 ⋙ <latex> \verymuchgreater <AMS> \ggg
+22da ⋚ <latex> \lesseqgtr <varlatex> \lesseqqgtr <AMS> \lesseqgtr
+22db ⋛ <latex> \gtreqless <varlatex> \gtreqqless <AMS> \gtreqless
+22e8 ⋨ <latex> \precedesnotsimilar <AMS> \precnsim
+22e9 ⋩ <latex> \succnsim <varlatex> \succnapprox <AMS> \succnsim
+22f0 ⋰ <latex> \upslopeellipsis <AMS> \adots
+22f1 ⋱ <latex> \downslopeellipsis <AMS> \ddots <IEEE> \ddots
+2306 ⌆ <latex> \perspcorrespond <AMS> \doublebarwedge ?
+233d ⌽ <latex> \ElsevierGlyph{E838} <AMS> \obar
+25a0 ■ <latex> \ding{110} <AMS> \blacksquare
+25ca ◊ <latex> \lozenge <AMS> \lozenge <IEEE> \diamond
+2605 ★ <latex> \ding{72} <AMS> \bigstar
+2660 ♠ <latex> \ding{171} <AMS> \spadesuit <IEEE> \spadesuit
+2661 ♡ <AMS> \heartsuit <IEEE> \heartsuit
+2662 ♢ <latex> \diamond <AMS> \diamondsuit <IEEE> \diamondsuit
+2663 ♣ <latex> \ding{168} <AMS> \clubsuit <IEEE> \clubsuit
+2713 ✓ <latex> \ding{51} <AMS> \checkmark
+2720 ✠ <latex> \ding{64} <AMS> \maltese
+2925 ⤥ <latex> \ElsevierGlyph{E20B} <AMS> \hksearow
+2926 ⤦ <latex> \ElsevierGlyph{E20A} <AMS> \hkswarow
+2927 ⤧ <latex> \ElsevierGlyph{E211} <AMS> \tona
+2928 ⤨ <latex> \ElsevierGlyph{E20E} <AMS> \toea
+2929 ⤩ <latex> \ElsevierGlyph{E20F} <AMS> \tosa
+292a ⤪ <latex> \ElsevierGlyph{E210} <AMS> \towa
+2940 ⥀ <latex> \Elolarr <AMS> \circlearrowleft
+2941 ⥁ <latex> \Elorarr <AMS> \circlearrowright
+2980 ⦀ <latex> \Elztfnc <AMS> \Vvert
+2993 ⦓ <latex> <\kern-0.58em(
+2a00 ⨀ <AMS> \bigodot <IEEE> \bigodot
+2a01 ⨁ <AMS> \bigoplus <IEEE> \bigoplus
+2a02 ⨂ <AMS> \bigotimes <IEEE> \bigotimes
+2a04 ⨄ <latex> \Elxuplus <AMS> \biguplus <IEEE> \biguplus
+2a05 ⨅ <latex> \ElzThr <AMS> \bigsqcap
+2a06 ⨆ <latex> \Elxsqcup <AMS> \bigsqcup <IEEE> \bigsqcup
+2a07 ⨇ <latex> \ElzInf <AMS> \conjquant
+2a08 ⨈ <latex> \ElzSup <AMS> \disjquant
+2a0d ⨍ <latex> \ElzCint <AMS> \intbar
+2a25 ⨥ <latex> \ElsevierGlyph{E25A} <AMS> \plusdot
+2a2a ⨪ <latex> \ElsevierGlyph{E25B} <AMS> \minusdot
+2a3c ⨼ <latex> \ElsevierGlyph{E259} <AMS> \intprod
+2a7d ⩽ <latex> \nleqslant <varlatex> \nleqq <AMS> \nleqslant
+2a7e ⩾ <latex> \ngeqslant <varlatex> \ngeqq <AMS> \ngeqslant
+2aaf ⪯ <latex> \not\preceq <AMS> \npreceq <IEEE> \not\preceq
+2ab0 ⪰ <latex> \not\succeq <AMS> \nsucceq <IEEE> \not\succeq
+
