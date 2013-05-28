@@ -1,3 +1,66 @@
+# TODO: \i
+# TODO: 0x2254 (:= not :-)        
+# TODO: 0x2afg (has extra {})
+#
+## IPA extensions
+#025b X{\ensuremath{\varepsilon}}X
+#
+#0261 X{g}X
+#
+#0278 X{\ensuremath{\phi}}X
+#
+#029e X{\textturnk}X
+#
+## Spacing modifiers
+#
+#02bc X{\rasp}X
+#
+#02c6 X{\^{}}X
+#
+#02c7 X{\textasciicaron}X
+#
+#02d8 X{\textasciibreve}X
+#
+#02d9 X{\textperiodcentered}X
+#
+#02da X{\r{}}X
+#
+#02db X{\k{}}X
+#
+#02dc X{\~{}}X
+#
+#02dd X{\H{}}X
+#
+#02e5 X{\tone{55}}X
+#
+#02e6 X{\tone{44}}X
+#
+#02e7 X{\tone{33}}X
+#
+#02e8 X{\tone{22}}X
+#
+#02e9 X{\tone{11}}X
+#
+#$codes{0x00ad} = '\-'; # Don't want extra {} at the end
+#$codes{0x0192} = '\textflorin'; # Wrong: \ensuremath{f}
+#$codes{0x0195} = '\texthvlig'; # Missing
+#$codes{0x019e} = '\textnrleg'; # Missing
+##$codes{0x01aa} = '\ensuremath{\eth}'; # Wrong
+#$codes{0x01c2} = '\textdoublepipe'; # Missing
+#$codes{0x0237} = '\j'; # Missing
+#$codes{0x02c6} = '\^{}'; # Missing
+#$codes{0x02dc} = '\~{}'; # Wrong: \texttildelow
+#$codes{0x2013} = '--'; # Wrong: \textendash
+#$codes{0x2014} = '---'; # Wrong: \textemdash
+#$codes{0x201a} = '\quotesinglbase'; # Wrong: ,
+#$codes{0x201e} = '\quotedblbase'; # Wrong: ,,
+#$codes{0x2329} = '\ensuremath{\langle}'; # Missing
+#$codes{0x232a} = '\ensuremath{\rangle}'; # Missing
+#$codes{0x219c} = '\ensuremath{\arrowwaveleft}'; # Wrong: \arrowwaveright
+#$codes{0x2244} = '\ensuremath{\nsimeq}'; # Wrong: \nsime
+#delete $codes{0x03d0}; # Wrong: \Pisymbol{ppi022}{87}
+
+
 
 Low range = special case
 if only latex use latex

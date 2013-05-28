@@ -9,7 +9,7 @@ A related project is the W3C effort to build a database of XML/HTML entity names
 ************
 - Notes:
   - README: This file. Describes the program and directory layout.
-  - unicode-conflicts.txt: Notes on parts of the mapping to fix
+  - TODO: Notes on parts of the mapping to fix
 
 - Programs:
   - TeX/Unicode.pm: The main module.
