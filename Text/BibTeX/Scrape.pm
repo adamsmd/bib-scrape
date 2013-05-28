@@ -86,7 +86,7 @@ sub domain { $mech->uri()->authority() =~ m[^(|.*\.)\Q$_[0]\E]i; }
 sub parse {
     if (domain('acm.org')) { parse_acm(@_); }
     elsif (domain('sciencedirect.com')) { parse_science_direct(@_); }
-    elsif (domain('springerlink.com')) { parse_springerlink(@_); }
+    elsif (domain('link.springer.com')) { parse_springerlink(@_); }
     elsif (domain('journals.cambridge.org')) { parse_cambridge_university_press(@_); }
     elsif (domain('computer.org')) { parse_ieee_computer_society(@_); }
     elsif (domain('jstor.org')) { parse_jstor(@_); }
@@ -156,8 +156,12 @@ sub get_url {
 
 sub get_mathml {
     my ($str) = @_;
-    $str =~ s[<span\b[^>]*\bonclick="submitCitation\('(.*?)'\)"[^>]*>(<span\b[^>]*>.*?</span>|<img\b[^>]*>.*?)</span>]
-        [@{[join(" ", split(/[\r\n]+/, get_url(decode_entities($1))))]}]g;
+    $str =~ s[<span\b[^>]*\bclass="mathmlsrc"[^>]*>
+                <(span|a)\b[^>]*\bdata-mathURL="(.*?)"[^>]*>.*?</\1>
+                .*?
+                <!--(ja:math|Loading\sMathjax)-->
+              </span>]
+        [@{[join(" ", split(/[\r\n]+/, get_url(decode_entities($2))))]}]xg;
     return $str;
 }
 
@@ -202,45 +206,45 @@ sub parse_science_direct {
 sub parse_springerlink {
     my ($mech) = @_;
 # TODO: handle books
-    $mech->follow_link(url_regex => qr[/export-citation/])
-        unless $mech->uri() =~ m[/export-citation/];
+    $mech->follow_link(url_regex => qr[/export-citation/]);
 
-    $mech->submit_form(
-        with_fields => {
-            'ctl00$ContentPrimary$ctl00$ctl00$Export' => 'AbstractRadioButton',
-            'ctl00$ContentPrimary$ctl00$ctl00$CitationManagerDropDownList'
-                => 'BibTex'},
-        button => 'ctl00$ContentPrimary$ctl00$ctl00$ExportCitationButton');
-    my $entry = parse_bibtex(decode('utf8', $mech->content()));
+    $mech->follow_link(url_regex => qr[/export-citation/.+\.bib]);
+    my $entry_text = $mech->content();
+    $entry_text =~ s[^(\@.*\{)$][$1X,]m; # Fix invalid BibTeX (missing key)
+    my $entry = parse_bibtex(decode('utf8', $entry_text));
+    $mech->back();
     $mech->back();
 
-    $mech->submit_form(
-        with_fields => {
-            'ctl00$ContentPrimary$ctl00$ctl00$Export' => 'AbstractRadioButton',
-            'ctl00$ContentPrimary$ctl00$ctl00$CitationManagerDropDownList' => 'EndNote'},
-        button => 'ctl00$ContentPrimary$ctl00$ctl00$ExportCitationButton');
+    $mech->follow_link(url_regex => qr[/export-citation/.+\.enw]);
     my $f = Text::RIS::parse($mech->content())->bibtex();
     ($f->exists($_) && $entry->set($_, $f->get($_))) for ('doi', 'month', 'issn', 'isbn');
     $mech->back();
 
-    $mech->follow_link(url_regex => qr[/abstract/]);
-    my ($abstr) = $mech->content =~ m[<div class="abstractText">\s*(<.*?)\r?\n</div>]s;
-    $abstr =~ s[<p class="Keyword">(.*?)</p>][]isg;
-    $abstr =~ s[<div class="ArticleNote">(.*?)</div>][]isg;
-    $abstr =~ s[<div class="AbstractPara">\s*<div class="">(.*?)</div>\s*</div>][\n\n$1\n\n]isg;
-    $abstr =~ s[<div class="AbstractPara">\s*<div class="normal">(.*?)</div>\s*</div>][\n\n$1\n\n]isg;
-    $abstr =~ s[<div class="Abstract".*?>(.*?)</div>][\n\n$1\n\n]isg;
-    $abstr =~ s[<div class="normal">(.*?)</div>][$1]isg;
+    my ($abstr) = join('', $mech->content =~ m[<div class="abstract-content formatted".*?>(.*?)</div>]sg);
     $entry->set('abstract', $abstr) if defined $abstr;
 
     my ($keywords) = $mech->content =~
         m[<p\b[^>]*?class="Keyword"><span\b[^>]*?class="KeywordHeading">.*?</span>(.*?)</p>]sg;
     $entry->set('keyword', join('; ', split('&nbsp;-&nbsp;', $keywords))) if defined $keywords;
 
-    $mech->follow_link(url_regex => qr[/about/]);
+    my ($affiliations) = $mech->content =~ m[<ul class="author-affiliations">(.*?)</ul>]s;
+    my @affiliations = $affiliations =~ m[<span class="affiliation">(.*?)</span>]sg;
+    $affiliations = join('', @affiliations);
+    $affiliations =~ s/,\s*$//mg;
+    $entry->set('affiliation', $affiliations) if @affiliations;
+
+    my $html = Text::MetaBib::parse($mech->content());
+    $entry->set('journal', $html->get('citation_journal_title')->[0]) if $entry->exists('journal');
+    $entry->set('author', $html->authors()) if $entry->exists('author');
+    my ($year, $month, $day) = $mech->content =~ m["abstract-about-cover-date">(\d\d\d\d)-(\d\d)-(\d\d)</dd>];
+    $entry->set('month', num2month($month)->[1]) if defined $month;
+
     issn($entry,
-         [$mech->content() =~ m[>(\d\d\d\d-\d\d\d[0-9X]) \(Print\)<]],
-         [$mech->content() =~ m[>(\d\d\d\d-\d\d\d[0-9X]) \(Online\)<]]);
+         [$mech->content() =~ m[setTargeting\("pissn","(\d\d\d\d-\d\d\d[0-9X])"\)]],
+         [$mech->content() =~ m[setTargeting\("eissn","(\d\d\d\d-\d\d\d[0-9X])"\)]]);
+
+    my @editors = $mech->content() =~ m[<li itemprop="editor"[^>]*>\s*<a[^>]*>(.*?)</a>]sg;
+    $entry->set('editor', join(' and ', @editors)) if @editors;
 
     return $entry;
 }

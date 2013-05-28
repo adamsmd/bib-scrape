@@ -130,10 +130,11 @@ The first line is the canonical form of a name.
 Lines other than the first one are aliases that should be converted to the
 canonical form.
 
-Names are generally matched case insensitively, but note that
-BibTeX uses case to determine the extent of the "van/von" part of a name.
-Thus in some cases like a publisher using "Van Noort" instead of
-"van Noort", you may have to include both cases in the name file.
+When searching for the canonical form of a name, case distinctions and
+the divisions of the name into parts (e.g. first vs last name) are
+ignored as publishers often get these wrong (e.g., "Van Noort" will
+match "van Noort" and "Jones, Simon Peyton" will match "Peyton Jones,
+Simon").
 
 The default name file provides several examples and recommended practices.
 

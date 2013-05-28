@@ -11,10 +11,15 @@ Ashley, J. Michael
 
 Zadeck, F. Kenneth
 
+# Please use Unicode instead of LaTeX escapes for this file.
+Huet, Gérard
+
 # We can't assume a three part name is "first middle last" as some
 # people have two words in their last name.  Further, publishers often
-# get this wrong (e.g. "Jones, Simon Peyton") Thus we explicitly
-# specify those names.
+# get this wrong (e.g. "Jones, Simon Peyton").  Thus we explicitly
+# specify those names.  When searching for names we ignore the
+# separation into parts so we will automatically detect that "Jones,
+# Simon Peyton" should match against "Peyton Jones, Simon".
 
 Rodriguez Yakushev, Alexey
 
@@ -34,17 +39,10 @@ Strogatz, Steven H.
 # Sometimes these parts of the names are capitalized, while other
 # times they are not.  Always double check how the particular author
 # spells it.
-#
-# Note that when they are lower case, bibtex treats them as a seperate
-# part of the name, but when they are upper case, bibtex treats them
-# as part of the last name.  Thus sometimes case insensitive match
-# isn't enough to find the name.
 
 van Straaten, Anton
-Van Straaten, Anton
 
 van Noort, Thomas
-Van Noort, Thomas
 
 Van Horn, David
 
@@ -189,6 +187,3 @@ Nykänen, Matti
 Cousot, Patrick
 
 Cousot, Radhia
-
-# Unicode is supported
-Huet, Gérard

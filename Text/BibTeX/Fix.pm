@@ -323,12 +323,15 @@ sub latex_encode
     $str =~ s[<a [^>]*onclick="toggleTabs\(.*?\)">.*?</a>][]isg; # Fix for Science Direct
 
     # HTML formatting
+    $str =~ s[<([^>]*)\bclass="a-plus-plus"([^>]*)>][<$1$2>]isg; # Remove class annotation
+    $str =~ s[<(\w+)\s*>][<$1>]isg; # Removed extra space around simple tags
     $str =~ s[<a( .*?)?>(.*?)</a>][$2]isog; # Remove <a> links
     $str =~ s[<p(| [^>]*)>(.*?)</p>][$2\n\n]isg; # Replace <p> with "\n\n"
     $str =~ s[<par(| [^>]*)>(.*?)</par>][$2\n\n]isg; # Replace <par> with "\n\n"
     $str =~ s[<span style="font-family:monospace\s*">(.*?)</span>][\\texttt{$1}]isg; # Replace monospace spans with \texttt
     $str =~ s[<span class="monospace\s*">(.*?)</span>][\\texttt{$1}]isg; # Replace monospace spans with \texttt
     $str =~ s[<span class="smallcaps\s*">(.*?)</span>][\\textsc{$1}]isg; # Replace small caps spans with \textsc
+    $str =~ s[<span class="[^"]*type-small-caps[^"]*">(.*?)</span>][\\textsc{$1}]isg; # Replace small caps spans with \textsc
     $str =~ s[<span( .*?)?>(.*?)</span>][$2]isg; # Remove <span>
     $str =~ s[<span( .*?)?>(.*?)</span>][$2]isg; # Remove <span>
     $str =~ s[<i>(.*?)</i>][\\textit{$1}]isog; # Replace <i> with \textit
@@ -494,6 +497,10 @@ sub last_name {
         $name =~ /^(O'|Mc|Mac)\p{upper}\p{lower}+$/; # Name with prefix
 }
 
+sub flatten_name {
+    return decode('utf8', join(' ', $_[0]->part('first'), $_[0]->part('von'), $_[0]->part('last'), $_[0]->part('jr')));
+}
+
 sub canonical_names {
     my ($self, $entry, $field) = @_;
 
@@ -506,16 +513,11 @@ sub canonical_names {
   NAME:
     for my $name ($entry->names($field)) {
         for my $name_group (@{$self->valid_names}) {
-          VALID_NAME:
             for my $_ (@$name_group) {
-                for my $part (qw(von last jr first)) {
-                    if (lc decode_entities(decode('utf8', join(' ', $name->part($part)))) ne
-                        lc decode('utf8', join(' ', $_->part($part)))) {
-                        next VALID_NAME;
-                    }
+                if (lc decode_entities(flatten_name($name)) eq lc flatten_name($_)) {
+                    push @names, decode('utf8', $name_group->[0]->format($name_format));
+                    next NAME;
                 }
-                push @names, decode('utf8', $name_group->[0]->format($name_format));
-                next NAME;
             }
         }
         print "WARNING: Suspect name @{[$name->format($name_format)]}\n" unless
