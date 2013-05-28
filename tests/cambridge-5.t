@@ -12,7 +12,6 @@ Bookreview
   year = {2001},
   issn = {1469-7653},
   doi = {10.1017/S0956796801004130},
-  eprint = {http://journals.cambridge.org/article_S0956796801004130},
   bib_scrape_url = {http://journals.cambridge.org/action/displayAbstract?aid=83371},
 }
 

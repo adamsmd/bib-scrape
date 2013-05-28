@@ -12,7 +12,6 @@ Call for papers.  Italics in abstract.  Subtitle.
   year = {2001},
   issn = {1469-7653},
   doi = {10.1017/S0956796801004105},
-  eprint = {http://journals.cambridge.org/article_S0956796801004105},
   bib_scrape_url = {http://journals.cambridge.org/action/displayAbstract?aid=83911},
   abstract = {Modern programming languages rely on advanced type systems that detect errors at compile-time. While the benefits of type systems have long been recognized, there are some areas where the standard systems in programming languages are not expressive enough. Language designers usually trade expressiveness for decidability of the type system. Some interesting programs will always be rejected (despite their semantical soundness) or be assigned uninformative types.
 {\par}

@@ -12,7 +12,6 @@ Chinese name, unusual subtitle placement
   year = {2011},
   issn = {1469-7653},
   doi = {10.1017/S0956796811000256},
-  eprint = {http://journals.cambridge.org/article_S0956796811000256},
   bib_scrape_url = {http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=8440159},
   abstract = {It is often hard to write programs that are efficient yet reusable. For example, an efficient implementation of Gaussian elimination should be specialized to the structure and known static properties of the input matrix. The most profitable optimizations, such as choosing the best pivoting or memoization, cannot be expected of even an advanced compiler because they are specific to the domain, but expressing these optimizations directly makes for ungainly source code. Instead, a promising and popular way to reconcile efficiency with reusability is for a domain expert to write code generators.
 {\par}

@@ -12,7 +12,6 @@ Unicode in author, "Mc" name
   year = {1995},
   issn = {1474-0079},
   doi = {10.1017/S0959269500002970},
-  eprint = {http://journals.cambridge.org/article_S0959269500002970},
   bib_scrape_url = {http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=2363692},
 }
 

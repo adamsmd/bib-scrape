@@ -13,7 +13,6 @@ use WWW::Mechanize;
 use Text::BibTeX;
 use Text::BibTeX qw(:subs);
 use Text::BibTeX::Value;
-use Text::BibTeX::Months qw(num2month);
 
 my $DEBUG = 0;
 
@@ -213,11 +212,11 @@ sub parse_springerlink {
     $entry_text =~ s[^(\@.*\{)$][$1X,]m; # Fix invalid BibTeX (missing key)
     my $entry = parse_bibtex(decode('utf8', $entry_text));
     $mech->back();
-    $mech->back();
 
     $mech->follow_link(url_regex => qr[/export-citation/.+\.enw]);
     my $f = Text::RIS::parse($mech->content())->bibtex();
     ($f->exists($_) && $entry->set($_, $f->get($_))) for ('doi', 'month', 'issn', 'isbn');
+    $mech->back();
     $mech->back();
 
     my ($abstr) = join('', $mech->content =~ m[<div class="abstract-content formatted".*?>(.*?)</div>]sg);
@@ -237,7 +236,7 @@ sub parse_springerlink {
     $entry->set('journal', $html->get('citation_journal_title')->[0]) if $entry->exists('journal');
     $entry->set('author', $html->authors()) if $entry->exists('author');
     my ($year, $month, $day) = $mech->content =~ m["abstract-about-cover-date">(\d\d\d\d)-(\d\d)-(\d\d)</dd>];
-    $entry->set('month', num2month($month)->[1]) if defined $month;
+    $entry->set('month', $month) if defined $month;
 
     issn($entry,
          [$mech->content() =~ m[setTargeting\("pissn","(\d\d\d\d-\d\d\d[0-9X])"\)]],
@@ -273,19 +272,23 @@ sub parse_cambridge_university_press {
                       $mech->content() =~ m[</h3>\s*<h3>(.*?)(?=</h3>)]sg
                      )));
     $entry->set('title', $mech->content() =~
-                m[<div id="codeDisplayWrapper">\s*<div.*?>\s*<div.*?>(.*?)</div>])
+                m[<div id="codeDisplayWrapper">\s*<div.*?>\s*<div.*?>(.*?)</div>]s)
         unless $entry->get('title');
 
     #print $mech->content();
     my $html = Text::MetaBib::parse($mech->content());
-    if ($html->exists('citation_date')) {
-        my ($year, $month) = $html->date('citation_date');
+    if ($html->exists('citation_publication_date') and join('',@{$html->get('citation_publication_date')}) =~ m[.]) {
+        my ($year, $month) = $html->date('citation_publication_date');
         $entry->set('month', $month);
     }
+
+    my ($doi) = join(' ', @{$html->get('citation_pdf_url')}) =~ m[^http://journals.cambridge.org/article_(S\d{16})$];
+    update($entry, 'doi', sub { $_ = "10.1017/$doi" if defined $doi });
 
     update($entry, 'abstract', sub { $_ = undef if m[^\s*$] });
     update($entry, 'doi', sub { $_ = undef if $_ eq "null" });
     update($entry, 'author', sub { $_ = undef if $_ eq "" });
+    update($entry, 'url', sub { $_ = undef if $_ eq join(' ',@{$html->get('citation_pdf_url')})});
 
     return $entry;
     # TODO: fix case of authors
@@ -330,8 +333,7 @@ sub parse_ieee_computer_society {
 # (they also use JavaScript to implement simple links)
 sub parse_ieeexplore {
     my ($mech, $fields) = @_;
-    my ($record) = $mech->content() =~
-        m[<span *id="recordId" *style="display: none;">\s*(\d+)\s*</span>]s;
+    my ($record) = $mech->content() =~ m[var recordId = "(\d+)";];
 
     # Ick, work around javascript by hard coding the URL
     $mech->get("http://ieeexplore.ieee.org/xpl/downloadCitations?".

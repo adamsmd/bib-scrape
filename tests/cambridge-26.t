@@ -12,7 +12,6 @@ Superscript in title
   year = {2009},
   issn = {1469-7653},
   doi = {10.1017/S0956796809990074},
-  eprint = {http://journals.cambridge.org/article_S0956796809990074},
   bib_scrape_url = {http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=6046168&fulltextType=RA&fileId=S0956796809990074},
   abstract = {Programming languages should be designed not by piling feature on top of feature, but by removing the weaknesses and restrictions that make additional features appear necessary. Scheme demonstrates that a very small number of rules for forming expressions, with no restrictions on how they are composed, suffice to form a practical and efficient programming language that is flexible enough to support most of the major programming paradigms in use today.
 {\par}

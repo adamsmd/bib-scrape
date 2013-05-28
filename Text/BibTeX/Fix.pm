@@ -15,7 +15,7 @@ use XML::Parser;
 
 use Text::BibTeX;
 use Text::BibTeX qw(:subs :nameparts :joinmethods);
-use Text::BibTeX::Months qw(str2month);
+use Text::BibTeX::Months qw(str2month num2month);
 use Text::BibTeX::Name;
 use Text::BibTeX::NameFormat;
 use Text::BibTeX::Value;
@@ -281,6 +281,7 @@ sub Text::BibTeX::Fix::Impl::fix {
                  my @x = map {
                      ($_ eq '/' || $_ eq '-' || $_ eq '--') and [Text::BibTeX::BTAST_STRING, $_] or
                      str2month(lc $_) or
+                     m[^\d+$] and num2month($_) or
                      print "WARNING: Suspect month: $_\n" and [Text::BibTeX::BTAST_STRING, $_]}
                    split /\b/;
                  $_ = new Text::BibTeX::Value(@x)});
