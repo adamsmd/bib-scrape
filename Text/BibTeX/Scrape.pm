@@ -347,19 +347,17 @@ sub parse_ieeexplore {
     my $entry = parse_bibtex($cont);
 
     $mech->back();
-    my $html = Text::MetaBib::parse($mech->content());
-    if ($html->exists('citation_date')) {
-        my $month = $html->get('citation_date')->[0];
-        $month =~ s/\d+(-\d+)?//g;
+
+    my ($month) = $mech->content() =~ m[\&publicationDate=([a-z0-9\., -]+)\&]is;
+    if (defined $month) {
+        $month =~ s[[0-9\., ]][]isg;
+        $month =~ s[^-*][];
+        $month =~ s[-*$][];
         $entry->set('month', $month);
     }
 
-    for ('keywords', 'issn', 'isbn') {
-        if ($html->exists("citation_$_")) {
-            my $value = $html->get("citation_$_")->[0];
-            $entry->set($_, $value) if $value ne '';
-        }
-    }
+    my ($isbn) = $mech->content() =~ m[\&isbn=([0-9X-]+)\&]is;
+    $entry->set('isbn', $isbn) if defined $isbn;
 
     return $entry
 }
