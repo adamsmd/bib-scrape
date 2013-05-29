@@ -11,7 +11,7 @@ use Text::BibTeX::Fix;
 use Text::BibTeX::Name;
 use Text::BibTeX::Scrape;
 
-$main::VERSION='2013.05.26';
+$main::VERSION='13.05.26';
 
 =head1 SYNOPSIS
 
