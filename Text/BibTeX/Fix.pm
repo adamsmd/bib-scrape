@@ -223,12 +223,6 @@ sub Text::BibTeX::Fix::Impl::fix {
     # regex delete if looks like doi
     # Fix Springer's use of 'note' to store 'doi'
     update($entry, 'note', sub { $_ = undef if $_ eq ($entry->get('doi') or "") });
-    # Remove series from note
-    update($entry, 'note', sub {
-        s/<xocs:full-name>(.*?)<\/xocs:full-name>//g;
-        s/<ce:title>(.*?)<\/ce:title>//g;
-        $entry->set('series', $1) if $1 ne '';
-        $_ = undef if /^\s*$/; });
 
     # Eliminate Unicode but not for no_encode fields (e.g. doi, url, etc.)
     for my $field ($entry->fieldlist()) {
@@ -355,6 +349,9 @@ sub latex_encode
     my $xml = XML::Parser->new(Style => 'Tree');
     $str =~ s[(<mml:math\b[^>]*>.*?</mml:math>)]
              [\\ensuremath{@{[rec(@{$xml->parse($1)})]}}]gs; # TODO: ensuremath (but avoid latex encoding)
+
+    # Trim spaces before NBSP (otherwise they have not effect in LaTeX)
+    $str =~ s[ *\xA0][\xA0]g;
 
     # Encode unicode but skip any \, {, or } that we already encoded.
     my @parts = split(/(\$.*?\$|[\\{}_^])/, $str);
@@ -514,7 +511,7 @@ sub canonical_names {
   NAME:
     for my $name ($entry->names($field)) {
         for my $name_group (@{$self->valid_names}) {
-            for my $_ (@$name_group) {
+            for (@$name_group) {
                 if (lc decode_entities(flatten_name($name)) eq lc flatten_name($_)) {
                     push @names, decode('utf8', $name_group->[0]->format($name_format));
                     next NAME;

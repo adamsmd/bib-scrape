@@ -3,7 +3,7 @@ Fix Blu -> Blume.  (Bug in ACM BibTeX.)
 @inproceedings{Blume:1997:10.1145/258948.258960,
   author = {Blume, Matthias and Appel, Andrew W.},
   title = {Lambda-splitting: a higher-order approach to cross-module optimizations},
-  booktitle = {Proceedings of the second ACM SIGPLAN international conference on Functional programming},
+  booktitle = {Proceedings of the Second ACM SIGPLAN International Conference on Functional Programming},
   series = {ICFP~'97},
   location = {Amsterdam, The Netherlands},
   pages = {112--124},

@@ -3,7 +3,7 @@ Subtitle and capitalization problems
 @inproceedings{Das:2002:10.1145/512529.512538,
   author = {Das, Manuvir and Lerner, Sorin and Seigle, Mark},
   title = {{ESP}: {P}ath-sensitive program verification in polynomial time},
-  booktitle = {Proceedings of the ACM SIGPLAN 2002 Conference on Programming language design and implementation},
+  booktitle = {Proceedings of the ACM SIGPLAN 2002 Conference on Programming Language Design and Implementation},
   series = {PLDI~'02},
   location = {Berlin, Germany},
   pages = {57--68},

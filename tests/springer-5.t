@@ -13,6 +13,7 @@ Oxford University Computing Laboratory, Wolfson Building, Parks Road, Oxford, OX
   pages = {13--29},
   year = {2006},
   publisher = {Springer Berlin Heidelberg},
+  language = {English},
   isbn = {978-3-540-33438-5},
   issn = {0302-9743 (Print) 1611-3349 (Online)},
   doi = {10.1007/11737414_3},

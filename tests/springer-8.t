@@ -11,6 +11,7 @@ Unicode in title
   pages = {190--201},
   year = {1992},
   publisher = {Springer Berlin Heidelberg},
+  language = {English},
   isbn = {978-3-540-55727-2},
   issn = {0302-9743 (Print) 1611-3349 (Online)},
   doi = {10.1007/BFb0013061},

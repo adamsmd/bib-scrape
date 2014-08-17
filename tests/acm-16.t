@@ -3,7 +3,7 @@ Subtitle
 @inproceedings{Might:2006:10.1145/1159803.1159807,
   author = {Might, Matthew and Shivers, Olin},
   title = {Improving Flow Analyses via {\textgreek{G}}{CFA}: Abstract Garbage Collection and Counting},
-  booktitle = {Proceedings of the eleventh ACM SIGPLAN international conference on Functional programming},
+  booktitle = {Proceedings of the Eleventh ACM SIGPLAN International Conference on Functional Programming},
   series = {ICFP~'06},
   location = {Portland, Oregon, USA},
   pages = {13--25},

@@ -3,7 +3,7 @@ http://dx.doi.org/10.1145/1863543.1863551
 @inproceedings{Mazurak:2010:10.1145/1863543.1863551,
   author = {Mazurak, Karl and Zdancewic, Steve},
   title = {Lolliproc: to concurrency from classical linear logic via curry-howard and control},
-  booktitle = {Proceedings of the 15th ACM SIGPLAN international conference on Functional programming},
+  booktitle = {Proceedings of the 15th ACM SIGPLAN International Conference on Functional Programming},
   series = {ICFP~'10},
   location = {Baltimore, Maryland, USA},
   pages = {39--50},

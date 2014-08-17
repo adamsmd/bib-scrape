@@ -21,23 +21,13 @@ sub debug {
     return $DEBUG;
 }
 
-sub jstor_patch {
-    &WWW::Mechanize::_die(@_)
-        unless ($_[0] eq "Error " and
-                $_[1] eq "GET" and
-                $_[2] eq "ing " and
-                $_[3] =~ m[^http://www.jstor.org/] and
-                $_[4] eq ": " and
-                $_[5] eq "Forbidden");
-}
-
 my $mech;
 
 sub scrape {
     my ($url) = @_;
 
     # TODO: test running without jstor_patch from home
-    $mech = WWW::Mechanize->new(autocheck => 1, onerror => \&jstor_patch );
+    $mech = WWW::Mechanize->new(autocheck => 1);
     $mech->add_handler("request_send",  sub { shift->dump; return }) if $DEBUG;
     $mech->add_handler("response_done", sub { shift->dump; return }) if $DEBUG;
     $mech->agent('Mozilla/5.0');
@@ -168,6 +158,8 @@ sub parse_science_direct {
     my ($mech) = @_;
 
     # Find the title and reverse engineer the Unicode
+    $mech->follow_link(text => "Screen reader users, click here to load entire article");
+
     my ($title) = $mech->content() =~ m[<h1 class="svTitle".*?>\s*(.*?)\s*</h1>]s;
     my ($keywords) = $mech->content() =~ m[<ul class="keyword".*?>\s*(.*?)\s*</ul>]s;
     $keywords = "" unless defined $keywords;
@@ -176,12 +168,12 @@ sub parse_science_direct {
 
     $title =~ s[<sup><a\b[^>]*\bclass="intra_ref"[^>]*>.*?</a></sup>][];
     $title = get_mathml($title);
-    my ($abst) = $mech->content() =~ m[<div class="abstract svAbstract *">\s*(.*?)\s*</div>];
+    my ($abst) = $mech->content() =~ m[<div class="abstract svAbstract *".*?>\s*(.*?)\s*</div>];
     $abst = "" unless defined $abst;
-    $abst =~ s[<h2 class="secHeading" id="section_abstract">Abstract</h2>][]g;
+    $abst =~ s[<h2 class="secHeading".*?>Abstract</h2>][]g;
     $abst = get_mathml($abst);
 
-    $mech->follow_link(text => 'Export citation');
+    my ($series) = $mech->content() =~ m[<p class="specIssueTitle">(.*?)</p>];
 
     $mech->submit_form(with_fields => {
         'format' => 'cite', 'citation-type' => 'BIBTEX'});
@@ -190,12 +182,15 @@ sub parse_science_direct {
     $entry->set('abstract', $abst);
     $entry->delete('keywords'); # Clear 'keywords' duplication that breaks Text::BibTeX
     $entry->set('keywords', $keywords) if $keywords ne '';
+    $entry->set('series', $series) if defined $series and $series ne '';
     $mech->back();
 
     $mech->submit_form(with_fields => {
         'format' => 'cite-abs', 'citation-type' => 'RIS'});
     my $f = Text::RIS::parse(decode('utf8', $mech->content()))->bibtex();
     $entry->set('month', $f->get('month'));
+    $entry->delete('note') if $f->exists('booktitle') and $f->get('booktitle') eq $entry->get('note');
+    $entry->set('series', $f->get('booktitle')) if !$entry->exists('series') and $f->exists('booktitle');
 
 # TODO: editor
 
@@ -275,7 +270,6 @@ sub parse_cambridge_university_press {
                 m[<div id="codeDisplayWrapper">\s*<div.*?>\s*<div.*?>(.*?)</div>]s)
         unless $entry->get('title');
 
-    #print $mech->content();
     my $html = Text::MetaBib::parse($mech->content());
     if ($html->exists('citation_publication_date') and join('',@{$html->get('citation_publication_date')}) =~ m[.]) {
         my ($year, $month) = $html->date('citation_publication_date');
@@ -380,12 +374,9 @@ sub parse_jstor {
     $entry->set('doi', '10.2307/' . $suffix);
     my ($month) = ($entry->get('jstor_formatteddate') =~ m[^(.*?)( \d\d?)?, \d\d\d\d$]);
     $entry->set('month', $month) if defined $month;
-
     $mech->back();
-    my ($title) = (
-        $mech->content() =~ m[<div class="mainCite"><h2 class="h3">(.*?)</h2>],
-        $mech->content() =~ m[(?<!<!--)<div class="hd title">(.*?)</div>]);
-    $entry->set('title', $title);
+
+    $entry->set('title', $mech->content() =~ m[<div class="mainCite.*?"><h2 class="h3">(.*?)</h2>]);
 
     issn($entry,
          [$mech->content() =~ m[>ISSN: (\d{7}[0-9X])<]],

@@ -3,7 +3,7 @@ Page numbers with letters and dashes
 @inproceedings{Baker:1996:10.1145/237218.237407,
   author = {Baker, James E. and Cruz, Isabel F. and Liotta, Giuseppe and Tamassia, Roberto},
   title = {Animating geometric algorithms over the web},
-  booktitle = {Proceedings of the twelfth annual symposium on Computational geometry},
+  booktitle = {Proceedings of the Twelfth Annual Symposium on Computational Geometry},
   series = {SCG~'96},
   location = {Philadelphia, Pennsylvania, USA},
   pages = {C-3--C-4},

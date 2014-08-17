@@ -3,7 +3,7 @@ Page numbers with letters
 @inproceedings{Teskey:1987:10.1145/42005.42011,
   author = {Teskey, F. N.},
   title = {Enriched knowledge representation for information retrieval},
-  booktitle = {Proceedings of the 10th annual international ACM SIGIR conference on Research and development in information retrieval},
+  booktitle = {Proceedings of the 10th Annual International ACM SIGIR Conference on Research and Development in Information Retrieval},
   series = {SIGIR~'87},
   location = {New Orleans, Louisiana, USA},
   pages = {43a--43g},

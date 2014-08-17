@@ -11,6 +11,7 @@ Author should be "R. Kent Dybvig" instead of "R. Dybvig"
   pages = {35--52},
   year = {1997},
   publisher = {Springer Berlin Heidelberg},
+  language = {English},
   isbn = {978-3-540-63468-3},
   issn = {0302-9743 (Print) 1611-3349 (Online)},
   doi = {10.1007/BFb0032732},

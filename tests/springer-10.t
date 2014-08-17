@@ -11,6 +11,7 @@ Acronym with numbers in title
   pages = {570--589},
   year = {2010},
   publisher = {Springer Berlin Heidelberg},
+  language = {English},
   isbn = {978-3-642-11956-9},
   issn = {0302-9743 (Print) 1611-3349 (Online)},
   doi = {10.1007/978-3-642-11957-6_30},

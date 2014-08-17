@@ -3,7 +3,7 @@ Decodes HTML in abstract
 @inproceedings{Might:2007:10.1145/1190216.1190247,
   author = {Might, Matthew},
   title = {Logic-flow analysis of higher-order programs},
-  booktitle = {Proceedings of the 34th annual ACM SIGPLAN-SIGACT symposium on Principles of programming languages},
+  booktitle = {Proceedings of the 34th Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
   series = {POPL~'07},
   location = {Nice, France},
   pages = {185--198},
