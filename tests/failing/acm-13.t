@@ -6,7 +6,7 @@ Page numbers with letters and dashes
   booktitle = {Proceedings of the Twelfth Annual Symposium on Computational Geometry},
   series = {SCG~'96},
   location = {Philadelphia, Pennsylvania, USA},
-  pages = {403--404},
+  pages = {C-3--C-4},
   numpages = {2},
   year = {1996},
   publisher = {ACM},

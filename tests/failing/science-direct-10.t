@@ -2,7 +2,7 @@ http://www.sciencedirect.com/science/article/pii/0167642394000042
 Subtitle
 @article{Henglein:1994:10.1016/0167-6423(94)00004-2,
   author = {Henglein, Fritz},
-  title = {Dynamic typing: syntax and proof theory},
+  title = {Dynamic typing: {S}yntax and proof theory},
   journal = {Science of Computer Programming},
   volume = {22},
   number = {3},

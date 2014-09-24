@@ -5,7 +5,7 @@ Multi range month
   title = {A space efficient method for the lowest common ancestor problem and an application to finding negative cycles},
   booktitle = {Foundations of Computer Science, 1977., 18th Annual Symposium on},
   pages = {132--141},
-  month = oct,
+  month = oct # {--} # nov,
   year = {1977},
   issn = {0272-5428},
   doi = {10.1109/SFCS.1977.4},

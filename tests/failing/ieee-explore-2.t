@@ -1,9 +1,7 @@
 http://ieeexplore.ieee.org/xpl/freeabs_all.jsp?arnumber=190306&abstractAccess=no&userType=
 Strange page numbering
-WARNING: Suspect name: Clark, D.A
-WARNING: Suspect name: Archer, I
 @inproceedings{Rawlings:1990,
-  author = {Rawlings, Christopher J. and Clark, D.A and Barton, Geoffrey J. and Archer, I and Saldanha, Jos{\'e} W.},
+  author = {Rawlings, Christopher J. and Clark, Dominic A. and Barton, Geoffrey J. and Archer, Iain and Saldanha, Jos{\'e} W.},
   title = {Large knowledge based applications in molecular biology and genetics},
   booktitle = {Very Large Knowledge-Based Systems, IEE Colloquium on},
   pages = {6/1--6/5},

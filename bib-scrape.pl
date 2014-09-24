@@ -4,6 +4,15 @@ use warnings;
 use strict;
 $|++;
 
+# Silence a known warning in Text::BibTeX::Value
+BEGIN {
+    my $old_warn = $SIG{__WARN__};
+    $SIG{__WARN__} = sub {
+        warn @_ unless $_[0] =~
+            m[^UNIVERSAL->import is deprecated and will be removed in a future perl.*Text/BibTeX/Value.pm line \d+\.];
+    };
+}
+
 use Getopt::Long qw(:config auto_version auto_help);
 
 use Text::BibTeX qw(:metatypes);
@@ -11,7 +20,7 @@ use Text::BibTeX::Fix;
 use Text::BibTeX::Name;
 use Text::BibTeX::Scrape;
 
-$main::VERSION='13.05.29';
+$main::VERSION='14.09.24';
 
 =head1 SYNOPSIS
 

@@ -32,8 +32,8 @@ sub Text::MetaBib::authors {
     my ($self) = @_;
     my @authors;
     push @authors, split(';', ($self->data->{'citation_authors'}->[0] || ''));
-    push @authors, @{$self->data->{'citation_author'} || []};
-    push @authors, split(',', $self->data->{'dc.creator'}->[0] || "");
+    push @authors, @{$self->data->{'citation_author'} || []} if $#authors == -1;
+    push @authors, split(',', $self->data->{'dc.creator'}->[0] || "") if $#authors == -1;
     return join(' and ', map { s[^ +][]g; s[ +$][]g; $_ } @authors);
 }
 
@@ -59,7 +59,7 @@ sub Text::MetaBib::date {
 
 sub Text::MetaBib::pages {
     my ($self) = @_;
-    return undef unless exists $self->data->{'citation_firstpage'};
+    return undef unless exists $self->data->{'citation_firstpage'} and $self->data->{'citation_firstpage'} ne '';
     my $pages = $self->data->{'citation_firstpage'}->[0];
     $pages .= "--" . $self->data->{'citation_lastpage'}->[0] if
         exists $self->data->{'citation_lastpage'};

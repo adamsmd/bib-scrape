@@ -3,7 +3,7 @@ Volume should not be 0
 @inproceedings{Heintze:1997:10.1109/LICS.1997.614960,
   author = {Heintze, Nevin and McAllester, David},
   title = {On the Cubic Bottleneck in Subtyping and Flow Analysis},
-  booktitle = {lics},
+  booktitle = {12th Annual IEEE Symposium on Logic in Computer Science (LICS'97)},
   series = {Logic in Computer Science, Symposium on},
   pages = {342},
   month = jun,

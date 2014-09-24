@@ -2,7 +2,7 @@ http://comjnl.oxfordjournals.org/content/53/10/1691.abstract
 Superscript in title and abstract
 @article{Shih:2010:10.1093/comjnl/bxp081,
   author = {Shih, Yu-Ying and Chao, Daniel},
-  title = {Sequence of Control in S\textsuperscript{3}{PMR}},
+  title = {Sequence of Control in {S}\textsuperscript{3}{PMR}},
   journal = {The Computer Journal},
   volume = {53},
   number = {10},

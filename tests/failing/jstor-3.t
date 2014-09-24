@@ -1,17 +1,5 @@
 http://www.jstor.org/stable/10.2307/2899325
 Month extraction when jstor_formatteddate has day and year
-WARNING: Suspect name: Golub, T. R.
-WARNING: Suspect name: Slonim, D. K.
-WARNING: Suspect name: Tamayo, P.
-WARNING: Suspect name: Huard, C.
-WARNING: Suspect name: Gaasenbeek, M.
-WARNING: Suspect name: Mesirov, J. P.
-WARNING: Suspect name: Coller, H.
-WARNING: Suspect name: Loh, M. L.
-WARNING: Suspect name: Downing, J. R.
-WARNING: Suspect name: Caligiuri, M. A.
-WARNING: Suspect name: Bloomfield, C. D.
-WARNING: Suspect name: Lander, E. S.
 @article{Golub:1999:10.2307/2899325,
   author = {Golub, T. R. and Slonim, D. K. and Tamayo, P. and Huard, C. and Gaasenbeek, M. and Mesirov, J. P. and Coller, H. and Loh, M. L. and Downing, J. R. and Caligiuri, M. A. and Bloomfield, C. D. and Lander, E. S.},
   title = {Molecular Classification of Cancer: Class Discovery and Class Prediction by Gene Expression Monitoring},

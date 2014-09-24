@@ -4,15 +4,16 @@ Author: Michael D. Adams
 This is a BibTeX scraper for collecting BibTeX entries from the
 websites of computer-science academic publishers.  I use it personally
 to make preparing my BibTeX files easier.  Currently it supports
- - ACM,
- - Springer,
- - Science Direct,
- - IEEE Computer Society,
- - IEEE Explore,
- - Cambridge Journals (e.g. Journal of Functional Programming),
- - JSTOR,
- - IOS Press, and
- - Wiley.
+ - ACM <acm.org>,
+ - Springer <link.springer.com>,
+ - Science Direct <sciencedirect.com>,
+ - IEEE Computer Society <computer.org>,
+ - IEEE Explore <ieeexplore.ieee.org>,
+ - Cambridge Journals <journals.cambridge.org>,
+ - Oxford Journals <oxfordjournals.org>,
+ - JSTOR <jstor.org>,
+ - IOS Press <iospress.metapress.com>, and
+ - Wiley <onlinelibrary.wiley.com>.
 
 In addition, this scraper fixes common problems with the BibTeX that
 these services provide.  For example, it fixes:

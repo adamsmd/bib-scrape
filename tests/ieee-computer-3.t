@@ -10,6 +10,7 @@ Unicode in title and abstract
   year = {2010},
   publisher = {IEEE Computer Society},
   address = {Los Alamitos, CA, USA},
+  isbn = {978-0-7695-4114-3},
   issn = {1043-6871},
   doi = {10.1109/LICS.2010.8},
   bib_scrape_url = {http://doi.ieeecomputersociety.org/10.1109/LICS.2010.8},

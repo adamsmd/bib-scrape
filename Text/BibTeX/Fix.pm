@@ -518,7 +518,7 @@ sub canonical_names {
                 }
             }
         }
-        print "WARNING: Suspect name @{[$name->format($name_format)]}\n" unless
+        print "WARNING: Suspect name: @{[$name->format($name_format)]}\n" unless
             (not defined $name->part('von') and
              not defined $name->part('jr') and
              first_name(decode_entities(decode('utf8', join(' ', $name->part('first'))))) and
@@ -529,7 +529,7 @@ sub canonical_names {
 
     # Warn about duplicate names
     my %seen;
-    $seen{$_}++ and print "WARNING: Duplicate name $_\n" for @names;
+    $seen{$_}++ and print "WARNING: Duplicate name: $_\n" for @names;
 
     $entry->set($field, join(' and ', @names));
 }

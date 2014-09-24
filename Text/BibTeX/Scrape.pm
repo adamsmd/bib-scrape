@@ -119,6 +119,22 @@ sub parse_acm {
                 m[<h1 class="mediumb-text".*?><strong>(.*?)</strong></h1>])
         if $entry->exists('title');
 
+    # ACM gets the capitalization wrong for 'booktitle' everywhere except in the BibTeX,
+    # but gets symbols right only in the non-BibTeX.  Attept to take the best of both worlds.
+    if ($entry->exists('booktitle')) {
+        my $diff = Algorithm::Diff->new(
+            [split m[\b], $entry->get('booktitle')],
+            [split m[\b], $html->get('citation_conference')->[0]],
+            { keyGen => sub { lc shift } } );
+        my $booktitle = '';
+        while ($diff->Next()) {
+            my $bibtex = join('', $diff->Items(1));
+            my $html = join('', $diff->Items(2));
+            $booktitle .= (lc $bibtex eq lc $html) ? $bibtex : $html;
+        }
+        $entry->set('booktitle', $booktitle);
+    }
+
     # Abstract
     my ($abstr_url) = $mech->content() =~ m[(tab_abstract.*?)\'];
     $mech->get($abstr_url);
@@ -288,37 +304,52 @@ sub parse_cambridge_university_press {
     # TODO: fix case of authors
 }
 
-# TODO: why are answers intermittent from IEEE?
 sub parse_ieee_computer_society {
     my ($mech) = @_;
 
-    my ($bibtex) = $mech->content() =~ m[<div id="bibText-content">(.*?)</div>]sig;
-    $bibtex =~ s[<br>][\n]sig;
-    $bibtex = decode_entities($bibtex); # Fix the HTML encoding
-    my $entry = parse_bibtex($bibtex);
-    update($entry, 'volume', sub { $_ = undef if $_ eq "0" });
+    my $html = Text::MetaBib::parse(decode('utf8', $mech->content()));
+    my $entry = parse_bibtex("\@" . ($html->type() || 'misc') . "{unknown_key,}");
 
-    my ($ris) = $mech->content() =~ m[<div id="refWorksText-content">(.*?)</div>]si;
-    $ris =~ s[<br>][\n]sig;
-    $ris = decode_entities($ris); # Fix the HTML encoding
-    my $f = Text::RIS::parse($ris)->bibtex();
-    $entry->set('keywords', $f->get('keywords')) if $f->exists('keywords');
-    if ($f->type() eq 'proceedings') { # IEEE gets this all wrong
-        $entry->set_type('inproceedings') ;
-        my ($booktitle) = ($mech->content() =~ m[<div id="abs-proceedingTitle">(.*?)</div>]s);
-        if ($booktitle) {
-            $entry->set('series', $entry->get('journal')) if $entry->exists('journal');
-            $entry->delete('journal');
-            $entry->set('booktitle', $booktitle);
-        }
-    }
+    $html->exists($_->[0]) and $entry->set($_->[1], join(' ; ', @{$html->get($_->[0])})) for (
+#      editor affiliation title
+        ['citation_title', 'title'],
+#      howpublished booktitle journal volume number series
+        ['citation_conference', 'booktitle'],
+        ['citation_journal_title', 'journal'], ['citation_volume', 'volume'],
+        ['citation_issue', 'number'], # patent_number, technical_report_number
+#      type school institution location
+#      chapter pages
+#      edition month year
+#      organization publisher address
+        ['dc.publisher', 'publisher'],
+#      language isbn issn doi url
+        ['dc.language', 'language'],
+        ['citation_isbn', 'isbn'], ['citation_issn', 'issn'], ['citation_doi', 'doi'],
+#        ['citation_mjid', 'mjid'],
+#        ['citation_pdf_url', 'pdf_url'],
+#      note annote keywords abstract copyright));
+        ['citation_keywords', 'keywords'],
+        ['dc.description', 'abstract'],
+        );
 
-    # Sometimes IEEE puts the month or abstract in MetaBib or RIS, but it is not
-    # consistent so we grab them from the HTML
-    my ($month) = ($mech->content() =~ m[<div class="abs-conf-location">\s*(\w+) \d\d-]is,
-                   $mech->content() =~ m[<div id="abs-issue-date-left">(\w+) \d\d\d\d]is);
+    $entry->delete('keywords') if $entry->exists('keywords') and ($entry->get('keywords') eq '');
+    $entry->set('author', $html->authors()) if $html->authors();
+    $entry->set('pages', $html->get('pages')->[0]) if $html->exists('pages');
+
+    my ($year, $month) = $html->date('dc.date');
+    $entry->set('year', $year);
     $entry->set('month', $month);
-    $entry->set('abstract', $mech->content() =~ m[<div class="abs-articlesummary">(.*?)</div>]is);
+
+    $mech->follow_link(text => 'BibTex');
+    my $f = parse_bibtex(decode('utf8', $mech->content()));
+
+    if ($entry->type() eq 'inproceedings') { # IEEE gets this all wrong
+        $entry->set('series', $f->get('journal')) if $f->exists('journal');
+        $entry->delete('journal');
+    }
+    $entry->set('address', $f->get('address')) if $f->exists('address');
+    $entry->set('volume', $f->get('volume')) if $f->exists('volume');
+    update($entry, 'volume', sub { $_ = undef if $_ eq "0" });
 
     return $entry;
 }

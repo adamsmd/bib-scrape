@@ -4,7 +4,7 @@ http://www.computer.org/csdl/proceedings/sitis/2008/3493/00/3493a003-abs.html
   author = {Chen, Yangjun and Chen, Yibin},
   title = {Core Labeling: A New Way to Compress Transitive Closure},
   booktitle = {2008 IEEE International Conference on Signal Image Technology and Internet Based Systems},
-  series = {2013 International Conference on Signal-Image Technology {\&} Internet-Based Systems},
+  series = {Signal-Image Technologies and Internet-Based System, International IEEE Conference on},
   pages = {3--10},
   month = nov,
   year = {2008},
