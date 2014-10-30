@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use HTML::HeadParser;
-#use Text::BibTeX;
 use Text::BibTeX::Months;
 
 use Class::Struct 'Text::MetaBib' => { data => '%' };

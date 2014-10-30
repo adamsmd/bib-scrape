@@ -20,7 +20,7 @@ use Text::BibTeX::Fix;
 use Text::BibTeX::Name;
 use Text::BibTeX::Scrape;
 
-$main::VERSION='14.09.24';
+$main::VERSION='14.10.30';
 
 =head1 SYNOPSIS
 
