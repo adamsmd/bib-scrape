@@ -10,7 +10,7 @@ Unicode in title and abstract. Underscore in title and abstract.
   month = oct,
   year = {2009},
   publisher = {Oxford University Press},
-  language = {en},
+  language = {English},
   issn = {0010-4620 (Print) 1460-2067 (Online)},
   doi = {10.1093/comjnl/bxn065},
   bib_scrape_url = {http://comjnl.oxfordjournals.org/content/52/7/824.abstract},

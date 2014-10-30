@@ -3,7 +3,7 @@ Unicode in title
 @incollection{Parigot:1992:10.1007/BFb0013061,
   author = {Parigot, Michel},
   editor = {Voronkov, Andrei},
-  affiliation = {Equipe de logique - CNRS UA 753 45-55 5{\'e}me {\'e}tage, Universit{\'e} Paris 7, 2 place jussieu, 75251, Paris Cedex 05, France},
+  affiliation = {Universit{\'e} Paris 7},
   title = {{\textgreek{l}}{\textgreek{m}}-Calculus: An algorithmic interpretation of classical natural deduction},
   booktitle = {Logic Programming and Automated Reasoning},
   volume = {624},

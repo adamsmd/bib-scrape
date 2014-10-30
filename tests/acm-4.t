@@ -8,6 +8,7 @@ Fix author's latex escapes; Key with spaces
   location = {Philadelphia, Pennsylvania, USA},
   pages = {1--12},
   numpages = {12},
+  month = jun,
   year = {1996},
   publisher = {ACM},
   address = {New York, NY, USA},

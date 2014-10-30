@@ -10,7 +10,7 @@ Math in title and abstract
   month = mar,
   year = {2010},
   publisher = {Oxford University Press},
-  language = {en},
+  language = {English},
   issn = {0010-4620 (Print) 1460-2067 (Online)},
   doi = {10.1093/comjnl/bxn071},
   bib_scrape_url = {http://comjnl.oxfordjournals.org/content/53/3/342.abstract},

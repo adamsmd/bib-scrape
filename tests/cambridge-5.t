@@ -10,6 +10,8 @@ Bookreview
   numpages = {1},
   month = sep,
   year = {2001},
+  publisher = {Cambridge University Press},
+  language = {English},
   issn = {1469-7653},
   doi = {10.1017/S0956796801004130},
   bib_scrape_url = {http://journals.cambridge.org/action/displayAbstract?aid=83371},

@@ -18,6 +18,12 @@ sub Text::MetaBib::parse {
     my ($text) = @_;
     my $data = {};
 
+    # Avoid SIGPLAN notices if possible
+    $text =~ s/(?=<meta name="citation_journal_title")/\n/g;
+    $text =~ s/(?=<meta name="citation_conference")/\n/g;
+    $text =~ s/<meta name="citation_journal_title" content="ACM SIGPLAN Notices">[^\n]*//
+        if $text =~ m/<meta name="citation_conference"/;
+
     my $p = new HTML::Parser;
     $p->report_tags('meta');
     $p->handler(start => sub {
@@ -26,15 +32,6 @@ sub Text::MetaBib::parse {
     $p->parse($text);
 
     return Text::MetaBib->new(data => $data);
-}
-
-sub Text::MetaBib::authors {
-    my ($self) = @_;
-    my @authors;
-    push @authors, split(';', ($self->data->{'citation_authors'}->[0] || ''));
-    push @authors, @{$self->data->{'citation_author'} || []} if $#authors == -1;
-    push @authors, split(',', $self->data->{'dc.creator'}->[0] || "") if $#authors == -1;
-    return join(' and ', map { s[^ +][]g; s[ +$][]g; $_ } @authors);
 }
 
 sub Text::MetaBib::type {
@@ -51,63 +48,169 @@ sub Text::MetaBib::type {
     return undef;
 }
 
-sub Text::MetaBib::date {
-    my ($self, $field) = @_;
-    my ($year, $month, $day) = ($self->data->{$field}->[0] =~ m[(\d{4})[/-](\d{2})[/-](\d{2})]);
-    return ($year, num2month($month)->[1], $day);
+sub uniq {
+    my @result;
+    ITEM: for (@_) {
+        for my $r (@result) {
+            next ITEM if $r eq $_;
+        }
+        push @result, $_;
+    }
+    return @result;
 }
 
-sub Text::MetaBib::pages {
-    my ($self) = @_;
-    return undef unless exists $self->data->{'citation_firstpage'} and $self->data->{'citation_firstpage'} ne '';
-    my $pages = $self->data->{'citation_firstpage'}->[0];
-    $pages .= "--" . $self->data->{'citation_lastpage'}->[0] if
-        exists $self->data->{'citation_lastpage'};
-    return $pages;
+sub Text::MetaBib::bibtex {
+    my ($self, $entry, @exceptions) = @_;
+
+    # Save old values that we don't want to change
+    my %old_values;
+    for (@exceptions) {
+        $old_values{$_} = $entry->get($_) if $entry->exists($_);
+    }
+
+    # The meta-data is highly redundent and multiple fields contain
+    # similar information.  In the following we choose fields that
+    # work for all publishers, but note what other fields also contain
+    # that information.
+
+    # 'author', 'dc.contributor', 'dc.creator', 'rft_aufirst', 'rft_aulast', and 'rft_au'
+    # also contain authorship information
+    my @authors;
+    if ($self->exists('citation_author')) { @authors = @{$self->get('citation_author')} }
+    elsif ($self->exists('citation_authors')) { @authors = split(';', $self->get('citation_authors')->[0]) }
+    if (@authors) { $entry->set('author', join(' and ', map { s[^ +][]g; s[ +$][]g; $_ } @authors)); }
+
+    # 'title', 'rft_title', 'dc.title', 'twitter:title' also contain title information
+    $entry->set('title', $self->get('citation_title')->[0]) if $self->exists('citation_title');
+
+    # test/acm-17.t has the article number in 'citation_firstpage' but no 'citation_firstpage'
+    # test/ieee-computer-1.t has 'pages' but empty 'citation_firstpage'
+    if ($self->exists('citation_firstpage') and $self->get('citation_firstpage')->[0] ne '' and
+        $self->exists('citation_lastpage') and $self->get('citation_lastpage')->[0] ne '') {
+        $entry->set('pages', $self->get('citation_firstpage')->[0] .
+                    ($self->get('citation_firstpage')->[0] ne $self->get('citation_lastpage')->[0] ?
+                     "--" . $self->get('citation_lastpage')->[0] : ""));
+    } elsif ($self->exists('pages')) {
+        $entry->set('pages', $self->get('pages')->[0]);
+    }
+
+    $entry->set('volume', $self->get('citation_volume')->[0]) if $self->exists('citation_volume');
+    $entry->set('number', $self->get('citation_issue')->[0]) if $self->exists('citation_issue');
+
+    # 'keywords' also contains keyword information
+    $entry->set('keywords',
+        join('; ', map { s/^\s*;*//; s/;*\s*$//; $_ } uniq(@{$self->get('citation_keywords')})))
+        if $self->exists('citation_keywords');
+
+    # 'rft_pub' also contains publisher information
+    if ($self->exists('dc.publisher')) { $entry->set('publisher', $self->get('dc.publisher')->[0]) }
+    elsif ($self->exists('citation_publisher')) { $entry->set('publisher', $self->get('citation_publisher')->[0]) }
+    elsif ($self->exists('st.publisher')) { $entry->set('publisher', $self->get('st.publisher')->[0]) }
+
+    # 'dc.date', 'rft_date', 'citation_online_date' also contain date information
+    if ($self->exists('citation_publication_date')) {
+        my ($year, $month, $day) = $self->get('citation_publication_date')->[0] =~ m[^(\d{4})[/-](\d{2})[/-](\d{2})$];
+        $entry->set('year', $year);
+        $entry->set('month', num2month($month)->[1]);
+    } elsif ($self->exists('citation_date')) {
+        if ($self->get('citation_date')->[0] =~ m[^(\d{2})[/-](\d{2})[/-](\d{4})$]) {
+            my ($month, $day, $year) = ($1, $2, $3);
+            $entry->set('year', $year);
+            $entry->set('month', num2month($month)->[1]);
+        } elsif ($self->get('citation_date')->[0] =~ m[^[ 0-9-]*?\b(\w+)\b[ .0-9-]*?\b(\d{4})\b]) {
+            my ($month, $year) = ($1, $2);
+            $entry->set('year', $year);
+            $entry->set('month', str2month($month)->[1]);
+        }
+    }
+
+    # 'dc.relation.ispartof', 'rft_jtitle', 'citation_journal_abbrev' also contain collection information
+    if ($self->exists('citation_conference')) { $entry->set('booktitle', $self->get('citation_conference')->[0]) }
+    elsif ($self->exists('citation_journal_title')) { $entry->set('journal', $self->get('citation_journal_title')->[0]) }
+    elsif ($self->exists('citation_inbook_title')) { $entry->set('booktitle', $self->get('citation_inbook_title')->[0]) }
+    elsif ($self->exists('st.title')) { $entry->set('journal', $self->get('st.title')->[0]) }
+
+    # 'rft_id' and 'doi' also contain doi information
+    if ($self->exists('citation_doi')) { $entry->set('doi', $self->get('citation_doi')->[0]) }
+    elsif ($self->exists('dc.identifier') and $self->get('dc.identifier')->[0] =~ m[^doi:(.+)$]) { $entry->set('doi', $1) }
+
+    # If we get two ISBNs then one is online and the other is print so
+    # we don't know which one to use and we can't use either one
+    if ($self->exists('citation_isbn') and 1 == @{$self->get('citation_isbn')}) {
+        $entry->set('isbn', $self->get('citation_isbn')->[0])
+    }
+
+    # 'rft_issn' also contains ISSN information
+    if ($self->exists('citation_issn') and 1 == @{$self->get('citation_issn')}) {
+        $entry->set('issn', $self->get('citation_issn')->[0]);
+    } elsif ($self->exists('st.printissn') and $self->exists('st.onlineissn')) {
+        $entry->set('issn', $self->get('st.printissn')->[0] . " (Print) " . $self->get('st.onlineissn')->[0] . " (Online)");
+    }
+
+    if ($self->exists('citation_language')) { $entry->set('language', $self->get('citation_language')->[0]) }
+    elsif ($self->exists('dc.language')) { $entry->set('language', $self->get('dc.language')->[0]) }
+
+    # 'dc.description' also contains abstract information
+    if ($self->exists('description')) {
+        my $d = $self->get('description')->[0];
+        $entry->set('abstract', $d) if $d ne '' and $d ne '****' and $d !~ /^IEEE Xplore/;
+    }
+
+    $entry->set('affiliation', join(' and ', @{$self->get('citation_author_institution')}))
+        if $self->exists('citation_author_institution');
+
+    # Restore values that we don't want to change
+    for (@exceptions) {
+        if (exists $old_values{$_}) { $entry->set($_, $old_values{$_}); }
+        else { $entry->delete($_); }
+    }
 }
+
+###### Other fields
+##
+## Some fields that we are not using but could include the following.
+## (The numbers in front are how many tests could use that field.)
+##
+#### Article
+##     12 citation_author_email (unused: author e-mail)
+##
+#### URL (unused)
+##      4 citation_fulltext_html_url (good: url)
+##      7 citation_public_url (unused: page url)
+##     10 citation_springer_api_url (broken: url broken key)
+##     64 citation_abstract_html_url (good: url may dup)
+##     69 citation_pdf_url (good: url may dup)
+##
+#### Misc (unused)
+##      7 citation_section
+##      7 issue_cover_image
+##      7 citation_id (unused: some sort of id)
+##      7 citation_id_from_sass_path (unused: some sort of id)
+##      7 citation_mjid (unused: some sort of id)
+##      7 hw.identifier
+##     25 rft_genre (always "Article")
+##      8 st.datatype (always "JOURNAL")
+##     25 rft_place (always "Cambridge")
+##        citation_fulltext_world_readable (always "")
+##      9 article_references (unused: textual version of reference)
+##
+###### Non-citation related
+##      7 hw.ad-path
+##      8 st.platformapikey (unused: API key)
+##      7 dc.type (always "text")
+##     14 dc.format (always "text/html")
+##      7 googlebot
+##      8 robots
+##      8 twitter:card
+##      8 twitter:image
+##      8 twitter:description
+##      8 twitter:site
+##     17 viewport
+##     25 coins
+##     10 msapplication-tilecolor
+##     10 msapplication-tileimage
+##     25 test
+##     25 verify-v1
+##     35 format-detection
 
 1;
-
-=cut
-
-sub keywords {
-    $entry->set('keywords', join " ; ", @{$self->{'citation_keywords'}})
-        if $self->{'citation_keywords'};
-    $entry->set('fulltext_html_url', join " ; ", @{$self->{'citation_fulltext_html_url'}})
-        if $self->{'citation_fulltext_html_url'};
-    $entry->set('pdf_url', join " ; ", @{$self->{'citation_pdf_url'}})
-        if $self->{'citation_pdf_url'};
-}
-
-    for (keys %$self) { $self->{$_} = join " ; ", @{$self->{$_}} }
-
-    $entry->set('volume', $self->{'citation_volume'});
-    $entry->set('abstract', @{$self->{'dc.description'}}) if exists $self->{'dc.description'};
-    $entry->set('nationality', $self->{'citation_patent_country'});
-    $entry->set($_, $self->{"citation_$_"}) for (qw(
-        online_date publisher language isbn issn doi pmid));
-
-title:
-    $entry->set('title', $self->{'citation_title'} || $self->{'dc.title'});
-
-booktitle:
-    $entry->set('booktitle',
-                $self->{'citation_conference'} || $self->{'citation_conference_title'} ||
-                $self->{'dc.relation.ispartof'});
-
-journal:
-    $entry->set('journal',
-                $self->{'citation_journal_title'} ||
-                $self->{'dc.relation.ispartof'});
-
-number:
-    $entry->set('number', ($self->{'citation_issue'} ||
-                           $self->{'citation_patent_number'} ||
-                           $self->{'citation_technical_report_number'}));
-
-pages:
-    $entry->set('pages', "$self->{'citation_firstpage'}--$self->{'citation_lastpage'}");
-
-institution:
-    $entry->set('institution', ($self->{'citation_dissertation_institution'} ||
-                                $self->{'citation_technical_report_institution'}));

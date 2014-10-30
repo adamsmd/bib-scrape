@@ -10,6 +10,8 @@ Call for papers.  Italics in abstract.  Subtitle.
   numpages = {1},
   month = jul,
   year = {2001},
+  publisher = {Cambridge University Press},
+  language = {English},
   issn = {1469-7653},
   doi = {10.1017/S0956796801004105},
   bib_scrape_url = {http://journals.cambridge.org/action/displayAbstract?aid=83911},

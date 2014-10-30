@@ -8,6 +8,7 @@ Ampersand in booktitle
   location = {Berlin, Germany},
   pages = {21--32},
   numpages = {12},
+  month = nov,
   year = {2013},
   publisher = {ACM},
   address = {New York, NY, USA},
@@ -15,7 +16,7 @@ Ampersand in booktitle
   doi = {10.1145/2516760.2516769},
   acmid = {2516769},
   bib_scrape_url = {http://dl.acm.org/citation.cfm?id=2516760.2516769},
-  keywords = {abstract interpretation, malware detection, pushdown systems, static analysis, taint analysis},
+  keywords = {abstract interpretation; malware detection; pushdown systems; static analysis; taint analysis},
   abstract = {Sound malware analysis of Android applications is challenging. First, object-oriented programs exhibit highly interprocedural, dynamically dispatched control structure. Second, the Android programming paradigm relies heavily on the asynchronous execution of multiple entry points. Existing analysis techniques focus more on the second challenge, while relying on traditional analytic techniques that suffer from inherent imprecision or unsoundness to solve the first.
 {\par}
 We present Anadroid, a static malware analysis framework for Android apps. Anadroid exploits two techniques to soundly raise precision: (1) it uses a pushdown system to precisely model dynamically dispatched interprocedural and exception-driven control-flow; (2) it uses Entry-Point Saturation (EPS) to soundly approximate all possible interleavings of asynchronous entry points in Android applications. (It also integrates static taint-flow analysis and least permissions analysis to expand the class of malicious behaviors which it can catch.) Anadroid provides rich user interface support for human analysts which must ultimately rule on the {\textquotedbl}maliciousness{\textquotedbl} of a behavior.

@@ -8,6 +8,7 @@ Italics and quotes in abstract
   location = {Vancouver, British Columbia, Canada},
   pages = {166--178},
   numpages = {13},
+  month = oct,
   year = {1998},
   publisher = {ACM},
   address = {New York, NY, USA},

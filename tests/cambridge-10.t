@@ -10,6 +10,8 @@ DOI of null
   numpages = {30},
   month = nov,
   year = {1998},
+  publisher = {Cambridge University Press},
+  language = {English},
   issn = {1469-7653},
   doi = {10.1017/S0956796898003141},
   bib_scrape_url = {http://journals.cambridge.org/article_S0956796898003141},

@@ -10,6 +10,8 @@ Subtitle
   numpages = {50},
   month = jul,
   year = {2010},
+  publisher = {Cambridge University Press},
+  language = {English},
   issn = {1469-7653},
   doi = {10.1017/S0956796810000171},
   bib_scrape_url = {http://journals.cambridge.org/action/displayAbstract?aid=7916651},

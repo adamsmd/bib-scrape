@@ -2,7 +2,7 @@ http://www.springerlink.com/content/l4m0g48020261740/about/
 Test ISBN and warning about suspect names.
 @incollection{Duchowski:2007:10.1007/978-1-84628-609-4_20,
   author = {Duchowski, Andrew},
-  affiliation = {Department of Computer Science, Clemson University, Clemson, SC 29634},
+  affiliation = {Clemson University},
   title = {Computer Science},
   booktitle = {Eye Tracking Methodology},
   pages = {275--300},

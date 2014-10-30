@@ -10,6 +10,8 @@ Unicode in title, author and abstract
   numpages = {51},
   month = sep,
   year = {2009},
+  publisher = {Cambridge University Press},
+  language = {English},
   issn = {1469-7653},
   doi = {10.1017/S0956796809007369},
   bib_scrape_url = {http://journals.cambridge.org/action/displayAbstract?aid=6171400},

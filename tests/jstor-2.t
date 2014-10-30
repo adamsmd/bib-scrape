@@ -14,7 +14,7 @@ http://www.jstor.org/stable/2034627
   jstor_formatteddate = {Apr., 1963},
   publisher = {American Mathematical Society},
   language = {English},
-  issn = {0002-9939},
+  issn = {0002-9939 (Print) 1088-6826 (Online)},
   doi = {10.2307/2034627},
   bib_scrape_url = {http://www.jstor.org/stable/2034627},
   copyright = {Copyright {\textcopyright} 1963 American Mathematical Society},

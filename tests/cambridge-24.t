@@ -10,6 +10,8 @@ Chinese name
   numpages = {53},
   month = sep,
   year = {2011},
+  publisher = {Cambridge University Press},
+  language = {English},
   issn = {1469-7653},
   doi = {10.1017/S0956796811000189},
   bib_scrape_url = {http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=8368547},

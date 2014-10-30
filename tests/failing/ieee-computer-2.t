@@ -10,6 +10,7 @@ http://www.computer.org/csdl/proceedings/sitis/2008/3493/00/3493a003-abs.html
   year = {2008},
   publisher = {IEEE Computer Society},
   address = {Los Alamitos, CA, USA},
+  language = {English},
   isbn = {978-0-7695-3493-0},
   doi = {10.1109/SITIS.2008.31},
   bib_scrape_url = {http://www.computer.org/csdl/proceedings/sitis/2008/3493/00/3493a003-abs.html},

@@ -2,6 +2,7 @@ http://www.computer.org/csdl/trans/ts/2006/06/e0365-abs.html
 Journal (IEEE Transactions)
 @article{Arisholm:2006:10.1109/TSE.2006.59,
   author = {Arisholm, Erik and Briand, Lionel C. and Hove, Siw Elisabeth and Labiche, Yvan},
+  affiliation = {IEEE and IEEE and IEEE},
   title = {The Impact of {UML} Documentation on Software Maintenance: An Experimental Evaluation},
   journal = {IEEE Transactions on Software Engineering},
   volume = {32},
@@ -11,6 +12,7 @@ Journal (IEEE Transactions)
   year = {2006},
   publisher = {IEEE Computer Society},
   address = {Los Alamitos, CA, USA},
+  language = {English},
   issn = {0098-5589},
   doi = {10.1109/TSE.2006.59},
   bib_scrape_url = {http://www.computer.org/csdl/trans/ts/2006/06/e0365-abs.html},

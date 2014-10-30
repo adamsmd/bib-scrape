@@ -2,7 +2,7 @@ http://www.springerlink.com/content/p60322171q577652/export-citation/
 Test starting from the export tab
 @article{Kramer:1955:10.1007/BF01975012,
   author = {Kramer, Gustav},
-  affiliation = {Abteilung Kramer, Aus dem Max-Planck-Institut f{\"u}r Meeresbiologie, Wilhelmshaven},
+  affiliation = {Aus dem Max-Planck-Institut f{\"u}r Meeresbiologie},
   title = {Ein weiterer Versuch, die Orientierung von Brieftauben durch jahreszeitliche {\"A}nderung der Sonnenh{\"o}he zu beeinflussen. Gleichzeitig eine Kritik der Theorie des Versuchs},
   journal = {Journal f{\"u}r Ornithologie},
   volume = {96},

@@ -10,6 +10,8 @@ Unicode in author, "Mc" name
   numpages = {2},
   month = sep,
   year = {1995},
+  publisher = {Cambridge University Press},
+  language = {English},
   issn = {1474-0079},
   doi = {10.1017/S0959269500002970},
   bib_scrape_url = {http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=2363692},

@@ -10,6 +10,8 @@ http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=114969
   numpages = {18},
   month = jul,
   year = {2002},
+  publisher = {Cambridge University Press},
+  language = {English},
   issn = {1469-7653},
   doi = {10.1017/S0956796802004355},
   bib_scrape_url = {http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=114969},

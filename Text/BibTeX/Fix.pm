@@ -8,6 +8,7 @@ use Safe;
 
 use Encode;
 use HTML::Entities qw(decode_entities);
+use Locale::Language qw(code2language);
 use Scalar::Util qw(blessed);
 use TeX::Unicode;
 use Text::ISBN;
@@ -84,7 +85,7 @@ sub Text::BibTeX::Fix::new {
     hash_flag($cfg, \%options, 'no_encode', qw(doi url eprint bib_scrape_url));
     hash_flag($cfg, \%options, 'no_collapse', qw());
     hash_flag($cfg, \%options, 'omit', qw());
-    hash_flag($cfg, \%options, 'omit_empty', qw(abstract issn doi));
+    hash_flag($cfg, \%options, 'omit_empty', qw(abstract issn doi keywords));
 
     croak("Unknown option: $_") for keys %options;
 
@@ -115,7 +116,8 @@ sub Text::BibTeX::Fix::Impl::fix {
     # rename fields
     for (['issue', 'number'], ['keyword', 'keywords']) {
         # Fix broken field names (SpringerLink and ACM violate this)
-        if ($entry->exists($_->[0]) and not $entry->exists($_->[1])) {
+        if ($entry->exists($_->[0]) and
+            (not $entry->exists($_->[1]) or $entry->get($_->[0]) eq $entry->get($_->[1]))) {
             $entry->set($_->[1], $entry->get($_->[0]));
             $entry->delete($_->[0]);
         }
@@ -185,6 +187,9 @@ sub Text::BibTeX::Fix::Impl::fix {
 
     # TODO: Author, Editor, Affiliation: List of renames
 # Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
+
+    # Change language codes (e.g., "en") to proper terms (e.g., "English")
+    update($entry, 'language', sub { $_ = code2language($_) if defined code2language($_) });
 #  List of renames (regex?)
 
     if ($entry->exists('author')) { canonical_names($self, $entry, 'author') }

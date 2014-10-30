@@ -10,6 +10,8 @@ Superscript in title
   numpages = {301},
   month = aug,
   year = {2009},
+  publisher = {Cambridge University Press},
+  language = {English},
   issn = {1469-7653},
   doi = {10.1017/S0956796809990074},
   bib_scrape_url = {http://journals.cambridge.org/action/displayAbstract?aid=6046168},

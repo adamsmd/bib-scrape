@@ -10,7 +10,7 @@ Superscript in title and abstract
   month = dec,
   year = {2010},
   publisher = {Oxford University Press},
-  language = {en},
+  language = {English},
   issn = {0010-4620 (Print) 1460-2067 (Online)},
   doi = {10.1093/comjnl/bxp081},
   bib_scrape_url = {http://comjnl.oxfordjournals.org/content/53/10/1691.abstract},

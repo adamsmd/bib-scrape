@@ -3,9 +3,7 @@ Shows unicode handling, but missing name for Bruno C.d.S. Oliveira
 @incollection{Hinze:2006:10.1007/11737414_3,
   author = {Hinze, Ralf and L{\"o}h, Andres and Oliveira, Bruno C. d. S.},
   editor = {Hagiya, Masami and Wadler, Philip},
-  affiliation = {Institut f{\"u}r Informatik III, Universit{\"a}t Bonn, R{\"o}merstra{\ss}e 164, 53117, Bonn, Germany
-{\par}
-Oxford University Computing Laboratory, Wolfson Building, Parks Road, Oxford, OX1 3QD, UK},
+  affiliation = {Universit{\"a}t Bonn and Universit{\"a}t Bonn and Oxford University Computing Laboratory},
   title = {{\textquotedblleft}Scrap Your Boilerplate{\textquotedblright} Reloaded},
   booktitle = {Functional and Logic Programming},
   volume = {3945},

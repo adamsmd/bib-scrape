@@ -68,6 +68,53 @@ sub update {
     }
 }
 
+sub get_url {
+    my ($url) = @_;
+    my $uri = URI->new_abs($url, $mech->base());
+    $mech->get($uri);
+    my $content = $mech->content();
+    $mech->back();
+    $content =~ s[<!--.*?-->][]sg; # Remove HTML comments
+    $content =~ s[\s*$][]; # remove trailing whitespace
+    $content =~ s[^\s*][]; # remove leading whitespace
+    return $content;
+}
+
+sub get_mathml {
+    my ($str) = @_;
+    $str =~ s[<span\b[^>]*\bclass="mathmlsrc"[^>]*>
+                <(span|a)\b[^>]*\bdata-mathURL="(.*?)"[^>]*>.*?</\1>
+                .*?
+                <!--(ja:math|Loading\sMathjax)-->
+              </span>]
+        [@{[join(" ", split(/[\r\n]+/, get_url(decode_entities($2))))]}]xg;
+    return $str;
+}
+
+sub issn {
+    my ($entry, $print, $online) = @_;
+    my ($print_issn) = @$print;
+    my ($online_issn) = @$online;
+    if ($print_issn and $online_issn) {
+        $entry->set('issn', "$print_issn (Print) $online_issn (Online)");
+    } elsif ($print_issn or $online_issn) {
+        $entry->set('issn', $print_issn || $online_issn);
+    }
+}
+
+sub merge {
+    my ($left, $left_split, $right, $right_split, $merge, $opts) = @_;
+
+    my $diff = Algorithm::Diff->new(
+        [grep {defined $_} (split $left_split, $left)],
+        [grep {defined $_} (split $right_split, $right)], $opts);
+    my $result = '';
+    while ($diff->Next()) {
+        $result .= &$merge(join('', $diff->Items(1)), join('', $diff->Items(2)));
+    }
+    return $result;
+}
+
 ################
 
 sub domain { $mech->uri()->authority() =~ m[^(|.*\.)\Q$_[0]\E]i; }
@@ -103,71 +150,33 @@ sub parse_acm {
         $mech->back();
         $i++;
     }
-    $cont =~ s[(\@.*) ][$1]; # Prevent keys with spaces
     my $entry = parse_bibtex($cont);
 
     $mech->back();
 
-    # Un-abbreviated journal title, but avoid spurious "journal" when
-    # proceedings are published in SIGPLAN Not.
-    my $html = Text::MetaBib::parse($mech->content());
-    $entry->set('journal', $html->get('citation_journal_title')->[0]) if $entry->exists('journal');
+    # Abstract
+    my ($abstr_url) = $mech->content() =~ m[(tab_abstract.*?)\'];
+    $mech->get($abstr_url);
+    # Fix the double HTML encoding of the abstract (Bug in ACM?)
+    $entry->set('abstract', decode_entities($1)) if $mech->content() =~
+        m[<div style="display:inline">((?:<par>|<p>)?.+?(?:</par>|</p>)?)</div>];
+    $mech->back();
 
-    $entry->set('author', $html->authors()) if $entry->exists('author');
+    my $html = Text::MetaBib::parse($mech->content());
+    $html->bibtex($entry, 'booktitle');
+
+    # ACM gets the capitalization wrong for 'booktitle' everywhere except in the BibTeX,
+    # but gets symbols right only in the non-BibTeX.  Attept to take the best of both worlds.
+    $entry->set('booktitle', merge($entry->get('booktitle'), qr[\b],
+                                   $html->get('citation_conference')->[0], qr[\b],
+                                   sub { (lc $_[0] eq lc $_[1]) ? $_[0] : $_[1] },
+                                   { keyGen => sub { lc shift }})) if $entry->exists('booktitle');
 
     $entry->set('title', $mech->content() =~
                 m[<h1 class="mediumb-text".*?><strong>(.*?)</strong></h1>])
         if $entry->exists('title');
 
-    # ACM gets the capitalization wrong for 'booktitle' everywhere except in the BibTeX,
-    # but gets symbols right only in the non-BibTeX.  Attept to take the best of both worlds.
-    if ($entry->exists('booktitle')) {
-        my $diff = Algorithm::Diff->new(
-            [split m[\b], $entry->get('booktitle')],
-            [split m[\b], $html->get('citation_conference')->[0]],
-            { keyGen => sub { lc shift } } );
-        my $booktitle = '';
-        while ($diff->Next()) {
-            my $bibtex = join('', $diff->Items(1));
-            my $html = join('', $diff->Items(2));
-            $booktitle .= (lc $bibtex eq lc $html) ? $bibtex : $html;
-        }
-        $entry->set('booktitle', $booktitle);
-    }
-
-    # Abstract
-    my ($abstr_url) = $mech->content() =~ m[(tab_abstract.*?)\'];
-    $mech->get($abstr_url);
-    if (my ($abstr) = $mech->content() =~
-        m[<div style="display:inline">((?:<par>|<p>)?.+?(?:</par>|</p>)?)</div>]) {
-        # Fix the double HTML encoding of the abstract (Bug in ACM?)
-        $entry->set('abstract', decode_entities($abstr));
-    }
-
     return $entry;
-}
-
-sub get_url {
-    my ($url) = @_;
-    my $uri = URI->new_abs($url, $mech->base());
-    $mech->get($uri);
-    my $content = $mech->content();
-    $mech->back();
-    $content =~ s[<!--.*?-->][]sg; # Remove HTML comments
-    $content =~ s[\s*$][]; # remove trailing whitespace
-    $content =~ s[^\s*][]; # remove leading whitespace
-    return $content;
-}
-
-sub get_mathml {
-    my ($str) = @_;
-    $str =~ s[<span\b[^>]*\bclass="mathmlsrc"[^>]*>
-                <(span|a)\b[^>]*\bdata-mathURL="(.*?)"[^>]*>.*?</\1>
-                .*?
-                <!--(ja:math|Loading\sMathjax)-->
-              </span>]
-        [@{[join(" ", split(/[\r\n]+/, get_url(decode_entities($2))))]}]xg;
-    return $str;
 }
 
 sub parse_science_direct {
@@ -176,40 +185,42 @@ sub parse_science_direct {
     # Find the title and reverse engineer the Unicode
     $mech->follow_link(text => "Screen reader users, click here to load entire article");
 
-    my ($title) = $mech->content() =~ m[<h1 class="svTitle".*?>\s*(.*?)\s*</h1>]s;
-    my ($keywords) = $mech->content() =~ m[<ul class="keyword".*?>\s*(.*?)\s*</ul>]s;
-    $keywords = "" unless defined $keywords;
-    $keywords =~ s[<li.*?>(.*?)</li>][$1]sg;
-    $keywords = get_mathml($keywords);
-
-    $title =~ s[<sup><a\b[^>]*\bclass="intra_ref"[^>]*>.*?</a></sup>][];
-    $title = get_mathml($title);
-    my ($abst) = $mech->content() =~ m[<div class="abstract svAbstract *".*?>\s*(.*?)\s*</div>];
-    $abst = "" unless defined $abst;
-    $abst =~ s[<h2 class="secHeading".*?>Abstract</h2>][]g;
-    $abst = get_mathml($abst);
-
-    my ($series) = $mech->content() =~ m[<p class="specIssueTitle">(.*?)</p>];
+    my $html = Text::MetaBib::parse($mech->content());
 
     $mech->submit_form(with_fields => {
         'format' => 'cite', 'citation-type' => 'BIBTEX'});
     my $entry = parse_bibtex($mech->content());
-    $entry->set('title', $title);
-    $entry->set('abstract', $abst);
+    $mech->back();
+
+    my ($title) = $mech->content() =~ m[<h1 class="svTitle".*?>\s*(.*?)\s*</h1>]s;
+    $title =~ s[<sup><a\b[^>]*\bclass="intra_ref"[^>]*>.*?</a></sup>][];
+    $entry->set('title', get_mathml($title));
+
+    my ($keywords) = $mech->content() =~ m[<ul class="keyword".*?>\s*(.*?)\s*</ul>]s;
+    $keywords = "" unless defined $keywords;
+    $keywords =~ s[<li.*?>(.*?)</li>][$1]sg;
+    $keywords = get_mathml($keywords);
     $entry->delete('keywords'); # Clear 'keywords' duplication that breaks Text::BibTeX
     $entry->set('keywords', $keywords) if $keywords ne '';
+
+    my ($abst) = $mech->content() =~ m[<div class="abstract svAbstract *".*?>\s*(.*?)\s*</div>];
+    $abst = "" unless defined $abst;
+    $abst =~ s[<h2 class="secHeading".*?>Abstract</h2>][]g;
+    $entry->set('abstract', get_mathml($abst));
+
+    my ($series) = $mech->content() =~ m[<p class="specIssueTitle">(.*?)</p>];
     $entry->set('series', $series) if defined $series and $series ne '';
-    $mech->back();
 
     $mech->submit_form(with_fields => {
         'format' => 'cite-abs', 'citation-type' => 'RIS'});
     my $f = Text::RIS::parse(decode('utf8', $mech->content()))->bibtex();
     $entry->set('month', $f->get('month'));
     $entry->delete('note') if $f->exists('booktitle') and $f->get('booktitle') eq $entry->get('note');
-    $entry->set('series', $f->get('booktitle')) if !$entry->exists('series') and $f->exists('booktitle');
+    $mech->back();
 
 # TODO: editor
 
+    $html->bibtex($entry);
     return $entry;
 }
 
@@ -217,36 +228,18 @@ sub parse_springerlink {
     my ($mech) = @_;
 # TODO: handle books
     $mech->follow_link(url_regex => qr[/export-citation/]);
-
     $mech->follow_link(url_regex => qr[/export-citation/.+\.bib]);
     my $entry_text = $mech->content();
     $entry_text =~ s[^(\@.*\{)$][$1X,]m; # Fix invalid BibTeX (missing key)
     my $entry = parse_bibtex(decode('utf8', $entry_text));
-    $mech->back();
-
-    $mech->follow_link(url_regex => qr[/export-citation/.+\.enw]);
-    my $f = Text::RIS::parse($mech->content())->bibtex();
-    ($f->exists($_) && $entry->set($_, $f->get($_))) for ('doi', 'month', 'issn', 'isbn');
     $mech->back();
     $mech->back();
 
     my ($abstr) = join('', $mech->content =~ m[<div class="abstract-content formatted".*?>(.*?)</div>]sg);
     $entry->set('abstract', $abstr) if defined $abstr;
 
-    my ($keywords) = $mech->content =~
-        m[<p\b[^>]*?class="Keyword"><span\b[^>]*?class="KeywordHeading">.*?</span>(.*?)</p>]sg;
-    $entry->set('keyword', join('; ', split('&nbsp;-&nbsp;', $keywords))) if defined $keywords;
-
-    my ($affiliations) = $mech->content =~ m[<ul class="author-affiliations">(.*?)</ul>]s;
-    my @affiliations = $affiliations =~ m[<span class="affiliation">(.*?)</span>]sg;
-    $affiliations = join('', @affiliations);
-    $affiliations =~ s/,\s*$//mg;
-    $entry->set('affiliation', $affiliations) if @affiliations;
-
     my $html = Text::MetaBib::parse($mech->content());
-    $entry->set('journal', $html->get('citation_journal_title')->[0]) if $entry->exists('journal');
-    $entry->set('author', $html->authors()) if $entry->exists('author');
-    my ($year, $month, $day) = $mech->content =~ m["abstract-about-cover-date">(\d\d\d\d)-(\d\d)-(\d\d)</dd>];
+    my ($year, $month, $day) = $mech->content() =~ m["abstract-about-cover-date">(\d\d\d\d)-(\d\d)-(\d\d)</dd>];
     $entry->set('month', $month) if defined $month;
 
     issn($entry,
@@ -256,6 +249,7 @@ sub parse_springerlink {
     my @editors = $mech->content() =~ m[<li itemprop="editor"[^>]*>\s*<a[^>]*>(.*?)</a>]sg;
     $entry->set('editor', join(' and ', @editors)) if @editors;
 
+    $html->bibtex($entry, 'month');
     return $entry;
 }
 
@@ -287,19 +281,14 @@ sub parse_cambridge_university_press {
         unless $entry->get('title');
 
     my $html = Text::MetaBib::parse($mech->content());
-    if ($html->exists('citation_publication_date') and join('',@{$html->get('citation_publication_date')}) =~ m[.]) {
-        my ($year, $month) = $html->date('citation_publication_date');
-        $entry->set('month', $month);
-    }
 
     my ($doi) = join(' ', @{$html->get('citation_pdf_url')}) =~ m[^http://journals.cambridge.org/article_(S\d{16})$];
     update($entry, 'doi', sub { $_ = "10.1017/$doi" if defined $doi });
 
-    update($entry, 'abstract', sub { $_ = undef if m[^\s*$] });
-    update($entry, 'doi', sub { $_ = undef if $_ eq "null" });
     update($entry, 'author', sub { $_ = undef if $_ eq "" });
     update($entry, 'url', sub { $_ = undef if $_ eq join(' ',@{$html->get('citation_pdf_url')})});
 
+    $html->bibtex($entry, 'abstract', 'number', 'title');
     return $entry;
     # TODO: fix case of authors
 }
@@ -309,36 +298,6 @@ sub parse_ieee_computer_society {
 
     my $html = Text::MetaBib::parse(decode('utf8', $mech->content()));
     my $entry = parse_bibtex("\@" . ($html->type() || 'misc') . "{unknown_key,}");
-
-    $html->exists($_->[0]) and $entry->set($_->[1], join(' ; ', @{$html->get($_->[0])})) for (
-#      editor affiliation title
-        ['citation_title', 'title'],
-#      howpublished booktitle journal volume number series
-        ['citation_conference', 'booktitle'],
-        ['citation_journal_title', 'journal'], ['citation_volume', 'volume'],
-        ['citation_issue', 'number'], # patent_number, technical_report_number
-#      type school institution location
-#      chapter pages
-#      edition month year
-#      organization publisher address
-        ['dc.publisher', 'publisher'],
-#      language isbn issn doi url
-        ['dc.language', 'language'],
-        ['citation_isbn', 'isbn'], ['citation_issn', 'issn'], ['citation_doi', 'doi'],
-#        ['citation_mjid', 'mjid'],
-#        ['citation_pdf_url', 'pdf_url'],
-#      note annote keywords abstract copyright));
-        ['citation_keywords', 'keywords'],
-        ['dc.description', 'abstract'],
-        );
-
-    $entry->delete('keywords') if $entry->exists('keywords') and ($entry->get('keywords') eq '');
-    $entry->set('author', $html->authors()) if $html->authors();
-    $entry->set('pages', $html->get('pages')->[0]) if $html->exists('pages');
-
-    my ($year, $month) = $html->date('dc.date');
-    $entry->set('year', $year);
-    $entry->set('month', $month);
 
     $mech->follow_link(text => 'BibTex');
     my $f = parse_bibtex(decode('utf8', $mech->content()));
@@ -351,6 +310,7 @@ sub parse_ieee_computer_society {
     $entry->set('volume', $f->get('volume')) if $f->exists('volume');
     update($entry, 'volume', sub { $_ = undef if $_ eq "0" });
 
+    $html->bibtex($entry);
     return $entry;
 }
 
@@ -360,6 +320,7 @@ sub parse_ieeexplore {
     my ($mech, $fields) = @_;
     my ($record) = $mech->content() =~ m[var recordId = "(\d+)";];
 
+    my $html = Text::MetaBib::parse($mech->content());
     # Ick, work around javascript by hard coding the URL
     $mech->get("http://ieeexplore.ieee.org/xpl/downloadCitations?".
                "recordIds=$record&".
@@ -368,27 +329,16 @@ sub parse_ieeexplore {
                "download-format=download-bibtex");
     my $cont = $mech->content();
     $cont =~ s/<br>//gi;
-    $cont =~ s/month=([^,\.{}"]*?)\./month=$1/;
     my $entry = parse_bibtex($cont);
-
     $mech->back();
 
-    my ($month) = $mech->content() =~ m[\&publicationDate=([a-z0-9\., -]+)\&]is;
-    if (defined $month) {
-        $month =~ s[[0-9\., ]][]isg;
-        $month =~ s[^-*][];
-        $month =~ s[-*$][];
-        $entry->set('month', $month);
-    }
-
-    my ($isbn) = $mech->content() =~ m[\&isbn=([0-9X-]+)\&]is;
-    $entry->set('isbn', $isbn) if defined $isbn;
-
+    $html->bibtex($entry);
     return $entry
 }
 
 sub parse_jstor {
     my ($mech) = @_;
+    my $html = Text::MetaBib::parse($mech->content());
 
     # Ick, not only does JSTOR hide behind JavaScript, but
     # it hides the link for downloading BibTeX if we are not logged in.
@@ -409,16 +359,14 @@ sub parse_jstor {
 
     $entry->set('title', $mech->content() =~ m[<div class="mainCite.*?"><h2 class="h3">(.*?)</h2>]);
 
-    issn($entry,
-         [$mech->content() =~ m[>ISSN: (\d{7}[0-9X])<]],
-         [$mech->content() =~ m[>E-ISSN: (\d{7}[0-9X])<]]);
-
+    $html->bibtex($entry);
     return $entry;
 }
 
 sub parse_ios_press {
     my ($mech) = @_;
 
+    my $html = Text::MetaBib::parse($mech->content());
     $mech->follow_link(text => 'RIS');
     my $f = Text::RIS::parse(decode('utf8', $mech->content()))->bibtex();
     my $entry = parse_bibtex("\@" . $f->type . " {unknown_key,}");
@@ -427,7 +375,6 @@ sub parse_ios_press {
          'author', 'year', 'month', 'doi') {
         $entry->set($_, $f->get($_)) if $f->exists($_);
     }
-
     $mech->back();
 
     my ($pub) = ($mech->content() =~ m[>Publisher</td><td.*?>(.*?)</td>]i);
@@ -437,12 +384,10 @@ sub parse_ios_press {
     $issn =~ s[<br/?>][ ];
     $entry->set('issn', $issn) if defined $issn;
 
-    my ($isbn) = ($mech->content() =~ m[>ISBN</td><td.*?>(.*?)</td>]i);
-    $entry->set('isbn', $isbn) if defined $isbn;
-
     my ($abstract) = ($mech->content() =~ m[<div class="abstract">\s*<p>(.*?)</p>\s*</div>]i);
     $entry->set('abstract', $abstract) if defined $abstract;
 
+    $html->bibtex($entry);
     return $entry;
 }
 
@@ -455,12 +400,7 @@ sub parse_wiley {
     my $entry = parse_bibtex(decode('utf8', $mech->content()));
     $mech->back(); $mech->back();
 
-    # Fill in the missing month
-    my ($month) = ($mech->content() =~ m[<span id="issueDate">((\w|\/)*) \d*</span>]);
-    $entry->set('month', $month) if $month;
-    # Choose the title either from bibtex or HTML based on whether we thing the BibTeX has the proper math in it.
-    $entry->set('title', $mech->content() =~ m[<h1 class="articleTitle">(.*?)</h1>]s)
-        unless $entry->get('title') =~ /\$/;
+    my $html = Text::MetaBib::parse($mech->content());
 
     # Ugh! Both the BibTeX and the HTML have problems.  Here we try to
     # pick out the best from each.  The HTML is usually better except that
@@ -470,33 +410,40 @@ sub parse_wiley {
     my $math_img = qr[<img [^>]*?>]; # We could use a more complicated regex, but this is good enough
 
     # Try to find the diff between the BibTeX and HTML
-    my $diff = Algorithm::Diff->new(
-        # Don't let "$...$" and "\documentclass...\end{document}" be split apart
-        [grep {defined $_} (split m[(\$.*?\$|\\documentclass.*?\\end\{document\})?], $bibtex_abstr)],
-        # Don't let "&charCode;", "<img...>" or "<span...><img...></span>" be split apart
-        [grep {defined $_} (split m[(\&[^;]*?;|$math_img|<span[^>]*?>$math_img</span>)?], $html_abstr)]);
-    my $abstract = '';
-    while ($diff->Next()) {
-        my $html = join('', $diff->Items(2));
-        $html =~ s[([{}])][\\$1]g; # Escape the HTML while we know it is still HTML
-        if ($html =~ m[$math_img]) {
-            # Replace images (and special characters surrounding it) with BibTeX.
-            # (By substituting we keep around things like </em> and the start or <em> at the end
-            $html =~ s[(\&[^;]*?;)*($math_img|<span[^>]*?>$math_img</span[^>]*?>)(\&[^;]*?;)*]
-                      [@{[join('', $diff->Items(1))]}]is;
-        }
-        $abstract .= $html;
-    }
+    $entry->set('abstract', merge(
+                    $entry->get('abstract'),
+                    qr[(\$.*?\$|\\documentclass.*?\\end\{document\})?],
+                    $mech->content() =~ m[<div id="abstract"><h3>Abstract</h3>(<div class="para">.*?</div>)</div>],
+                    qr[(\&[^;]*?;|$math_img|<span[^>]*?>$math_img</span>)?],
+                    sub { my ($bib, $html) = @_;
+                          $html =~ s[([{}])][\\$1]g; # Escape the HTML while we know it is still HTML
+                          if ($html =~ m[$math_img]) {
+                              # Replace images (and special characters surrounding it) with BibTeX.
+                              # (By substituting we keep around things like </em> at the start or <em> at the end
+                              $html =~ s[(\&[^;]*?;)*($math_img|<span[^>]*?>$math_img</span[^>]*?>)(\&[^;]*?;)*][$bib]is;
+                          }
+                          $html;
+                    }, {}));
 
-    # Finally, we clean up and use this abstract
-    $entry->set('abstract', $abstract);
-
+    # Finally, we clean up the abstract
     update($entry, 'abstract', sub { s[\\documentclass\{article\} \\usepackage\{mathrsfs\} \\usepackage\{amsmath,amssymb,amsfonts\} \\pagestyle\{empty\} \\begin\{document\} \\begin\{align\*\}(.*?)\\end\{align\*\} \\end\{document\}][\\ensuremath{$1}]isg; });
     update($entry, 'abstract', sub { s[<div class="para">(.*?)</div>][\n\n$1\n\n]isg });
     update($entry, 'abstract',
            sub { s[(Copyright )?(.|&copy;) \d\d\d\d John Wiley (.|&amp;) Sons, (Ltd|Inc)\.\s*][] });
     update($entry, 'abstract',
            sub { s[(.|&copy;) \d\d\d\d Wiley Periodicals, Inc\. Random Struct\. Alg\..*, \d\d\d\d][] });
+
+    $html->bibtex($entry, 'title');
+
+    # To handle multiple month issues we must use HTML
+    my ($month) = ($mech->content() =~ m[<span id="issueDate">((\w|\/)*) \d*</span>]);
+    $entry->set('month', $month) if $month;
+
+    # Choose the title either from bibtex or HTML based on whether we thing the BibTeX has the proper math in it.
+    $entry->set('title', $mech->content() =~ m[<h1 class="articleTitle">(.*?)</h1>]s)
+        unless $entry->get('title') =~ /\$/;
+
+
     return $entry;
 }
 
@@ -505,56 +452,19 @@ sub parse_oxford_journals {
 
     my $html = Text::MetaBib::parse($mech->content());
     my $entry = parse_bibtex("\@article{unknown_key,}");
+    $html->bibtex($entry);
 
-    $entry->set('author', $html->authors()) if $html->authors();
-    $entry->set('pages', $html->pages()) if $html->pages();
-    $html->exists($_->[0]) and $entry->set($_->[1], join(' ; ', @{$html->get($_->[0])})) for (
-#      editor affiliation title
-        ['citation_title', 'title'],
-#      howpublished booktitle journal volume number series
-        ['citation_journal_title', 'journal'], ['citation_volume', 'volume'],
-        ['citation_issue', 'number'], # patent_number, technical_report_number
-#      type school institution location
-#      chapter pages
-#      edition month year
-#      organization publisher address
-        ['dc.publisher', 'publisher'],
-#      language isbn issn doi url
-        ['dc.language', 'language'],
-        ['citation_isbn', 'isbn'], ['citation_issn', 'issn'], ['citation_doi', 'doi'],
-#        ['citation_mjid', 'mjid'],
-#        ['citation_pdf_url', 'pdf_url'],
-#      note annote keywords abstract copyright));        
-        );
-
-    my ($year, $month) = $html->date('dc.date');
-    $entry->set('year', $year);
-    $entry->set('month', $month);
-
-    my ($title) = $mech->content =~ m[<h1 id="article-title-1" itemprop="headline">\s*(.*?)\s</h1>]si;
-    $entry->set('title', $title) if defined $title;
     my ($abstract) = ($mech->content() =~ m[>\s*Abstract\s*</h2>\s*(.*?)\s*</div>]si);
     $entry->set('abstract', $abstract) if defined $abstract;
-
-    #$entry->set('address', 'Oxford, UK');
-    update($entry, 'issn', sub { s[ *; *][/]g; });
 
     issn($entry,
          [$mech->content() =~ m[Print ISSN (\d\d\d\d-\d\d\d[0-9X])]],
          [$mech->content() =~ m[Online ISSN (\d\d\d\d-\d\d\d[0-9X])]]);
 
-    return $entry;
-}
+    my ($title) = $mech->content =~ m[<h1 id="article-title-1" itemprop="headline">\s*(.*?)\s</h1>]si;
+    $entry->set('title', $title) if defined $title;
 
-sub issn {
-    my ($entry, $print, $online) = @_;
-    my ($print_issn) = @$print;
-    my ($online_issn) = @$online;
-    if ($print_issn and $online_issn) {
-        $entry->set('issn', "$print_issn (Print) $online_issn (Online)");
-    } elsif ($print_issn or $online_issn) {
-        $entry->set('issn', $print_issn || $online_issn);
-    }
+    return $entry;
 }
 
 1;

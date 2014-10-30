@@ -3,7 +3,7 @@ missing "Kent" of R. Kent Dybvig; empty ISBN; over long affiliation; blank abstr
 @incollection{Waddell:1997:10.1007/BFb0032732,
   author = {Waddell, Oscar and Dybvig, R. Kent},
   editor = {Van Hentenryck, Pascal},
-  affiliation = {Indiana University Computer Science Department, 47405, Bloomington, IN, USA},
+  affiliation = {Indiana University Computer Science Department and Indiana University Computer Science Department},
   title = {Fast and effective procedure inlining},
   booktitle = {Static Analysis},
   volume = {1302},

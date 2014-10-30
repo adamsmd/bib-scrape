@@ -8,6 +8,7 @@ Authors should be "Aho, Alfred V." instead of "Aho, A. V.", etc.
   location = {Austin, Texas, USA},
   pages = {253--265},
   numpages = {13},
+  month = apr,
   year = {1973},
   publisher = {ACM},
   address = {New York, NY, USA},

@@ -10,6 +10,8 @@ http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=5794644
   numpages = {2},
   month = jul,
   year = {2009},
+  publisher = {Cambridge University Press},
+  language = {English},
   issn = {1469-7653},
   doi = {10.1017/S0956796809007242},
   bib_scrape_url = {http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=5794644},

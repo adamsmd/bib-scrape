@@ -10,6 +10,8 @@ http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=192403
   numpages = {43},
   month = jan,
   year = {2004},
+  publisher = {Cambridge University Press},
+  language = {English},
   issn = {1469-7653},
   doi = {10.1017/S0956796803004829},
   bib_scrape_url = {http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=192403},

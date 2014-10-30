@@ -10,7 +10,7 @@ Italics in title and abstract. Has subtitle.
   month = jun,
   year = {2010},
   publisher = {Oxford University Press},
-  language = {en},
+  language = {English},
   issn = {0010-4620 (Print) 1460-2067 (Online)},
   doi = {10.1093/comjnl/bxp049},
   bib_scrape_url = {http://comjnl.oxfordjournals.org/content/53/5/592.abstract},

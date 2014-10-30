@@ -10,6 +10,8 @@ http://dx.doi.org/10.1017/S0956796801004129
   numpages = {9},
   month = nov,
   year = {2001},
+  publisher = {Cambridge University Press},
+  language = {English},
   issn = {1469-7653},
   doi = {10.1017/S0956796801004129},
   bib_scrape_url = {http://dx.doi.org/10.1017/S0956796801004129},

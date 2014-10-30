@@ -2,6 +2,7 @@ http://www.computer.org/csdl/mags/co/2005/12/rz043-abs.html
 Magazine
 @article{Pantel:2005:10.1109/MC.2005.406,
   author = {Pantel, Patrick and Philpot, Andrew and Hovy, Eduard},
+  affiliation = {Digital Government Research Center, USC Information Sciences Institute and Digital Government Research Center, USC Information Sciences Institute and Digital Government Research Center, USC Information Sciences Institute},
   title = {Data Alignment and Integration},
   journal = {Computer},
   volume = {38},
@@ -11,6 +12,7 @@ Magazine
   year = {2005},
   publisher = {IEEE Computer Society},
   address = {Los Alamitos, CA, USA},
+  language = {English},
   issn = {0018-9162},
   doi = {10.1109/MC.2005.406},
   bib_scrape_url = {http://www.computer.org/csdl/mags/co/2005/12/rz043-abs.html},

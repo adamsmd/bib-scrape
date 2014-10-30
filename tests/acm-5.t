@@ -8,6 +8,7 @@ Fix Blu -> Blume.  (Bug in ACM BibTeX.)
   location = {Amsterdam, The Netherlands},
   pages = {112--124},
   numpages = {13},
+  month = aug,
   year = {1997},
   publisher = {ACM},
   address = {New York, NY, USA},

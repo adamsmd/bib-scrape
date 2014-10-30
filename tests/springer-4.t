@@ -2,7 +2,7 @@ http://www.springerlink.com/content/q11t01v06h6446p2/
 Non-continuously numbered journal
 @article{Lin:1999:10.1208/ps010201,
   author = {Lin, Chun-Jung and Smith, David E.},
-  affiliation = {College of Pharmacy and Upjohn Center for Clinical Pharmacology, The University of Michigan, 48109-0504, Ann Arbor, Michigan},
+  affiliation = {The University of Michigan and The University of Michigan},
   title = {Glycylsarcosine uptake in rabbit renal brush border membrane vesicles isolated from outer cortex or outer medulla: Evidence for heterogeneous distribution of oligopeptide transporters},
   journal = {AAPS PharmSci},
   volume = {1},

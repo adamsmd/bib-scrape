@@ -8,6 +8,7 @@ Page numbers with letters and dashes
   location = {Philadelphia, Pennsylvania, USA},
   pages = {C-3--C-4},
   numpages = {2},
+  month = may,
   year = {1996},
   publisher = {ACM},
   address = {New York, NY, USA},

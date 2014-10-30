@@ -2,9 +2,7 @@ http://www.springerlink.com/content/xm722115x3032238/
 Multi-paragraph (broken) abstract
 @article{Cousot:1999:10.1023/A:1008649901864,
   author = {Cousot, Patrick and Cousot, Radhia},
-  affiliation = {{\'E}cole Normale Sup{\'e}rieure, DMI, 45, rue d'Ulm, 75230, Paris cedex 05, France
-{\par}
-CNRS {\&} {\'E}cole Polytechnique, LIX, 91440, Palaiseau cedex, France},
+  affiliation = {{\'E}cole Normale Sup{\'e}rieure, DMI and CNRS {\&} {\'E}cole Polytechnique, LIX and {\'E}cole Normale Sup{\'e}rieure, DMI and CNRS {\&} {\'E}cole Polytechnique, LIX},
   title = {Refining Model Checking by Abstract Interpretation},
   journal = {Automated Software Engineering},
   volume = {6},

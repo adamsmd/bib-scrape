@@ -9,6 +9,7 @@ WARNING: Suspect name: Teskey, F. N.
   location = {New Orleans, Louisiana, USA},
   pages = {43--44},
   numpages = {2},
+  month = nov,
   year = {1987},
   publisher = {ACM},
   address = {New York, NY, USA},

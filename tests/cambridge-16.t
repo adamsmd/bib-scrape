@@ -10,6 +10,8 @@ Capitals in title "C-Rules"
   numpages = {14},
   month = mar,
   year = {2010},
+  publisher = {Cambridge University Press},
+  language = {English},
   issn = {1469-7653},
   doi = {10.1017/S0956796810000018},
   bib_scrape_url = {http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=7524488},

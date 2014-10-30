@@ -2,7 +2,7 @@ http://dx.doi.org/10.1007/BF01975011
 
 @article{Rawson:1955:10.1007/BF01975011,
   author = {Rawson, Kenneth S. and Rawson, Anne M.},
-  affiliation = {Aus dem Max-Planck-Institut f{\"u}r Meeresbiologie, Wilhelmshaven},
+  affiliation = {Aus dem Max-Planck-Institut f{\"u}r Meeresbiologie and Aus dem Max-Planck-Institut f{\"u}r Meeresbiologie},
   title = {The orientation of homing pigeons in relation to change in sun declination},
   journal = {Journal f{\"u}r Ornithologie},
   volume = {96},

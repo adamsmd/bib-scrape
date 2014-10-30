@@ -8,6 +8,7 @@ Page numbers with letters
   location = {New Orleans, Louisiana, USA},
   pages = {43a--43g},
   numpages = {7},
+  month = nov,
   year = {1987},
   publisher = {ACM},
   address = {New York, NY, USA},
