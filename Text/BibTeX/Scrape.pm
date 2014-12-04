@@ -141,12 +141,12 @@ sub parse_acm {
         =~ m[navigate\('(.*?)'];
     $mech->get($url);
     my ($i, $cont) = (1, undef);
-    # Try to avoid SIGPLAN Notices
+    # Try to avoid SIGPLAN Notices, SIGSOFT Software Eng. Notes, etc.
     while ($mech->find_link(text => 'download', n => $i)) {
         $mech->follow_link(text => 'download', n => $i);
         $cont = $mech->content()
             unless defined $cont and
-            $mech->content() =~ m[journal = \{?SIGPLAN Not]i;
+            $mech->content() =~ m[journal = ]i;
         $mech->back();
         $i++;
     }
