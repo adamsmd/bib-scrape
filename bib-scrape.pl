@@ -16,7 +16,7 @@ BEGIN {
 use Getopt::Long qw(:config auto_version auto_help);
 
 use FindBin;
-use lib $FindBin::Bin;
+use lib $FindBin::RealBin;
 
 use Text::BibTeX qw(:metatypes);
 use Text::BibTeX::Fix;
