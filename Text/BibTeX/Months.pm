@@ -19,6 +19,7 @@ $months{$macro_names[$_]} = $macro_names[$_] for (0..@long_names);
 $months{$long_names[$_]} = $macro_names[$_] for (0..@long_names);
 $months{'sept'} = 'sep';
 
+Text::BibTeX::delete_macro($_) for (keys %months);
 Text::BibTeX::add_macro_text($_, $months{$_}) for (keys %months);
 
 sub macro { my $x = shift; $x and [Text::BibTeX::BTAST_MACRO, $x] or undef }
