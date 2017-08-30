@@ -108,9 +108,11 @@ sub Text::MetaBib::bibtex {
 
     # 'dc.date', 'rft_date', 'citation_online_date' also contain date information
     if ($self->exists('citation_publication_date')) {
-        my ($year, $month, $day) = $self->get('citation_publication_date')->[0] =~ m[^(\d{4})[/-](\d{2})[/-](\d{2})$];
-        $entry->set('year', $year);
-        $entry->set('month', num2month($month)->[1]);
+        if ($self->get('citation_publication_date')->[0] =~ m[^(\d{4})[/-](\d{2})[/-](\d{2})$]) {
+            my ($year, $month, $day) = ($1, $2, $3);
+            $entry->set('year', $year);
+            $entry->set('month', num2month($month)->[1]);
+        }
     } elsif ($self->exists('citation_date')) {
         if ($self->get('citation_date')->[0] =~ m[^(\d{2})[/-](\d{2})[/-](\d{4})$]) {
             my ($month, $day, $year) = ($1, $2, $3);
