@@ -227,8 +227,7 @@ sub parse_science_direct {
 sub parse_springerlink {
     my ($mech) = @_;
 # TODO: handle books
-    $mech->follow_link(url_regex => qr[/export-citation/]);
-    $mech->follow_link(url_regex => qr[/export-citation/.+\.bib]);
+    $mech->follow_link(url_regex => qr[format=bibtex]);
     my $entry_text = $mech->content();
     $entry_text =~ s[^(\@.*\{)$][$1X,]m; # Fix invalid BibTeX (missing key)
     my $entry = parse_bibtex(decode('utf8', $entry_text));
