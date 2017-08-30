@@ -708,7 +708,7 @@ _ _ \ensuremath{\circlearrowleft} \ensuremath{\circlearrowright}
 \ensuremath{\Searrow} \ensuremath{\Swarrow} \ensuremath{\Lleftarrow} \ensuremath{\Rrightarrow}
 \ensuremath{\leftsquigarrow} \ensuremath{\rightsquigarrow} _ _
 
-\ensuremath{\dashleftarrow} \ensuremath{\dashrightarrow} _ _
+\ensuremath{\dashleftarrow} _ \ensuremath{\dashrightarrow} _
 ));
     set_codes(0x21fc, qw(
 _ \ensuremath{\leftarrowtriangle} \ensuremath{\rightarrowtriangle} \ensuremath{\leftrightarrowtriangle}));
@@ -752,7 +752,7 @@ _ _ _ _
 
 \ensuremath{\nleq} \ensuremath{\ngeq} \ensuremath{\lesssim} \ensuremath{\gtrsim}
 \ensuremath{\nlesssim} \ensuremath{\ngtrsim} \ensuremath{\lessgtr} \ensuremath{\gtrless}
-\ensuremath{\ngtrless} \ensuremath{\nlessgtr} \ensuremath{\prec} \ensuremath{\succ}
+\ensuremath{\nlessgtr} \ensuremath{\ngtrless} \ensuremath{\prec} \ensuremath{\succ}
 \ensuremath{\preccurlyeq} \ensuremath{\succcurlyeq} \ensuremath{\precsim} \ensuremath{\succsim}
 
 \ensuremath{\nprec} \ensuremath{\nsucc} \ensuremath{\subset} \ensuremath{\supset}
