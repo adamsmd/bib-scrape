@@ -68,7 +68,7 @@ sub Text::BibTeX::Fix::new {
       howpublished booktitle journal volume number series jstor_issuetitle
       type jstor_articletype school institution location
       chapter pages articleno numpages
-      edition month year issue_date jstor_formatteddate
+      edition day month year issue_date jstor_formatteddate
       organization publisher address
       language isbn issn doi eid acmid url eprint bib_scrape_url
       note annote keywords abstract copyright));
