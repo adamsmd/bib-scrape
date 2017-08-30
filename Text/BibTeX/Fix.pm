@@ -501,7 +501,7 @@ sub last_name {
 }
 
 sub flatten_name {
-    return decode('utf8', join(' ', $_[0]->part('first'), $_[0]->part('von'), $_[0]->part('last'), $_[0]->part('jr')));
+    return decode('utf8', join(' ', $_[0]->part('first') // (), $_[0]->part('von') // (), $_[0]->part('last') // (), $_[0]->part('jr') // ()));
 }
 
 sub canonical_names {

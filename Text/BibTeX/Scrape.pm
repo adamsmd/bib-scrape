@@ -349,7 +349,7 @@ sub parse_jstor {
                 {'noDoi'=>$suffix, 'doi'=>"10.2307/$suffix"});
 
     my $cont = $mech->content();
-    $cont =~ s[\@comment{.*$][]gm; # hack to avoid comments
+    $cont =~ s[\@comment\{.*$][]gm; # hack to avoid comments
     $cont =~ s[JSTOR CITATION LIST][]g; # hack to avoid junk chars
     my $entry = parse_bibtex($cont);
     $entry->set('doi', '10.2307/' . $suffix);
