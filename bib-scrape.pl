@@ -326,8 +326,8 @@ sub read_valid_names {
     my @names = ([]);
     for (<NAME_FILE>) {
         chomp;
-        if (m/^#/) { }
-        elsif (m/^\s*$/) { push @names, [] }
+        s/#.*//; # Remove comments (which start with `#`)
+        if (m/^\s*$/) { push @names, [] }
         else { push @{$names[$#names]}, new Text::BibTeX::Name($_) }
     }
     close NAME_FILE;
