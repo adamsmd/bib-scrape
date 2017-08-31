@@ -13,7 +13,7 @@ if test 0 -eq $#; then
 fi
 
 for i in "$@"; do
-    echo $i
-    URL=`head -n 1 $i`
-    (head -n 2 $i; ./bib-scrape.pl `head -n 1 $i`) | diff -u $i - | wdiff -dt
+    echo "$i"
+    URL=$(head -n 1 "$i")
+    (head -n 2 "$i"; ./bib-scrape.pl "$URL") | diff -u "$i" - | wdiff -dt
 done
