@@ -159,7 +159,7 @@ sub Text::BibTeX::Fix::Impl::fix {
 
     check($entry, 'number', "suspect number", sub {
         m[^\d+$] || m[^\d+--\d+$] || m[^\d+(/\d+)*$] || m[^\d+es$] ||
-        m[^Special Issue \d+(--\d+)?$] || m[^Supplement S\d+$]});
+        m[^Special Issue \d+(--\d+)?$] || m[^S\d+$]});
 
     update($entry, 'isbn', sub { $_ = Text::ISBN::canonical($_, $self->isbn13, $self->isbn_sep) });
     # TODO: ISSN: Print vs electronic vs native, dash vs no-dash vs native
@@ -332,6 +332,11 @@ sub latex_encode
     $str =~ s[<span class="monospace\s*">(.*?)</span>][\\texttt{$1}]isg; # Replace monospace spans with \texttt
     $str =~ s[<span class="smallcaps\s*">(.*?)</span>][\\textsc{$1}]isg; # Replace small caps spans with \textsc
     $str =~ s[<span class="[^"]*type-small-caps[^"]*">(.*?)</span>][\\textsc{$1}]isg; # Replace small caps spans with \textsc
+    $str =~ s[<span class="italic">(.*?)</span>][\\emph{$1}]isg; # TODO: "isog"? \\textit?
+    $str =~ s[<span class="bold">(.*?)</span>][\\textbf{$1}]isg; # TODO: "isog"? \\textit?
+    $str =~ s[<span class="sup">(.*?)</span>][\\textsuperscript{$1}]isg; # TODO: "isog"? \\textit?
+    $str =~ s[<span class="sub">(.*?)</span>][\\textsubscript{$1}]isg; # TODO: "isog"? \\textit?
+    $str =~ s[<span class="sc">(.*?)</span>][\\textsc{$1}]isg; # TODO: "isog"?
     $str =~ s[<span( .*?)?>(.*?)</span>][$2]isg; # Remove <span>
     $str =~ s[<span( .*?)?>(.*?)</span>][$2]isg; # Remove <span>
     $str =~ s[<i>(.*?)</i>][\\textit{$1}]isog; # Replace <i> with \textit
