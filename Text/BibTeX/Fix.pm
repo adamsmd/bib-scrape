@@ -501,7 +501,17 @@ sub last_name {
 }
 
 sub flatten_name {
-    return decode('utf8', join(' ', $_[0]->part('first') // (), $_[0]->part('von') // (), $_[0]->part('last') // (), $_[0]->part('jr') // ()));
+    my @f = $_[0]->part('first');
+    my @v = $_[0]->part('von');
+    my @l = $_[0]->part('last');
+    my @j = $_[0]->part('jr');
+
+    @f = () unless defined $f[0];
+    @v = () unless defined $v[0];
+    @l = () unless defined $l[0];
+    @j = () unless defined $j[0];
+
+    return decode('utf8', join(' ', @f, @v, @l, @j));
 }
 
 sub canonical_names {
