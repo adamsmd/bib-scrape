@@ -48,7 +48,15 @@ sub parse_bibtex {
 
     my $entry = new Text::BibTeX::Entry;
     print "BIBTEXT:\n$bib_text\n" if $DEBUG;
-    $entry->parse_s(encode('utf8', $bib_text), 0); # 1 for preserve values
+
+    $bib_text = encode('utf8', $bib_text);
+
+    my ($id) = $bib_text =~ m[\{(.*?),]s;
+    $id =~ s[ ][_]g;
+    $id =~ s[[^[:ascii:]]][?]g;
+    $bib_text =~ s/\{(.*?),/{$id,/s;
+
+    $entry->parse_s($bib_text, 0); # 1 for preserve values
     die "Can't parse BibTeX:\n$bib_text\n" unless $entry->parse_ok;
 
     # Parsing the bibtex converts it to utf8, so we have to decode it
@@ -123,7 +131,7 @@ sub parse {
     if (domain('acm.org')) { parse_acm(@_); }
     elsif (domain('sciencedirect.com')) { parse_science_direct(@_); }
     elsif (domain('link.springer.com')) { parse_springerlink(@_); }
-    elsif (domain('journals.cambridge.org')) { parse_cambridge_university_press(@_); }
+    elsif (domain('www.cambridge.org')) { parse_cambridge_university_press(@_); }
     elsif (domain('computer.org')) { parse_ieee_computer_society(@_); }
     elsif (domain('jstor.org')) { parse_jstor(@_); }
     elsif (domain('iospress.metapress.com')) { parse_ios_press(@_); }
@@ -255,41 +263,31 @@ sub parse_springerlink {
 sub parse_cambridge_university_press {
     my ($mech) = @_;
 
-    $mech->follow_link(text => 'Abstract') if defined $mech->find_link(text => 'Abstract');
-    $mech->follow_link(text => 'Export Citation');
-    $mech->submit_form(form_name => 'exportCitationForm',
-                       fields => {'Download' => 'Download',
-                                  'displayAbstract' => 'Yes',
-                                  'format' => 'BibTex'});
+    $mech->content() =~ m[data-prod-id="([0-9A-F]+)">Export citation</a>];
+    my $product_id = $1;
+    $mech->get("https://www.cambridge.org/core/services/aop-easybib/export/?exportType=bibtex&productIds=$product_id&citationStyle=bibtex");
     my $entry = parse_bibtex($mech->content());
-    update($entry, 'abstract', sub { s/^\s*ABSTRACT\s*//; });
-    $mech->back(); $mech->back();
+    $mech->back();
 
-    my ($abst) = $mech->content() =~ m[>Abstract</.*?><p>(<p>.*?</p>)\s*</p>]s;
+    my ($abst) = $mech->content() =~ m[<div class="abstract" data-abstract-type="normal">(.*?)</div>]s;
+    $abst =~ s[^<title>Abstract</title>][] if $abst;
     $abst =~ s/\n+/\n/g if $abst;
     $entry->set('abstract', $abst) if $abst;
 
-    $entry->set('title',
-                join(": ",
-                     map { $_ ne "" ? $_ : () }
-                     ($mech->content() =~ m[<h2><font.*?>(.*?)</font></h2>]sg,
-                      $mech->content() =~ m[</h3>\s*<h3>(.*?)(?=</h3>)]sg
-                     )));
-    $entry->set('title', $mech->content() =~
-                m[<div id="codeDisplayWrapper">\s*<div.*?>\s*<div.*?>(.*?)</div>]s)
-        unless $entry->get('title');
-
     my $html = Text::MetaBib::parse($mech->content());
 
-    my ($doi) = join(' ', @{$html->get('citation_pdf_url')}) =~ m[^http://journals.cambridge.org/article_(S\d{16})$];
-    update($entry, 'doi', sub { $_ = "10.1017/$doi" if defined $doi });
+    $entry->set('title', @{$html->get('citation_title')});
 
-    update($entry, 'author', sub { $_ = undef if $_ eq "" });
-    update($entry, 'url', sub { $_ = undef if $_ eq join(' ',@{$html->get('citation_pdf_url')})});
+    my ($month) = (join(' ',@{$html->get('citation_publication_date')}) =~ m[^\d\d\d\d/(\d\d)]);
+    $entry->set('month', $month);
 
-    $html->bibtex($entry, 'abstract', 'number', 'title');
+    my ($doi) = join(' ', @{$html->get('citation_pdf_url')}) =~ m[/(S\d{16})a\.pdf];
+    $entry->set('doi', "10.1017/$doi");
+
+    my ($print_issn, $online_issn) = @{$html->get('citation_issn')};
+    $entry->set('issn', "$print_issn (Print) $online_issn (Online)");
+
     return $entry;
-    # TODO: fix case of authors
 }
 
 sub parse_ieee_computer_society {
