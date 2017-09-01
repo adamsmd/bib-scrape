@@ -26,13 +26,18 @@ sub check_digit10 { check_digit(11, [10,9,8,7,6,5,4,3,2], @_); }
 sub check_digit13 { check_digit(10, [1,3,1,3,1,3,1,3,1,3,1,3], @_); }
 sub check_digit_issn { check_digit(11, [8,7,6,5,4,3,2], @_); }
 
-sub valid_issn {
+sub canonical_issn {
     my ($issn) = @_;
-    return ($issn =~ m[^\d\d\d\d-\d\d\d(\d|X)$] && $1 eq check_digit_issn($issn))
+    $issn =~ s/[- ]//g;
+    $issn =~ m[^(\d\d\d\d)(\d\d\d(\d|X))$] or croak "Invalid ISSN due to wrong number of digits: $issn";
+    $issn = "$1-$2";
+    my $check = check_digit_issn($issn);
+    $issn =~ /$check$/ or croak "Bad check digit in ISSN.  Expecting $check in $issn";
+    return $issn;
 }
 
 # $isbn13: >0 (force to isbn 13), <0 (use isbn10 if possible), 0 (use whatever came in)
-sub canonical {
+sub canonical_isbn {
     my ($isbn, $isbn13, $sep) = @_;
     $isbn =~ s/[- ]//g;
     my @digits = split(//, $isbn);

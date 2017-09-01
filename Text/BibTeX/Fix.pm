@@ -164,45 +164,9 @@ sub Text::BibTeX::Fix::Impl::fix {
 
     # TODO: Keywords: ';' vs ','
 
-    my $isbn_re = qr[(?:\d+-)?\d+-\d+-\d+-[0-9X]];
-    update($entry, 'isbn', sub {
-        if (m[^($isbn_re) \(Print\) ($isbn_re) \(Online\)$]) {
-            if ($self->isbn eq 'both') {
-                $_ = Text::ISBN::canonical($1, $self->isbn13, $self->isbn_sep)
-                    . ' (Print) '
-                    . Text::ISBN::canonical($2, $self->isbn13, $self->isbn_sep)
-                    . ' (Online)';
-            } elsif ($self->isbn eq 'print') {
-                $_ = Text::ISBN::canonical($1, $self->isbn13, $self->isbn_sep);
-            } elsif ($self->isbn eq 'online') {
-                $_ = Text::ISBN::canonical($2, $self->isbn13, $self->isbn_sep);
-            }
-        } elsif (m[^$isbn_re$]) {
-            $_ = Text::ISBN::canonical($_, $self->isbn13, $self->isbn_sep);
-        } elsif ($_ eq '') { $_ = undef;
-        } else { print "WARNING: Suspect ISBN: $_\n"
-        }
-           });
+    isbn($self, $entry, 'isbn', qr[(?:\d+-)?\d+-\d+-\d+-[0-9X]], $self->isbn, *Text::ISBN::canonical_isbn);
 
-    my $issn_re = qr[\d\d\d\d-\d\d\d[0-9X]];
-    update($entry, 'issn', sub {
-        s[\b(\d{4})(\d{3}[0-9X])\b][$1-$2]g;
-        if (m[^($issn_re) \(Print\) ($issn_re) \(Online\)$]) {
-            if ($self->issn eq 'both') {
-                Text::ISBN::valid_issn($1) or print "WARNING: Check sum failed in issn: $1\n";
-                Text::ISBN::valid_issn($2) or print "WARNING: Check sum failed in issn: $2\n";
-            } elsif ($self->issn eq 'print') {
-                Text::ISBN::valid_issn($1) or print "WARNING: Check sum failed in issn: $1\n";
-                $_ = $1;
-            } elsif ($self->issn eq 'online') {
-                Text::ISBN::valid_issn($2) or print "WARNING: Check sum failed in issn: $2\n";
-                $_ = $2;
-            }
-        } elsif (m[^$issn_re$]) {
-            Text::ISBN::valid_issn($_) or print "WARNING: Check sum failed in issn: $_\n"
-        } elsif ($_ eq '') { $_ = undef
-        } else { print "WARNING: Suspect ISSN: $_\n" }
-           });
+    isbn($self, $entry, 'issn', qr[\d\d\d\d-\d\d\d[0-9X]], $self->issn, *Text::ISBN::canonical_issn);
 
     # TODO: Author, Editor, Affiliation: List of renames
 # Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
@@ -329,10 +293,29 @@ sub Text::BibTeX::Fix::Impl::fix {
     return $str;
 }
 
+sub isbn {
+    my ($self, $entry, $field, $re, $print_or_online, $canonical) = @_;
+    update($entry, $field, sub {
+        if (m[^($re) \(Print\) ($re) \(Online\)$]) {
+            if ($print_or_online eq 'both') {
+                $_ = &$canonical($1, $self->isbn13, $self->isbn_sep)
+                    . ' (Print) '
+                    . &$canonical($2, $self->isbn13, $self->isbn_sep)
+                    . ' (Online)';
+            } elsif ($print_or_online eq 'print') {
+                $_ = &$canonical($1, $self->isbn13, $self->isbn_sep);
+            } elsif ($print_or_online eq 'online') {
+                $_ = &$canonical($2, $self->isbn13, $self->isbn_sep);
+            }
+        } elsif (m[^$re$]) {
+            $_ = &$canonical($_, $self->isbn13, $self->isbn_sep);
+        } elsif ($_ eq '') { $_ = undef
+        } else { print "WARNING: Suspect ISSN: $_\n" }
+           });
+}
 
 # Based on TeX::Encode and modified to use braces appropriate for BibTeX.
-sub latex_encode
-{
+sub latex_encode {
     use utf8;
     my ($str) = @_;
 
