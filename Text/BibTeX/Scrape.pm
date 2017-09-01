@@ -128,20 +128,27 @@ sub merge {
 sub domain { $mech->uri()->authority() =~ m[^(|.*\.)\Q$_[0]\E]i; }
 
 sub parse {
-    if (domain('acm.org')) { parse_acm(@_); }
-    elsif (domain('cambridge.org')) { parse_cambridge(@_); }
-    elsif (domain('computer.org')) { parse_computer_society(@_); }
-    elsif (domain('ieeexplore.ieee.org')) { parse_ieeexplore(@_); }
-    elsif (domain('iospress.metapress.com')) { parse_ios_press(@_); }
-    elsif (domain('jstor.org')) { parse_jstor(@_); }
-    elsif (domain('oxfordjournals.org')) { parse_oxford_journals(@_); }
-    elsif (domain('sciencedirect.com')) { parse_science_direct(@_); }
-    elsif (domain('springer.com')) { parse_springer(@_); }
-    elsif (domain('wiley.com')) {parse_wiley(@_); }
-    else { die "Unknown URI: " . $mech->uri(); }
+    for my $parse (
+      *parse_acm,
+      *parse_cambridge,
+      *parse_computer_society,
+      *parse_ieeexplore,
+      *parse_ios_press,
+      *parse_jstor,
+      *parse_oxford_journals,
+      *parse_science_direct,
+      *parse_springer,
+      *arse_wiley) {
+      my $result = &$parse(@_);
+      return $result if defined $result;
+    }
+
+    die "Unknown URI: " . $mech->uri();
 }
 
 sub parse_acm {
+    domain('acm.org') || return undef;
+
     my ($mech) = @_;
 
     # BibTeX
@@ -188,6 +195,8 @@ sub parse_acm {
 }
 
 sub parse_cambridge {
+    domain('cambridge.org') || return undef;
+
     my ($mech) = @_;
 
     $mech->content() =~ m[data-prod-id="([0-9A-F]+)">Export citation</a>];
@@ -217,6 +226,8 @@ sub parse_cambridge {
 }
 
 sub parse_computer_society {
+    domain('computer.org') || return undef;
+
     my ($mech) = @_;
 
     my $html = Text::MetaBib::parse(decode('utf8', $mech->content()));
@@ -247,6 +258,8 @@ sub parse_computer_society {
 # IEEE is evil because they require a subscription just to get bibliography data
 # (they also use JavaScript to implement simple links)
 sub parse_ieeexplore {
+    domain('ieeexplore.ieee.org') || return undef;
+
     my ($mech, $fields) = @_;
     my ($record) = $mech->content() =~ m[var recordId = "(\d+)";];
 
@@ -267,6 +280,8 @@ sub parse_ieeexplore {
 }
 
 sub parse_ios_press {
+    domain('iospress.metapress.com') || return undef;
+
     my ($mech) = @_;
 
     my $html = Text::MetaBib::parse($mech->content());
@@ -295,6 +310,8 @@ sub parse_ios_press {
 }
 
 sub parse_jstor {
+    domain('jstor.org') || return undef;
+
     my ($mech) = @_;
     my $html = Text::MetaBib::parse($mech->content());
 #    print($mech->content(), "\n");
@@ -331,6 +348,8 @@ sub parse_jstor {
 }
 
 sub parse_oxford_journals {
+    domain('oxfordjournals.org') || return undef;
+
     my ($mech) = @_;
 
     my $html = Text::MetaBib::parse($mech->content());
@@ -351,6 +370,8 @@ sub parse_oxford_journals {
 }
 
 sub parse_science_direct {
+    domain('sciencedirect.com') || return undef;
+
     my ($mech) = @_;
 
     # Find the title and reverse engineer the Unicode
@@ -396,6 +417,8 @@ sub parse_science_direct {
 }
 
 sub parse_springer {
+    domain('springer.com') || return undef;
+
     my ($mech) = @_;
 # TODO: handle books
     $mech->follow_link(url_regex => qr[format=bibtex]);
@@ -449,6 +472,8 @@ sub parse_springer {
 }
 
 sub parse_wiley {
+    domain('wiley.com') || return undef;
+
     my ($mech) = @_;
     $mech->follow_link(url_regex => qr[/abstract]) if $mech->find_link(url_regex => qr[/abstract]);
     $mech->follow_link(text => 'Export Citation for this Article');
