@@ -129,15 +129,15 @@ sub domain { $mech->uri()->authority() =~ m[^(|.*\.)\Q$_[0]\E]i; }
 
 sub parse {
     if (domain('acm.org')) { parse_acm(@_); }
-    elsif (domain('sciencedirect.com')) { parse_science_direct(@_); }
-    elsif (domain('link.springer.com')) { parse_springerlink(@_); }
-    elsif (domain('www.cambridge.org')) { parse_cambridge_university_press(@_); }
-    elsif (domain('computer.org')) { parse_ieee_computer_society(@_); }
-    elsif (domain('jstor.org')) { parse_jstor(@_); }
-    elsif (domain('iospress.metapress.com')) { parse_ios_press(@_); }
+    elsif (domain('cambridge.org')) { parse_cambridge(@_); }
+    elsif (domain('computer.org')) { parse_computer_society(@_); }
     elsif (domain('ieeexplore.ieee.org')) { parse_ieeexplore(@_); }
-    elsif (domain('onlinelibrary.wiley.com')) {parse_wiley(@_); }
+    elsif (domain('iospress.metapress.com')) { parse_ios_press(@_); }
+    elsif (domain('jstor.org')) { parse_jstor(@_); }
     elsif (domain('oxfordjournals.org')) { parse_oxford_journals(@_); }
+    elsif (domain('sciencedirect.com')) { parse_science_direct(@_); }
+    elsif (domain('springer.com')) { parse_springer(@_); }
+    elsif (domain('wiley.com')) {parse_wiley(@_); }
     else { die "Unknown URI: " . $mech->uri(); }
 }
 
@@ -187,105 +187,7 @@ sub parse_acm {
     return $entry;
 }
 
-sub parse_science_direct {
-    my ($mech) = @_;
-
-    # Find the title and reverse engineer the Unicode
-    $mech->follow_link(text => "Screen reader users, click here to load entire article");
-
-    my $html = Text::MetaBib::parse($mech->content());
-
-    $mech->submit_form(with_fields => {
-        'format' => 'cite', 'citation-type' => 'BIBTEX'});
-    my $entry = parse_bibtex($mech->content());
-    $mech->back();
-
-    my ($title) = $mech->content() =~ m[<h1 class="svTitle".*?>\s*(.*?)\s*</h1>]s;
-    $title =~ s[<sup><a\b[^>]*\bclass="intra_ref"[^>]*>.*?</a></sup>][];
-    $entry->set('title', get_mathml($title));
-
-    my ($keywords) = $mech->content() =~ m[<ul class="keyword".*?>\s*(.*?)\s*</ul>]s;
-    $keywords = "" unless defined $keywords;
-    $keywords =~ s[<li.*?>(.*?)</li>][$1]sg;
-    $keywords = get_mathml($keywords);
-    $entry->delete('keywords'); # Clear 'keywords' duplication that breaks Text::BibTeX
-    $entry->set('keywords', $keywords) if $keywords ne '';
-
-    my ($abst) = $mech->content() =~ m[<div class="abstract svAbstract *".*?>\s*(.*?)\s*</div>];
-    $abst = "" unless defined $abst;
-    $abst =~ s[<h2 class="secHeading".*?>Abstract</h2>][]g;
-    $entry->set('abstract', get_mathml($abst));
-
-    my ($series) = $mech->content() =~ m[<p class="specIssueTitle">(.*?)</p>];
-    $entry->set('series', $series) if defined $series and $series ne '';
-
-    $mech->submit_form(with_fields => {
-        'format' => 'cite-abs', 'citation-type' => 'RIS'});
-    my $f = Text::RIS::parse(decode('utf8', $mech->content()))->bibtex();
-    $entry->set('month', $f->get('month'));
-    $entry->delete('note') if $f->exists('booktitle') and $f->get('booktitle') eq $entry->get('note');
-    $mech->back();
-
-# TODO: editor
-
-    $html->bibtex($entry);
-    return $entry;
-}
-
-sub parse_springerlink {
-    my ($mech) = @_;
-# TODO: handle books
-    $mech->follow_link(url_regex => qr[format=bibtex]);
-    my $entry_text = $mech->content();
-    $entry_text =~ s[^(\@.*\{)$][$1X,]m; # Fix invalid BibTeX (missing key)
-    my $entry = parse_bibtex(decode('utf8', $entry_text));
-    $mech->back();
-    $mech->back();
-
-    my ($abstr) = join('', $mech->content() =~ m[>(?:Abstract|Summary)</h2>(.*?)</section]s);
-    $entry->set('abstract', $abstr) if defined $abstr;
-
-    my $html = Text::MetaBib::parse($mech->content());
-    my ($year, $month, $day) = $mech->content() =~ m["abstract-about-cover-date">(\d\d\d\d)-(\d\d)-(\d\d)</dd>];
-    $entry->set('month', $month) if defined $month;
-
-    print_or_online($entry, 'issn',
-        [$mech->content() =~ m[setTargeting\("pissn","(\d\d\d\d-\d\d\d[0-9X])"\)]],
-        [$mech->content() =~ m[setTargeting\("eissn","(\d\d\d\d-\d\d\d[0-9X])"\)]]);
-
-    my @editors = $mech->content() =~ m[<li itemprop="editor"[^>]*>\s*<a[^>]*>(.*?)</a>]sg;
-    $entry->set('editor', join(' and ', @editors)) if @editors;
-
-    print_or_online($entry, 'isbn',
-        [$mech->content() =~ m[id="print-isbn">(.*?)</span>]],
-        [$mech->content() =~ m[id="electronic-isbn">(.*?)</span>]]);
-
-    my ($link) = $mech->find_link(text => 'About this book');
-    if (defined $link) {
-      $mech->follow_link(text => 'About this book');
-
-      my ($series) = $mech->content() =~ m[<dt>Series Title</dt>\s*<dd>(.*?)</dd>];
-      $entry->set('series', $series) if defined $series;
-
-      my ($volume) = $mech->content() =~ m[<dt>Series Volume</dt>\s*<dd>(.*?)</dd>];
-      $entry->set('volume', $1) if defined $volume;
-    }
-
-    $entry->set('keywords', $1) if $mech->content() =~ m[<div class="KeywordGroup" lang="en">(?:<h3 class="Heading">KeyWords</h3>)?(.*?)</div>];
-    update($entry, 'keywords', sub {
-      s[^<span class="Keyword">\s*(.*?)\s*</span>$][$1];
-      s[\s*</span><span class="Keyword">\s*][; ]g;
-          });
-
-    $html->bibtex($entry, 'month');
-
-    # The publisher field should not include the address
-    update($entry, 'publisher', sub { $_ = 'Springer' if $_ eq ('Springer, ' . ($entry->get('address') // '')) });
-
-    return $entry;
-}
-
-sub parse_cambridge_university_press {
+sub parse_cambridge {
     my ($mech) = @_;
 
     $mech->content() =~ m[data-prod-id="([0-9A-F]+)">Export citation</a>];
@@ -314,7 +216,7 @@ sub parse_cambridge_university_press {
     return $entry;
 }
 
-sub parse_ieee_computer_society {
+sub parse_computer_society {
     my ($mech) = @_;
 
     my $html = Text::MetaBib::parse(decode('utf8', $mech->content()));
@@ -364,6 +266,34 @@ sub parse_ieeexplore {
     return $entry
 }
 
+sub parse_ios_press {
+    my ($mech) = @_;
+
+    my $html = Text::MetaBib::parse($mech->content());
+    $mech->follow_link(text => 'RIS');
+    my $f = Text::RIS::parse(decode('utf8', $mech->content()))->bibtex();
+    my $entry = parse_bibtex("\@" . $f->type . " {unknown_key,}");
+    # TODO: missing items?
+    for ('journal', 'title', 'volume', 'number', 'abstract', 'pages',
+         'author', 'year', 'month', 'doi') {
+        $entry->set($_, $f->get($_)) if $f->exists($_);
+    }
+    $mech->back();
+
+    my ($pub) = ($mech->content() =~ m[>Publisher</td><td.*?>(.*?)</td>]i);
+    $entry->set('publisher', $pub) if defined $pub;
+
+    my ($issn) = ($mech->content() =~ m[>ISSN</td><td.*?>(.*?)</td>]i);
+    $issn =~ s[<br/?>][ ];
+    $entry->set('issn', $issn) if defined $issn;
+
+    my ($abstract) = ($mech->content() =~ m[<div class="abstract">\s*<p>(.*?)</p>\s*</div>]i);
+    $entry->set('abstract', $abstract) if defined $abstract;
+
+    $html->bibtex($entry);
+    return $entry;
+}
+
 sub parse_jstor {
     my ($mech) = @_;
     my $html = Text::MetaBib::parse($mech->content());
@@ -400,31 +330,121 @@ sub parse_jstor {
     return $entry;
 }
 
-sub parse_ios_press {
+sub parse_oxford_journals {
     my ($mech) = @_;
 
     my $html = Text::MetaBib::parse($mech->content());
-    $mech->follow_link(text => 'RIS');
-    my $f = Text::RIS::parse(decode('utf8', $mech->content()))->bibtex();
-    my $entry = parse_bibtex("\@" . $f->type . " {unknown_key,}");
-    # TODO: missing items?
-    for ('journal', 'title', 'volume', 'number', 'abstract', 'pages',
-         'author', 'year', 'month', 'doi') {
-        $entry->set($_, $f->get($_)) if $f->exists($_);
-    }
-    $mech->back();
+    my $entry = parse_bibtex("\@article{unknown_key,}");
+    $html->bibtex($entry);
 
-    my ($pub) = ($mech->content() =~ m[>Publisher</td><td.*?>(.*?)</td>]i);
-    $entry->set('publisher', $pub) if defined $pub;
-
-    my ($issn) = ($mech->content() =~ m[>ISSN</td><td.*?>(.*?)</td>]i);
-    $issn =~ s[<br/?>][ ];
-    $entry->set('issn', $issn) if defined $issn;
-
-    my ($abstract) = ($mech->content() =~ m[<div class="abstract">\s*<p>(.*?)</p>\s*</div>]i);
+    my ($abstract) = ($mech->content() =~ m[>\s*Abstract\s*</h2>\s*(.*?)\s*</div>]si);
     $entry->set('abstract', $abstract) if defined $abstract;
 
+    print_or_online($entry, 'issn',
+         [$mech->content() =~ m[Print ISSN (\d\d\d\d-\d\d\d[0-9X])]],
+         [$mech->content() =~ m[Online ISSN (\d\d\d\d-\d\d\d[0-9X])]]);
+
+    my ($title) = $mech->content =~ m[<h1 id="article-title-1" itemprop="headline">\s*(.*?)\s</h1>]si;
+    $entry->set('title', $title) if defined $title;
+
+    return $entry;
+}
+
+sub parse_science_direct {
+    my ($mech) = @_;
+
+    # Find the title and reverse engineer the Unicode
+    $mech->follow_link(text => "Screen reader users, click here to load entire article");
+
+    my $html = Text::MetaBib::parse($mech->content());
+
+    $mech->submit_form(with_fields => {
+        'format' => 'cite', 'citation-type' => 'BIBTEX'});
+    my $entry = parse_bibtex($mech->content());
+    $mech->back();
+
+    my ($title) = $mech->content() =~ m[<h1 class="svTitle".*?>\s*(.*?)\s*</h1>]s;
+    $title =~ s[<sup><a\b[^>]*\bclass="intra_ref"[^>]*>.*?</a></sup>][];
+    $entry->set('title', get_mathml($title));
+
+    my ($keywords) = $mech->content() =~ m[<ul class="keyword".*?>\s*(.*?)\s*</ul>]s;
+    $keywords = "" unless defined $keywords;
+    $keywords =~ s[<li.*?>(.*?)</li>][$1]sg;
+    $keywords = get_mathml($keywords);
+    $entry->delete('keywords'); # Clear 'keywords' duplication that breaks Text::BibTeX
+    $entry->set('keywords', $keywords) if $keywords ne '';
+
+    my ($abst) = $mech->content() =~ m[<div class="abstract svAbstract *".*?>\s*(.*?)\s*</div>];
+    $abst = "" unless defined $abst;
+    $abst =~ s[<h2 class="secHeading".*?>Abstract</h2>][]g;
+    $entry->set('abstract', get_mathml($abst));
+
+    my ($series) = $mech->content() =~ m[<p class="specIssueTitle">(.*?)</p>];
+    $entry->set('series', $series) if defined $series and $series ne '';
+
+    $mech->submit_form(with_fields => {
+        'format' => 'cite-abs', 'citation-type' => 'RIS'});
+    my $f = Text::RIS::parse(decode('utf8', $mech->content()))->bibtex();
+    $entry->set('month', $f->get('month'));
+    $entry->delete('note') if $f->exists('booktitle') and $f->get('booktitle') eq $entry->get('note');
+    $mech->back();
+
+# TODO: editor
+
     $html->bibtex($entry);
+    return $entry;
+}
+
+sub parse_springer {
+    my ($mech) = @_;
+# TODO: handle books
+    $mech->follow_link(url_regex => qr[format=bibtex]);
+    my $entry_text = $mech->content();
+    $entry_text =~ s[^(\@.*\{)$][$1X,]m; # Fix invalid BibTeX (missing key)
+    my $entry = parse_bibtex(decode('utf8', $entry_text));
+    $mech->back();
+    $mech->back();
+
+    my ($abstr) = join('', $mech->content() =~ m[>(?:Abstract|Summary)</h2>(.*?)</section]s);
+    $entry->set('abstract', $abstr) if defined $abstr;
+
+    my $html = Text::MetaBib::parse($mech->content());
+    my ($year, $month, $day) = $mech->content() =~ m["abstract-about-cover-date">(\d\d\d\d)-(\d\d)-(\d\d)</dd>];
+    $entry->set('month', $month) if defined $month;
+
+    print_or_online($entry, 'issn',
+        [$mech->content() =~ m[setTargeting\("pissn","(\d\d\d\d-\d\d\d[0-9X])"\)]],
+        [$mech->content() =~ m[setTargeting\("eissn","(\d\d\d\d-\d\d\d[0-9X])"\)]]);
+
+    my @editors = $mech->content() =~ m[<li itemprop="editor"[^>]*>\s*<a[^>]*>(.*?)</a>]sg;
+    $entry->set('editor', join(' and ', @editors)) if @editors;
+
+    print_or_online($entry, 'isbn',
+        [$mech->content() =~ m[id="print-isbn">(.*?)</span>]],
+        [$mech->content() =~ m[id="electronic-isbn">(.*?)</span>]]);
+
+    my ($link) = $mech->find_link(text => 'About this book');
+    if (defined $link) {
+      $mech->follow_link(text => 'About this book');
+
+      my ($series) = $mech->content() =~ m[<dt>Series Title</dt>\s*<dd>(.*?)</dd>];
+      $entry->set('series', $series) if defined $series;
+
+      my ($volume) = $mech->content() =~ m[<dt>Series Volume</dt>\s*<dd>(.*?)</dd>];
+      $entry->set('volume', $1) if defined $volume;
+    }
+
+    $entry->set('keywords', $1) if $mech->content() =~ m[<div class="KeywordGroup" lang="en">(?:<h3 class="Heading">KeyWords</h3>)?(.*?)</div>];
+    update($entry, 'keywords', sub {
+      s[^<span class="Keyword">\s*(.*?)\s*</span>$][$1];
+      s[\s*</span><span class="Keyword">\s*][; ]g;
+          });
+
+    $html->bibtex($entry, 'month');
+
+    # The publisher field should not include the address
+    update($entry, 'publisher', sub { $_ = 'Springer' if $_ eq ('Springer, ' . ($entry->get('address') // '')) });
+
     return $entry;
 }
 
@@ -480,26 +500,6 @@ sub parse_wiley {
     $entry->set('title', $mech->content() =~ m[<h1 class="articleTitle">(.*?)</h1>]s)
         unless $entry->get('title') =~ /\$/;
 
-
-    return $entry;
-}
-
-sub parse_oxford_journals {
-    my ($mech) = @_;
-
-    my $html = Text::MetaBib::parse($mech->content());
-    my $entry = parse_bibtex("\@article{unknown_key,}");
-    $html->bibtex($entry);
-
-    my ($abstract) = ($mech->content() =~ m[>\s*Abstract\s*</h2>\s*(.*?)\s*</div>]si);
-    $entry->set('abstract', $abstract) if defined $abstract;
-
-    print_or_online($entry, 'issn',
-         [$mech->content() =~ m[Print ISSN (\d\d\d\d-\d\d\d[0-9X])]],
-         [$mech->content() =~ m[Online ISSN (\d\d\d\d-\d\d\d[0-9X])]]);
-
-    my ($title) = $mech->content =~ m[<h1 id="article-title-1" itemprop="headline">\s*(.*?)\s</h1>]si;
-    $entry->set('title', $title) if defined $title;
 
     return $entry;
 }
