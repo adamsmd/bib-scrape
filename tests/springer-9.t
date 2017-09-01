@@ -1,6 +1,6 @@
 http://www.springerlink.com/content/m8x0246j74044t6l/
 Author should be "R. Kent Dybvig" instead of "R. Dybvig"
-@incollection{Waddell:1997:10.1007/BFb0032732,
+@inbook{Waddell:1997:10.1007/BFb0032732,
   author = {Waddell, Oscar and Dybvig, R. Kent},
   editor = {Van Hentenryck, Pascal},
   affiliation = {Indiana University Computer Science Department and Indiana University Computer Science Department},
@@ -10,9 +10,10 @@ Author should be "R. Kent Dybvig" instead of "R. Dybvig"
   series = {Lecture Notes in Computer Science},
   pages = {35--52},
   year = {1997},
-  publisher = {Springer Berlin Heidelberg},
+  publisher = {Springer},
+  address = {Berlin, Heidelberg},
   language = {English},
-  isbn = {978-3-540-63468-3},
+  isbn = {978-3-540-63468-3 (Print) 978-3-540-69576-9 (Online)},
   issn = {0302-9743 (Print) 1611-3349 (Online)},
   doi = {10.1007/BFb0032732},
   bib_scrape_url = {http://www.springerlink.com/content/m8x0246j74044t6l/},

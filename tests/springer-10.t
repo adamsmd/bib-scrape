@@ -1,6 +1,6 @@
 http://dx.doi.org/10.1007/978-3-642-11957-6_30
 Acronym with numbers in title
-@incollection{Vardoulakis:2010:10.1007/978-3-642-11957-6_30,
+@inbook{Vardoulakis:2010:10.1007/978-3-642-11957-6_30,
   author = {Vardoulakis, Dimitrios and Shivers, Olin},
   editor = {Gordon, Andrew D.},
   affiliation = {Northeastern University and Northeastern University},
@@ -10,9 +10,10 @@ Acronym with numbers in title
   series = {Lecture Notes in Computer Science},
   pages = {570--589},
   year = {2010},
-  publisher = {Springer Berlin Heidelberg},
+  publisher = {Springer},
+  address = {Berlin, Heidelberg},
   language = {English},
-  isbn = {978-3-642-11956-9},
+  isbn = {978-3-642-11956-9 (Print) 978-3-642-11957-6 (Online)},
   issn = {0302-9743 (Print) 1611-3349 (Online)},
   doi = {10.1007/978-3-642-11957-6_30},
   bib_scrape_url = {http://dx.doi.org/10.1007/978-3-642-11957-6_30},

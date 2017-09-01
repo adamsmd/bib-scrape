@@ -99,14 +99,14 @@ sub get_mathml {
     return $str;
 }
 
-sub issn {
-    my ($entry, $print, $online) = @_;
+sub print_or_online {
+    my ($entry, $field, $print, $online) = @_;
     my ($print_issn) = @$print;
     my ($online_issn) = @$online;
     if ($print_issn and $online_issn) {
-        $entry->set('issn', "$print_issn (Print) $online_issn (Online)");
+        $entry->set($field, "$print_issn (Print) $online_issn (Online)");
     } elsif ($print_issn or $online_issn) {
-        $entry->set('issn', $print_issn || $online_issn);
+        $entry->set($field, $print_issn || $online_issn);
     }
 }
 
@@ -242,21 +242,46 @@ sub parse_springerlink {
     $mech->back();
     $mech->back();
 
-    my ($abstr) = join('', $mech->content =~ m[<div class="abstract-content formatted".*?>(.*?)</div>]sg);
+    my ($abstr) = join('', $mech->content() =~ m[>(?:Abstract|Summary)</h2>(.*?)</section]s);
     $entry->set('abstract', $abstr) if defined $abstr;
 
     my $html = Text::MetaBib::parse($mech->content());
     my ($year, $month, $day) = $mech->content() =~ m["abstract-about-cover-date">(\d\d\d\d)-(\d\d)-(\d\d)</dd>];
     $entry->set('month', $month) if defined $month;
 
-    issn($entry,
-         [$mech->content() =~ m[setTargeting\("pissn","(\d\d\d\d-\d\d\d[0-9X])"\)]],
-         [$mech->content() =~ m[setTargeting\("eissn","(\d\d\d\d-\d\d\d[0-9X])"\)]]);
+    print_or_online($entry, 'issn',
+        [$mech->content() =~ m[setTargeting\("pissn","(\d\d\d\d-\d\d\d[0-9X])"\)]],
+        [$mech->content() =~ m[setTargeting\("eissn","(\d\d\d\d-\d\d\d[0-9X])"\)]]);
 
     my @editors = $mech->content() =~ m[<li itemprop="editor"[^>]*>\s*<a[^>]*>(.*?)</a>]sg;
     $entry->set('editor', join(' and ', @editors)) if @editors;
 
+    print_or_online($entry, 'isbn',
+        [$mech->content() =~ m[id="print-isbn">(.*?)</span>]],
+        [$mech->content() =~ m[id="electronic-isbn">(.*?)</span>]]);
+
+    my ($link) = $mech->find_link(text => 'About this book');
+    if (defined $link) {
+      $mech->follow_link(text => 'About this book');
+
+      my ($series) = $mech->content() =~ m[<dt>Series Title</dt>\s*<dd>(.*?)</dd>];
+      $entry->set('series', $series) if defined $series;
+
+      my ($volume) = $mech->content() =~ m[<dt>Series Volume</dt>\s*<dd>(.*?)</dd>];
+      $entry->set('volume', $1) if defined $volume;
+    }
+
+    $entry->set('keywords', $1) if $mech->content() =~ m[<div class="KeywordGroup" lang="en">(?:<h3 class="Heading">KeyWords</h3>)?(.*?)</div>];
+    update($entry, 'keywords', sub {
+      s[^<span class="Keyword">\s*(.*?)\s*</span>$][$1];
+      s[\s*</span><span class="Keyword">\s*][; ]g;
+          });
+
     $html->bibtex($entry, 'month');
+
+    # The publisher field should not include the address
+    update($entry, 'publisher', sub { $_ = 'Springer' if $_ eq ('Springer, ' . ($entry->get('address') // '')) });
+
     return $entry;
 }
 
@@ -284,8 +309,7 @@ sub parse_cambridge_university_press {
     my ($doi) = join(' ', @{$html->get('citation_pdf_url')}) =~ m[/(S\d{16})a\.pdf];
     $entry->set('doi', "10.1017/$doi");
 
-    my ($print_issn, $online_issn) = @{$html->get('citation_issn')};
-    $entry->set('issn', "$print_issn (Print) $online_issn (Online)");
+    print_or_online($entry, 'issn', [$html->get('citation_issn')->[0]], [$html->get('citation_issn')->[1]]);
 
     return $entry;
 }
@@ -297,7 +321,10 @@ sub parse_ieee_computer_society {
     my $entry = parse_bibtex("\@" . ($html->type() || 'misc') . "{unknown_key,}");
 
     $mech->follow_link(text => 'BibTex');
-    my $f = parse_bibtex(decode('utf8', $mech->content()));
+    my $bib_text = $mech->content();
+    $bib_text =~ s[<br/>][\n]g;
+    my $f = parse_bibtex(decode('utf8', $bib_text));
+    $mech->back();
 
     if ($entry->type() eq 'inproceedings') { # IEEE gets this all wrong
         $entry->set('series', $f->get('journal')) if $f->exists('journal');
@@ -305,9 +332,13 @@ sub parse_ieee_computer_society {
     }
     $entry->set('address', $f->get('address')) if $f->exists('address');
     $entry->set('volume', $f->get('volume')) if $f->exists('volume');
-    update($entry, 'volume', sub { $_ = undef if $_ eq "0" });
+    update($entry, 'volume', sub { $_ = undef if $_ eq "00" });
 
     $html->bibtex($entry);
+
+    # Don't use the MetaBib for this as IEEE doesn't escape quotes property
+    $entry->set('abstract', $mech->content() =~ m[<div class="abstractText abstractTextMB">(.*?)</div>]);
+
     return $entry;
 }
 
@@ -336,25 +367,34 @@ sub parse_ieeexplore {
 sub parse_jstor {
     my ($mech) = @_;
     my $html = Text::MetaBib::parse($mech->content());
+#    print($mech->content(), "\n");
+
+    $mech->follow_link(text_regex => qr[Cite this Item]);
+    $mech->follow_link(text => 'Export a Text file');
+
+#print $mech->content();
+#    print($mech->content(), "\n");
 
     # Ick, not only does JSTOR hide behind JavaScript, but
     # it hides the link for downloading BibTeX if we are not logged in.
     # We get around this by hard coding the URL that we know it should be at.
-    my ($suffix) = $mech->content() =~
-        m[Stable URL: .*?://www.jstor.org/stable/(\d+)\W];
-    $mech->post("http://www.jstor.org/action/downloadCitation?userAction=export&format=bibtex&include=abs",
-                {'noDoi'=>$suffix, 'doi'=>"10.2307/$suffix"});
+ #   my ($suffix) = $mech->content() =~
+ #       m[Stable URL: .*?://www.jstor.org/stable/(\d+)\W];
+ #   $mech->post("http://www.jstor.org/action/downloadCitation?userAction=export&format=bibtex&include=abs",
+ #               {'noDoi'=>$suffix, 'doi'=>"10.2307/$suffix"});
 
+#    my $cont = $mech->content();
     my $cont = $mech->content();
-    $cont =~ s[\@comment\{.*$][]gm; # hack to avoid comments
-    $cont =~ s[JSTOR CITATION LIST][]g; # hack to avoid junk chars
+#    $cont =~ s[\@comment\{.*$][]gm; # hack to avoid comments
+#    $cont =~ s[JSTOR CITATION LIST][]g; # hack to avoid junk chars
     my $entry = parse_bibtex($cont);
-    $entry->set('doi', '10.2307/' . $suffix);
-    my ($month) = ($entry->get('jstor_formatteddate') =~ m[^(.*?)( \d\d?)?, \d\d\d\d$]);
-    $entry->set('month', $month) if defined $month;
+    #$entry->set('doi', '10.2307/' . $suffix);
+#    my ($month) = ($entry->get('jstor_formatteddate') =~ m[^(.*?)( \d\d?)?, \d\d\d\d$]);
+#    $entry->set('month', $month) if defined $month;
+    $mech->back();
     $mech->back();
 
-    $entry->set('title', $mech->content() =~ m[<div class="mainCite.*?"><h2 class="h3">(.*?)</h2>]);
+    #$entry->set('title', $mech->content() =~ m[<div class="mainCite.*?"><h2 class="h3">(.*?)</h2>]);
 
     $html->bibtex($entry);
     return $entry;
@@ -454,7 +494,7 @@ sub parse_oxford_journals {
     my ($abstract) = ($mech->content() =~ m[>\s*Abstract\s*</h2>\s*(.*?)\s*</div>]si);
     $entry->set('abstract', $abstract) if defined $abstract;
 
-    issn($entry,
+    print_or_online($entry, 'issn',
          [$mech->content() =~ m[Print ISSN (\d\d\d\d-\d\d\d[0-9X])]],
          [$mech->content() =~ m[Online ISSN (\d\d\d\d-\d\d\d[0-9X])]]);
 

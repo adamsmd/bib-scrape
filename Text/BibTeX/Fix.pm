@@ -50,8 +50,8 @@ sub hash_flag {
 
 use Class::Struct 'Text::BibTeX::Fix::Impl' => {
   known_fields => '@', valid_names => '@',
-  debug => '$', final_comma => '$',
-  escape_acronyms => '$', isbn13 => '$', isbn_sep => '$', issn => '$',
+  debug => '$', final_comma => '$', escape_acronyms => '$',
+  isbn => '$', isbn13 => '$', isbn_sep => '$', issn => '$',
   no_encode => '%', no_collapse => '%', omit => '%', omit_empty => '%',
   field_action => '$',
 };
@@ -77,6 +77,7 @@ sub Text::BibTeX::Fix::new {
     scalar_flag($cfg, \%options, 'debug', 0);
     scalar_flag($cfg, \%options, 'final_comma', 1);
     scalar_flag($cfg, \%options, 'escape_acronyms', 1);
+    scalar_flag($cfg, \%options, 'isbn', 'both');
     scalar_flag($cfg, \%options, 'isbn13', 0);
     scalar_flag($cfg, \%options, 'isbn_sep', '-');
     scalar_flag($cfg, \%options, 'issn', 'both');
@@ -104,8 +105,8 @@ sub Text::BibTeX::Fix::Impl::fix {
     # Doi field: remove "http://hostname/" or "DOI: "
     $entry->set('doi', $entry->get('url')) if (
         not $entry->exists('doi') and
-        ($entry->get('url') || "") =~ m[^http://dx.doi.org/.*$]);
-    update($entry, 'doi', sub { s[http://[^/]+/][]i; s[DOI:\s*][]ig; });
+        ($entry->get('url') || "") =~ m[^http(s?)://(dx.)?doi.org/.*$]);
+    update($entry, 'doi', sub { s[http(s?)://[^/]+/][]i; s[DOI:\s*][]ig; });
 
     # Page numbers: no "pp." or "p."
     # TODO: page fields
@@ -161,9 +162,27 @@ sub Text::BibTeX::Fix::Impl::fix {
         m[^\d+$] || m[^\d+--\d+$] || m[^\d+(/\d+)*$] || m[^\d+es$] ||
         m[^Special Issue \d+(--\d+)?$] || m[^S\d+$]});
 
-    update($entry, 'isbn', sub { $_ = Text::ISBN::canonical($_, $self->isbn13, $self->isbn_sep) });
-    # TODO: ISSN: Print vs electronic vs native, dash vs no-dash vs native
     # TODO: Keywords: ';' vs ','
+
+    my $isbn_re = qr[(?:\d+-)?\d+-\d+-\d+-[0-9X]];
+    update($entry, 'isbn', sub {
+        if (m[^($isbn_re) \(Print\) ($isbn_re) \(Online\)$]) {
+            if ($self->isbn eq 'both') {
+                $_ = Text::ISBN::canonical($1, $self->isbn13, $self->isbn_sep)
+                    . ' (Print) '
+                    . Text::ISBN::canonical($2, $self->isbn13, $self->isbn_sep)
+                    . ' (Online)';
+            } elsif ($self->isbn eq 'print') {
+                $_ = Text::ISBN::canonical($1, $self->isbn13, $self->isbn_sep);
+            } elsif ($self->isbn eq 'online') {
+                $_ = Text::ISBN::canonical($2, $self->isbn13, $self->isbn_sep);
+            }
+        } elsif (m[^$isbn_re$]) {
+            $_ = Text::ISBN::canonical($1, $self->isbn13, $self->isbn_sep);
+        } elsif ($_ eq '') { $_ = undef;
+        } else { print "WARNING: Suspect ISBN: $_\n"
+        }
+           });
 
     my $issn_re = qr[\d\d\d\d-\d\d\d[0-9X]];
     update($entry, 'issn', sub {
@@ -216,11 +235,12 @@ sub Text::BibTeX::Fix::Impl::fix {
     # TODO: via Omit if matches
     # TODO: omit if ...
     update($entry, 'url', sub {
-        $_ = undef if m[^(http://dx.doi.org/
-                         |http://doi.acm.org/
-                         |http://portal.acm.org/citation.cfm
-                         |http://www.jstor.org/stable/
-                         |http://www.sciencedirect.com/science/article/)]x; } );
+        $_ = undef if m[^(http(s?)://doi.org/
+                         |http(s?)://dx.doi.org/
+                         |http(s?)://doi.acm.org/
+                         |http(s?)://portal.acm.org/citation.cfm
+                         |http(s?)://www.jstor.org/stable/
+                         |http(s?)://www.sciencedirect.com/science/article/)]x; } );
     # TODO: via omit if empty
     update($entry, 'note', sub { $_ = undef if $_ eq "" });
     # TODO: add $doi to omit if matches
@@ -337,16 +357,17 @@ sub latex_encode
     $str =~ s[<span class="sup">(.*?)</span>][\\textsuperscript{$1}]isg; # TODO: "isog"? \\textit?
     $str =~ s[<span class="sub">(.*?)</span>][\\textsubscript{$1}]isg; # TODO: "isog"? \\textit?
     $str =~ s[<span class="sc">(.*?)</span>][\\textsc{$1}]isg; # TODO: "isog"?
+    $str =~ s[<span class="EmphasisTypeSmallCaps ">(.*?)</span>][\\textsc{$1}]isg;
     $str =~ s[<span( .*?)?>(.*?)</span>][$2]isg; # Remove <span>
     $str =~ s[<span( .*?)?>(.*?)</span>][$2]isg; # Remove <span>
     $str =~ s[<i>(.*?)</i>][\\textit{$1}]isog; # Replace <i> with \textit
     $str =~ s[<italic>(.*?)</italic>][\\textit{$1}]isog; # Replace <italic> with \textit
-    $str =~ s[<em>(.*?)</em>][\\emph{$1}]isog; # Replace <em> with \emph
+    $str =~ s[<em [^>]*?>(.*?)</em>][\\emph{$1}]isog; # Replace <em> with \emph
     $str =~ s[<strong>(.*?)</strong>][\\textbf{$1}]isog; # Replace <strong> with \textbf
     $str =~ s[<b>(.*?)</b>][\\textbf{$1}]isog; # Replace <b> with \textbf
     $str =~ s[<tt>(.*?)</tt>][\\texttt{$1}]isog; # Replace <tt> with \texttt
     $str =~ s[<code>(.*?)</code>][\\texttt{$1}]isog; # Replace <code> with \texttt
-    $str =~ s[<small>(.*?)</small>][{\\small $1}]isog; # Replace <small> with \small
+#    $str =~ s[<small>(.*?)</small>][{\\small $1}]isog; # Replace <small> with \small
     $str =~ s[<sup>(.*?)</sup>][\\textsuperscript{$1}]isog; # Super scripts
     $str =~ s[<supscrpt>(.*?)</supscrpt>][\\textsuperscript{$1}]isog; # Super scripts
     $str =~ s[<sub>(.*?)</sub>][\\textsubscript{$1}]isog; # Sub scripts

@@ -153,8 +153,9 @@ sub Text::MetaBib::bibtex {
 
     # 'dc.description' also contains abstract information
     if ($self->exists('description')) {
-        my $d = $self->get('description')->[0];
-        $entry->set('abstract', $d) if $d ne '' and $d ne '****' and $d !~ /^IEEE Xplore/;
+        for my $d (@{$self->get('description')}) {
+            $entry->set('abstract', $d) if $d ne '' and $d ne '****' and $d !~ /^(IEEE Xplore|IEEE Computer Society)/;
+        }
     }
 
     $entry->set('affiliation', join(' and ', @{$self->get('citation_author_institution')}))

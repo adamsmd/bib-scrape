@@ -76,6 +76,12 @@ Scrape BibTeX entry from the publisher's page
 
 =head2 GENERAL OPTIONS
 
+=item --isbn=<kind> [default=both]
+
+When both a print and an online ISBN are available, use only the print
+ISBN if <kind> is 'print', only the online ISBN if <kind> is 'online',
+or both if <kind> is 'both'.
+
 =item --isbn13=<mode> [default=0]
 
 If <mode> is a positive integer, then always use ISBN-13 in the output.
@@ -90,7 +96,7 @@ Use an empty string to specify no separator.
 =item --issn=<kind> [default=both]
 
 When both a print and an online ISSN are available, use only the print
-ISSN if <kind> is 'print, only the online ISSN if <kind> is 'online',
+ISSN if <kind> is 'print', only the online ISSN if <kind> is 'online',
 or both if <kind> is 'both'.
 
 =item --comma, --no-comma [default=yes]
@@ -223,8 +229,8 @@ sub string_flag {
 
 my ($DEBUG, $SCRAPE, $FIX) =
    (      0,      1,    1);
-my ($ISBN13, $ISBN_SEP, $ISSN, $COMMA, $ESCAPE_ACRONYMS) =
-   (      0,       '-','both',      1,                1);
+my ($ISBN, $ISBN13, $ISBN_SEP, $ISSN, $COMMA, $ESCAPE_ACRONYMS) =
+   ('both',      0,       '-','both',      1,                1);
 my (@NAME_FILE) = ("$FindBin::RealBin/names.txt");
 my (@FIELD_ACTION_FILE) = ("$FindBin::RealBin/action.txt");
 my (@INPUT, @EXTRA_FIELDS, %NO_ENCODE, %NO_COLLAPSE, %OMIT, %OMIT_EMPTY);
@@ -245,6 +251,7 @@ GetOptions(
 
     # General options
     # TODO: no-defaults
+    'isbn' => \$ISBN,
     'isbn13=i' => \$ISBN13,
     'isbn-sep=s' => \$ISBN_SEP,
     'issn' => \$ISSN,
@@ -264,6 +271,7 @@ my $fixer = Text::BibTeX::Fix->new(
     field_action => join('\n', slurp_file(@FIELD_ACTION_FILE)),
     debug => $DEBUG,
     known_fields => [@EXTRA_FIELDS],
+    isbn => $ISBN,
     isbn13 => $ISBN13,
     isbn_sep => $ISBN_SEP,
     issn => $ISSN,
