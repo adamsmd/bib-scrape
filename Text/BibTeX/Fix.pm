@@ -178,7 +178,7 @@ sub Text::BibTeX::Fix::Impl::fix {
                 $_ = Text::ISBN::canonical($2, $self->isbn13, $self->isbn_sep);
             }
         } elsif (m[^$isbn_re$]) {
-            $_ = Text::ISBN::canonical($1, $self->isbn13, $self->isbn_sep);
+            $_ = Text::ISBN::canonical($_, $self->isbn13, $self->isbn_sep);
         } elsif ($_ eq '') { $_ = undef;
         } else { print "WARNING: Suspect ISBN: $_\n"
         }
