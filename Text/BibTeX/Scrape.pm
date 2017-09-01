@@ -138,7 +138,7 @@ sub parse {
       *parse_oxford_journals,
       *parse_science_direct,
       *parse_springer,
-      *arse_wiley) {
+      *parse_wiley) {
       my $result = &$parse(@_);
       return $result if defined $result;
     }
@@ -280,7 +280,7 @@ sub parse_ieeexplore {
 }
 
 sub parse_ios_press {
-    domain('iospress.metapress.com') || return undef;
+    domain('iospress.com') || return undef;
 
     my ($mech) = @_;
 
