@@ -296,10 +296,10 @@ for my $filename (@INPUT) {
         } else {
             if (not $entry->exists('bib_scrape_url')) {
                 # Try to find a URL to scrape
-                if ($entry->exists('doi') and $entry->get('doi') =~ m[http://[^/]+/(.*)]i) {
+                if ($entry->exists('doi') and $entry->get('doi') =~ m[http(?:s)?://[^/]+/(.*)]i) {
                     (my $url = $1) =~ s[DOI:\s*][]ig;
-                    $entry->set('bib_scrape_url', "http://dx.doi.org/$url");
-                } elsif ($entry->exists('url') and $entry->get('url') =~ m[^http://dx.doi.org/.*$]) {
+                    $entry->set('bib_scrape_url', "https://doi.org/$url");
+                } elsif ($entry->exists('url') and $entry->get('url') =~ m[^http(?:s)?://(?:dx.)?doi.org/.*$]) {
                     $entry->set('bib_scrape_url', $entry->get('url'));
                 }
             }
@@ -312,7 +312,7 @@ for my $filename (@INPUT) {
 for (@ARGV) {
     my $entry = new Text::BibTeX::Entry;
     $entry->set_key($1) if $_ =~ s[^\{([^}]*)\}][];
-    $_ =~ s[^doi:][http://dx.doi.org/]i;
+    $_ =~ s[^doi:][http(?:s)?://(?:dx)?.doi.org/]i;
     $entry->set('bib_scrape_url', $_);
     scrape_and_fix_entry($entry);
 }

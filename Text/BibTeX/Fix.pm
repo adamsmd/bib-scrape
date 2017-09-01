@@ -355,7 +355,7 @@ sub latex_encode {
     $str =~ s[<supscrpt>(.*?)</supscrpt>][\\textsuperscript{$1}]isog; # Super scripts
     $str =~ s[<sub>(.*?)</sub>][\\textsubscript{$1}]isog; # Sub scripts
 
-    $str =~ s[<img src="http://www.sciencedirect.com/scidirimg/entities/([0-9a-f]+).gif".*?>][@{[chr(hex $1)]}]isg; # Fix for Science Direct
+    $str =~ s[<img src="http(s)?://www.sciencedirect.com/scidirimg/entities/([0-9a-f]+).gif".*?>][@{[chr(hex $2)]}]isg; # Fix for Science Direct
     $str =~ s[<img src="/content/[A-Z0-9]+/xxlarge(\d+).gif".*?>][@{[chr($1)]}]isg; # Fix for Springer Link
     $str =~ s[<email>(.*?)</email>][$1]isg; # Fix for Cambridge
 
