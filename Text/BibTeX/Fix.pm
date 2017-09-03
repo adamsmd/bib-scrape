@@ -280,8 +280,9 @@ sub Text::BibTeX::Fix::Impl::fix {
     # Put fields in a standard order.
     for my $field ($entry->fieldlist()) {
         die "Unknown field '$field'\n" unless grep { $field eq $_ } @{$self->known_fields};
-        die "Duplicate field '$field' will be mangled" if
-            scalar(grep { $field eq $_ } $entry->fieldlist()) >= 2;
+# TODO: needed?
+#        die "Duplicate field '$field' will be mangled" if
+#            scalar(grep { $field eq $_ } $entry->fieldlist()) >= 2;
     }
     $entry->set_fieldlist([map { $entry->exists($_) ? ($_) : () } @{$self->known_fields}]);
 
@@ -332,8 +333,8 @@ sub latex_encode {
     $str =~ s[<p(| [^>]*)>(.*?)</p>][$2\n\n]isg; # Replace <p> with "\n\n"
     $str =~ s[<par(| [^>]*)>(.*?)</par>][$2\n\n]isg; # Replace <par> with "\n\n"
     $str =~ s[<span style="font-family:monospace\s*">(.*?)</span>][\\texttt{$1}]isg; # Replace monospace spans with \texttt
-    $str =~ s[<span class="monospace\s*">(.*?)</span>][\\texttt{$1}]isg; # Replace monospace spans with \texttt
-    $str =~ s[<span class="smallcaps\s*">(.*?)</span>][\\textsc{$1}]isg; # Replace small caps spans with \textsc
+    $str =~ s[<span class="monospace\s*"[^>]*>(.*?)</span>][\\texttt{$1}]isg; # Replace monospace spans with \texttt
+    $str =~ s[<span class="small-?caps\s*"[^>]*>(.*?)</span>][\\textsc{$1}]isg; # Replace small caps spans with \textsc
     $str =~ s[<span class="[^"]*type-small-caps[^"]*">(.*?)</span>][\\textsc{$1}]isg; # Replace small caps spans with \textsc
     $str =~ s[<span class="italic">(.*?)</span>][\\emph{$1}]isg; # TODO: "isog"? \\textit?
     $str =~ s[<span class="bold">(.*?)</span>][\\textbf{$1}]isg; # TODO: "isog"? \\textit?
@@ -345,7 +346,7 @@ sub latex_encode {
     $str =~ s[<span( .*?)?>(.*?)</span>][$2]isg; # Remove <span>
     $str =~ s[<i>(.*?)</i>][\\textit{$1}]isog; # Replace <i> with \textit
     $str =~ s[<italic>(.*?)</italic>][\\textit{$1}]isog; # Replace <italic> with \textit
-    $str =~ s[<em [^>]*?>(.*?)</em>][\\emph{$1}]isog; # Replace <em> with \emph
+    $str =~ s[<em\b[^>]*?>(.*?)</em>][\\emph{$1}]isog; # Replace <em> with \emph
     $str =~ s[<strong>(.*?)</strong>][\\textbf{$1}]isog; # Replace <strong> with \textbf
     $str =~ s[<b>(.*?)</b>][\\textbf{$1}]isog; # Replace <b> with \textbf
     $str =~ s[<tt>(.*?)</tt>][\\texttt{$1}]isog; # Replace <tt> with \texttt
@@ -361,7 +362,7 @@ sub latex_encode {
 
     # MathML formatting
     my $xml = XML::Parser->new(Style => 'Tree');
-    $str =~ s[(<mml:math\b[^>]*>.*?</mml:math>)]
+    $str =~ s[(<(?:mml:)?math\b[^>]*>.*?</(?:mml:)?math>)]
              [\\ensuremath{@{[rec(@{$xml->parse($1)})]}}]gs; # TODO: ensuremath (but avoid latex encoding)
 
     # Trim spaces before NBSP (otherwise they have not effect in LaTeX)
@@ -378,20 +379,21 @@ sub rec {
     if ($tag eq '0') { return greek($body); }
     my %attr = %{shift @$body};
 
-    if ($tag eq 'mml:math') { return xml(@$body); }
-    if ($tag eq 'mml:mi' and exists $attr{'mathvariant'} and $attr{'mathvariant'} eq 'normal')
-    { return '\mathrm{' . xml(@$body) . '}' }
-    if ($tag eq 'mml:mi') { return xml(@$body) }
-    if ($tag eq 'mml:mo') { return xml(@$body) }
-    if ($tag eq 'mml:mn') { return xml(@$body) }
-    if ($tag eq 'mml:msqrt') { return '\sqrt{' . xml(@$body) . '}' }
-    if ($tag eq 'mml:mrow') { return '{' . xml(@$body) . '}' }
-    if ($tag eq 'mml:mspace') { return '\hspace{' . $attr{'width'} . '}' }
-    if ($tag eq 'mml:msubsup') { return '{' . xml(@$body[0..1]) .
+    if ($tag =~ m[(mml:)?math]) { return xml(@$body); }
+    if ($tag =~ m[(mml:)?mtext]) { return xml(@$body); }
+    if ($tag =~ m[(mml:)?mi] and exists $attr{'mathvariant'} and $attr{'mathvariant'} eq 'normal') {
+        return '\mathrm{' . xml(@$body) . '}' }
+    if ($tag =~ m[(mml:)?mi]) { return xml(@$body) }
+    if ($tag =~ m[(mml:)?mo]) { return xml(@$body) }
+    if ($tag =~ m[(mml:)?mn]) { return xml(@$body) }
+    if ($tag =~ m[(mml:)?msqrt]) { return '\sqrt{' . xml(@$body) . '}' }
+    if ($tag =~ m[(mml:)?mrow]) { return '{' . xml(@$body) . '}' }
+    if ($tag =~ m[(mml:)?mspace]) { return '\hspace{' . $attr{'width'} . '}' }
+    if ($tag =~ m[(mml:)?msubsup]) { return '{' . xml(@$body[0..1]) .
                                      '}_{' . xml(@$body[2..3]) .
                                      '}^{' . xml(@$body[4..5]) . '}' }
-    if ($tag eq 'mml:msub') { return '{' . xml(@$body[0..1]) . '}_{' . xml(@$body[2..3]) . '}' }
-    if ($tag eq 'mml:msup') { return '{' . xml(@$body[0..1]) . '}^{' . xml(@$body[2..3]) . '}' }
+    if ($tag =~ m[(mml:)?msub]) { return '{' . xml(@$body[0..1]) . '}_{' . xml(@$body[2..3]) . '}' }
+    if ($tag =~ m[(mml:)?msup]) { return '{' . xml(@$body[0..1]) . '}^{' . xml(@$body[2..3]) . '}' }
 }
 
 sub xml {

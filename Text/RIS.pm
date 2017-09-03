@@ -84,7 +84,7 @@ sub Text::RIS::bibtex {
     $entry->set('series', $self->{'T3'}); # check
     #A3: author series
     #A[4-9]: author (undocumented)
-    my ($year, $month, $day) = split m[/|-], ($self->{'PY'} || $self->{'Y1'});
+    my ($year, $month, $day) = split m[/|-], ($self->{'DA'} || $self->{'PY'} || $self->{'Y1'});
     $entry->set('year', $year);
     $entry->set('month', num2month($month)->[1]) if $month;
     $entry->set('day', $day);

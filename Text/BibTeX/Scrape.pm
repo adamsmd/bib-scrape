@@ -370,49 +370,61 @@ sub parse_oxford_journals {
 }
 
 sub parse_science_direct {
-    domain('sciencedirect.com') || return undef;
+    domain('sciencedirect.com') || domain('elsevier.com') || return undef;
 
     my ($mech) = @_;
 
-    # Find the title and reverse engineer the Unicode
-    $mech->follow_link(text => "Screen reader users, click here to load entire article");
+    # Evil Elsiver uses JavaScript to redirect
+    my ($redirect) = $mech->content() =~ m[<input type="hidden" name="redirectURL" value="([^"]*?)" id="redirectURL"/>];
+    if (defined $redirect) {
+        $redirect =~ s[\%([0-9A-Z]{2})][@{[chr(hex $1)]}]ig; # URL decode
+        $mech->get($redirect);
+    }
 
     my $html = Text::MetaBib::parse($mech->content());
 
-    $mech->submit_form(with_fields => {
-        'format' => 'cite', 'citation-type' => 'BIBTEX'});
+    # Evil Science Direct uses JavaScript to create links
+    my ($pii) = $mech->content() =~ m["sd:article:pii:(s?\d{15}(\d|x))"];
+
+    $mech->get("https://www.sciencedirect.com/sdfe/arp/cite?pii=$pii&format=text%2Fx-bibtex&withabstract=true");
     my $entry = parse_bibtex($mech->content());
     $mech->back();
 
-    my ($title) = $mech->content() =~ m[<h1 class="svTitle".*?>\s*(.*?)\s*</h1>]s;
-    $title =~ s[<sup><a\b[^>]*\bclass="intra_ref"[^>]*>.*?</a></sup>][];
-    $entry->set('title', get_mathml($title));
+    my ($title) = $mech->content() =~ m[<h1 class="article-title" [^>]*>(.*?)</h1>]s;
+    $title =~ s[<a\b[^>]*>(.*?)</a>][]s;
+    $entry->set('title', $title);
 
-    my ($keywords) = $mech->content() =~ m[<ul class="keyword".*?>\s*(.*?)\s*</ul>]s;
-    $keywords = "" unless defined $keywords;
-    $keywords =~ s[<li.*?>(.*?)</li>][$1]sg;
-    $keywords = get_mathml($keywords);
-    $entry->delete('keywords'); # Clear 'keywords' duplication that breaks Text::BibTeX
-    $entry->set('keywords', $keywords) if $keywords ne '';
+    my ($keywords) = $mech->content() =~ m[>Keywords</h2>(<div\b[^>]*>.*?</div>)</div>]s;
+    if (defined $keywords) {
+        $keywords =~ s[<div\b[^>]*?>(.*?)</div>][$1; ]sg;
+        $keywords =~ s[; $][];
+        $entry->set('keywords', $keywords);
+    }
 
-    my ($abst) = $mech->content() =~ m[<div class="abstract svAbstract *".*?>\s*(.*?)\s*</div>];
+    my ($abst) = $mech->content() =~ m[<div class="abstract author"[^>]*>(.*?</div>)</div>];
     $abst = "" unless defined $abst;
-    $abst =~ s[<h2 class="secHeading".*?>Abstract</h2>][]g;
+    $abst =~ s[<h2\b[^>]*>Abstract</h2>][]g;
+    $abst =~ s[<div\b[^>]*>(.*)</div>][$1]s;
     $entry->set('abstract', get_mathml($abst));
 
-    my ($series) = $mech->content() =~ m[<p class="specIssueTitle">(.*?)</p>];
-    $entry->set('series', $series) if defined $series and $series ne '';
+    if ($entry->exists('note') and $entry->get('note') ne '') {
+        $entry->set('series', $entry->get('note'));
+        $entry->delete('note');
+    }
 
-    $mech->submit_form(with_fields => {
-        'format' => 'cite-abs', 'citation-type' => 'RIS'});
+    my ($iss_first) = $mech->content() =~ m["iss-first":"(\d+)"];
+    my ($iss_last) = $mech->content() =~ m["iss-last":"(\d+)"];
+    $entry->set('number', defined $iss_last ? "$iss_first--$iss_last" : "$iss_first");
+
+    $mech->get("http://www.sciencedirect.com/sdfe/arp/cite?pii=$pii&format=application%2Fx-research-info-systems&withabstract=false");
     my $f = Text::RIS::parse(decode('utf8', $mech->content()))->bibtex();
     $entry->set('month', $f->get('month'));
-    $entry->delete('note') if $f->exists('booktitle') and $f->get('booktitle') eq $entry->get('note');
     $mech->back();
 
 # TODO: editor
 
     $html->bibtex($entry);
+
     return $entry;
 }
 
