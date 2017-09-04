@@ -10,7 +10,7 @@ http://content.iospress.com/articles/ai-communications/aic444
   month = jan,
   year = {2009},
   publisher = {IOS Press},
-  issn = {0921-7126 (Print) 1875-8452 (Online)},
+  issn = {0921-7126},
   doi = {10.3233/AIC-2009-0444},
   bib_scrape_url = {http://content.iospress.com/articles/ai-communications/aic444},
   abstract = {In the present paper we address the problem of automatically abstracting the behavioral modes of system components on the basis of their indiscriminability in a diagnostic setting. Our goal is to abstract the original model in such a way as to provide more informative results to the supervisor, without loosing any relevant diagnostic information.
