@@ -285,27 +285,14 @@ sub parse_ios_press {
     my ($mech) = @_;
 
     my $html = Text::MetaBib::parse($mech->content());
-    $mech->follow_link(text => 'RIS');
-    my $f = Text::RIS::parse(decode('utf8', $mech->content()))->bibtex();
-    my $entry = parse_bibtex("\@" . $f->type . " {unknown_key,}");
-    # TODO: missing items?
-    for ('journal', 'title', 'volume', 'number', 'abstract', 'pages',
-         'author', 'year', 'month', 'doi') {
-        $entry->set($_, $f->get($_)) if $f->exists($_);
-    }
-    $mech->back();
-
-    my ($pub) = ($mech->content() =~ m[>Publisher</td><td.*?>(.*?)</td>]i);
-    $entry->set('publisher', $pub) if defined $pub;
-
-    my ($issn) = ($mech->content() =~ m[>ISSN</td><td.*?>(.*?)</td>]i);
-    $issn =~ s[<br/?>][ ];
-    $entry->set('issn', $issn) if defined $issn;
-
-    my ($abstract) = ($mech->content() =~ m[<div class="abstract">\s*<p>(.*?)</p>\s*</div>]i);
-    $entry->set('abstract', $abstract) if defined $abstract;
-
+    my $entry = parse_bibtex("\@" . 'article' . " {unknown_key,}");
     $html->bibtex($entry);
+
+    $entry->set('abstract', decode_entities($mech->content() =~ m[data-abstract="([^"]*)"]));
+
+    # Insert missing paragraphs.  This is a heuristic solution.
+    update($entry, 'abstract', sub { s[([.!?])  ][$1\n\n] });
+
     return $entry;
 }
 
