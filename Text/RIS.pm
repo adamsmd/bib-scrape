@@ -22,10 +22,11 @@ sub Text::RIS::parse {
         $line =~ s[\r|\n][]g;
         my ($key, $val) = $line =~ m[^([A-Z][A-Z0-9]|DOI) *- *(.*?) *$];
         if (defined $key) { push @{$data->{$key}}, $val; $last_key = $key; }
-        elsif ("" ne $line) {
-            my $list = $data->{$last_key};
-            @$list[$#$list] .= "\n" . $line;
-        } else {} # blank line
+# TODO: needed?
+#        elsif ("" ne $line) {
+#            my $list = $data->{$last_key};
+#            @$list[$#$list] .= "\n" . $line;
+#        } else {} # blank line
     }
 
     return Text::RIS->new(data => $data);
@@ -87,6 +88,12 @@ sub Text::RIS::bibtex {
     my ($year, $month, $day) = split m[/|-], ($self->{'DA'} || $self->{'PY'} || $self->{'Y1'});
     $entry->set('year', $year);
     $entry->set('month', num2month($month)->[1]) if $month;
+
+    if (exists $self->{'C1'}) {
+        ($month, $day, $year) = $self->{'C1'} =~ m[Full publication date: (\w+)\.?( \d+)?, (\d+)];
+        $entry->set('month', $month);
+    }
+
     $entry->set('day', $day);
     #Y2: date secondary
     ($self->{'N1'} || $self->{'AB'} || $self->{'N2'} || "") =~ $doi;

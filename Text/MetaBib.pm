@@ -133,6 +133,7 @@ sub Text::MetaBib::bibtex {
 
     # 'rft_id' and 'doi' also contain doi information
     if ($self->exists('citation_doi')) { $entry->set('doi', $self->get('citation_doi')->[0]) }
+    elsif ($self->exists('st.discriminator')) { $entry->set('doi', $self->get('st.discriminator')->[0]) }
     elsif ($self->exists('dc.identifier') and $self->get('dc.identifier')->[0] =~ m[^doi:(.+)$]) { $entry->set('doi', $1) }
 
     # If we get two ISBNs then one is online and the other is print so

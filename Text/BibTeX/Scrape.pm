@@ -314,36 +314,30 @@ sub parse_jstor {
 
     my ($mech) = @_;
     my $html = Text::MetaBib::parse($mech->content());
-#    print($mech->content(), "\n");
 
     $mech->follow_link(text_regex => qr[Cite this Item]);
     $mech->follow_link(text => 'Export a Text file');
 
-#print $mech->content();
-#    print($mech->content(), "\n");
-
-    # Ick, not only does JSTOR hide behind JavaScript, but
-    # it hides the link for downloading BibTeX if we are not logged in.
-    # We get around this by hard coding the URL that we know it should be at.
- #   my ($suffix) = $mech->content() =~
- #       m[Stable URL: .*?://www.jstor.org/stable/(\d+)\W];
- #   $mech->post("http://www.jstor.org/action/downloadCitation?userAction=export&format=bibtex&include=abs",
- #               {'noDoi'=>$suffix, 'doi'=>"10.2307/$suffix"});
-
-#    my $cont = $mech->content();
     my $cont = $mech->content();
-#    $cont =~ s[\@comment\{.*$][]gm; # hack to avoid comments
-#    $cont =~ s[JSTOR CITATION LIST][]g; # hack to avoid junk chars
     my $entry = parse_bibtex($cont);
-    #$entry->set('doi', '10.2307/' . $suffix);
-#    my ($month) = ($entry->get('jstor_formatteddate') =~ m[^(.*?)( \d\d?)?, \d\d\d\d$]);
-#    $entry->set('month', $month) if defined $month;
-    $mech->back();
     $mech->back();
 
-    #$entry->set('title', $mech->content() =~ m[<div class="mainCite.*?"><h2 class="h3">(.*?)</h2>]);
+    $mech->find_link(text => 'Export a RIS file');
+    $mech->follow_link(text => 'Export a RIS file');
+    my $f = Text::RIS::parse(decode('utf8', $mech->content()))->bibtex();
+    $entry->set('month', $f->get('month'));
+    $mech->back();
+
+    $mech->back();
+
+    my ($doi) = $mech->content() =~ m[<div class="doi">(.*?)</div>]s;
+    $entry->set('doi', $doi) if defined $doi;
 
     $html->bibtex($entry);
+
+    my ($abs) = $mech->content() =~ m[<div class="abstract1"[^>]*>(.*?)</div>]s;
+    $entry->set('abstract', $abs) if defined $abs;
+
     return $entry;
 }
 
