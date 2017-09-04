@@ -452,7 +452,7 @@ sub parse_wiley {
     domain('wiley.com') || return undef;
 
     my ($mech) = @_;
-    $mech->follow_link(url_regex => qr[/abstract]) if $mech->find_link(url_regex => qr[/abstract]);
+    $mech->follow_link(url_regex => qr[/wol1/.*/abstract$]) if $mech->find_link(url_regex => qr[/wol1/.*/abstract$]);
     $mech->follow_link(text => 'Export Citation for this Article');
     $mech->submit_form(with_fields => {
         'fileFormat' => 'BIBTEX', 'hasAbstract' => 'CITATION_AND_ABSTRACT'});
