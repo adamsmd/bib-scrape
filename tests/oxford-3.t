@@ -2,6 +2,7 @@ http://comjnl.oxfordjournals.org/content/53/10/1691.abstract
 Superscript in title and abstract
 @article{Shih:2010:10.1093/comjnl/bxp081,
   author = {Shih, Yu-Ying and Chao, Daniel},
+  affiliation = {Department of Information Management, National Taipei College of Business, Taipei, ROC and Department of Graduate Institute of Industrial and Business Management, National Taipei University of Technology, Taipei, ROC and Department of MIS, National Cheng Chi University, Taipei, ROC},
   title = {Sequence of Control in S\textsuperscript{3}{PMR}},
   journal = {The Computer Journal},
   volume = {53},
@@ -10,7 +11,6 @@ Superscript in title and abstract
   month = dec,
   year = {2010},
   publisher = {Oxford University Press},
-  language = {English},
   issn = {0010-4620 (Print) 1460-2067 (Online)},
   doi = {10.1093/comjnl/bxp081},
   bib_scrape_url = {http://comjnl.oxfordjournals.org/content/53/10/1691.abstract},

@@ -2,6 +2,7 @@ http://comjnl.oxfordjournals.org/content/54/5/717.abstract
 Unicode in authors
 @article{Sevinc:2011:10.1093/comjnl/bxp130,
   author = {Sevin{\c{c}}, Ender and Co{\c{s}}ar, Ahmet},
+  affiliation = {Computer Engineering Department, Middle East Technical University, Ankara, Turkey and Computer Engineering Department, Middle East Technical University, Ankara, Turkey},
   title = {An Evolutionary Genetic Algorithm for Optimization of Distributed Database Queries},
   journal = {The Computer Journal},
   volume = {54},
@@ -10,7 +11,6 @@ Unicode in authors
   month = may,
   year = {2011},
   publisher = {Oxford University Press},
-  language = {English},
   issn = {0010-4620 (Print) 1460-2067 (Online)},
   doi = {10.1093/comjnl/bxp130},
   bib_scrape_url = {http://comjnl.oxfordjournals.org/content/54/5/717.abstract},

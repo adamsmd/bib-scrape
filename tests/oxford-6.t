@@ -2,6 +2,7 @@ http://comjnl.oxfordjournals.org/content/53/3/342.abstract
 Math in title and abstract
 @article{Datta:2010:10.1093/comjnl/bxn071,
   author = {Datta, Ajoy K. and Larmore, Lawrence L. and Vemula, Priyanka},
+  affiliation = {School of Computer Science, University of Nevada Las Vegas, NV, USA and School of Computer Science, University of Nevada Las Vegas, NV, USA and School of Computer Science, University of Nevada Las Vegas, NV, USA},
   title = {A Self-Stabilizing \emph{O}(\emph{k})-Time \emph{k}-Clustering Algorithm},
   journal = {The Computer Journal},
   volume = {53},
@@ -10,7 +11,6 @@ Math in title and abstract
   month = mar,
   year = {2010},
   publisher = {Oxford University Press},
-  language = {English},
   issn = {0010-4620 (Print) 1460-2067 (Online)},
   doi = {10.1093/comjnl/bxn071},
   bib_scrape_url = {http://comjnl.oxfordjournals.org/content/53/3/342.abstract},

@@ -2,6 +2,7 @@ http://comjnl.oxfordjournals.org/content/54/1/31.abstract
 Unicode in authors
 @article{Cirstea:2011:10.1093/comjnl/bxp004,
   author = {C{\^{\i}}rstea, Corina and Kurz, Alexander and Pattinson, Dirk and Schr{\"o}der, Lutz and Venema, Yde},
+  affiliation = {School of Electronics and Computer Science, University of Southampton, Highfield, Southampton SO17 1BJ, UK and Department of Computer Science, University of Leicester, University Road, Leicester, LE1 7RH, UK and Department of Computing, Imperial College London, 180 Queen's Gate, London SW7 2AZ, UK and DFKI Bremen and Department of Computer Science, Universit{\"a}t Bremen, Cartesium, Enrique-Schmidt-Str. 5, 28359 Bremen, Germany and Institute for Logic, Language and Computation, University of Amsterdam, Plantage Muidergracht 24, 1018 TV Amsterdam, The Netherlands},
   title = {Modal Logics are Coalgebraic},
   journal = {The Computer Journal},
   volume = {54},
@@ -10,7 +11,6 @@ Unicode in authors
   month = jan,
   year = {2011},
   publisher = {Oxford University Press},
-  language = {English},
   issn = {0010-4620 (Print) 1460-2067 (Online)},
   doi = {10.1093/comjnl/bxp004},
   bib_scrape_url = {http://comjnl.oxfordjournals.org/content/54/1/31.abstract},

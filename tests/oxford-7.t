@@ -2,6 +2,7 @@ http://comjnl.oxfordjournals.org/content/52/7/824.abstract
 Unicode in title and abstract. Underscore in title and abstract.
 @article{Alhadidi:2009:10.1093/comjnl/bxn065,
   author = {Alhadidi, D[ima] and Belblidia, N[adia] and Debbabi, M[ourad] and Bhattacharya, P[rabir]},
+  affiliation = {Computer Security Laboratory (CSL), Concordia Institute for Information Systems Engineering, Concordia University, Montreal, Quebec, CanadaH3G 1M8 and Computer Security Laboratory (CSL), Concordia Institute for Information Systems Engineering, Concordia University, Montreal, Quebec, CanadaH3G 1M8 and Computer Security Laboratory (CSL), Concordia Institute for Information Systems Engineering, Concordia University, Montreal, Quebec, CanadaH3G 1M8 and Computer Security Laboratory (CSL), Concordia Institute for Information Systems Engineering, Concordia University, Montreal, Quebec, CanadaH3G 1M8},
   title = {{\textgreek{l}}_{SAOP}: A Security {AOP} Calculus},
   journal = {The Computer Journal},
   volume = {52},
@@ -10,7 +11,6 @@ Unicode in title and abstract. Underscore in title and abstract.
   month = oct,
   year = {2009},
   publisher = {Oxford University Press},
-  language = {English},
   issn = {0010-4620 (Print) 1460-2067 (Online)},
   doi = {10.1093/comjnl/bxn065},
   bib_scrape_url = {http://comjnl.oxfordjournals.org/content/52/7/824.abstract},

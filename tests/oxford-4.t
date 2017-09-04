@@ -2,6 +2,7 @@ http://comjnl.oxfordjournals.org/content/53/6/634.abstract
 Italics in title and abstract
 @article{Kuo:2010:10.1093/comjnl/bxp008,
   author = {Kuo, Yu-Chen},
+  affiliation = {Department of Computer and Information Science, SooChow University, Taipei, Taiwan 100, Republic of China},
   title = {General Tree \emph{k}-Coteries to Reduce the Degradation of Quorums},
   journal = {The Computer Journal},
   volume = {53},
@@ -10,7 +11,6 @@ Italics in title and abstract
   month = jul,
   year = {2010},
   publisher = {Oxford University Press},
-  language = {English},
   issn = {0010-4620 (Print) 1460-2067 (Online)},
   doi = {10.1093/comjnl/bxp008},
   bib_scrape_url = {http://comjnl.oxfordjournals.org/content/53/6/634.abstract},

@@ -342,7 +342,7 @@ sub parse_jstor {
 }
 
 sub parse_oxford_journals {
-    domain('oxfordjournals.org') || return undef;
+    domain('oup.com') || return undef;
 
     my ($mech) = @_;
 
@@ -350,7 +350,7 @@ sub parse_oxford_journals {
     my $entry = parse_bibtex("\@article{unknown_key,}");
     $html->bibtex($entry);
 
-    my ($abstract) = ($mech->content() =~ m[>\s*Abstract\s*</h2>\s*(.*?)\s*</div>]si);
+    my ($abstract) = ($mech->content() =~ m[<section class="abstract">\s*(.*?)\s*</section>]si);
     $entry->set('abstract', $abstract) if defined $abstract;
 
     print_or_online($entry, 'issn',
