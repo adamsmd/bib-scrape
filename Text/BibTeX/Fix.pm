@@ -164,9 +164,9 @@ sub Text::BibTeX::Fix::Impl::fix {
 
     # TODO: Keywords: ';' vs ','
 
-    isbn($self, $entry, 'isbn', qr[(?:\d+-)?\d+-\d+-\d+-[0-9X]], $self->isbn, *Text::ISBN::canonical_isbn);
+    isbn($self, $entry, 'isbn', $self->isbn, *Text::ISBN::canonical_isbn);
 
-    isbn($self, $entry, 'issn', qr[\d\d\d\d-\d\d\d[0-9X]], $self->issn, *Text::ISBN::canonical_issn);
+    isbn($self, $entry, 'issn', $self->issn, *Text::ISBN::canonical_issn);
 
     # TODO: Author, Editor, Affiliation: List of renames
 # Booktitle, Journal, Publisher*, Series, School, Institution, Location*, Edition*, Organization*, Publisher*, Address*, Language*:
@@ -295,9 +295,9 @@ sub Text::BibTeX::Fix::Impl::fix {
 }
 
 sub isbn {
-    my ($self, $entry, $field, $re, $print_or_online, $canonical) = @_;
+    my ($self, $entry, $field, $print_or_online, $canonical) = @_;
     update($entry, $field, sub {
-        if (m[^($re) \(Print\) ($re) \(Online\)$]) {
+        if (m[^([0-9x-]+) \(Print\) ([0-9x-]+) \(Online\)$]i) {
             if ($print_or_online eq 'both') {
                 $_ = &$canonical($1, $self->isbn13, $self->isbn_sep)
                     . ' (Print) '
@@ -308,10 +308,10 @@ sub isbn {
             } elsif ($print_or_online eq 'online') {
                 $_ = &$canonical($2, $self->isbn13, $self->isbn_sep);
             }
-        } elsif (m[^$re$]) {
+        } elsif (m[^[0-9x-]+$]i) {
             $_ = &$canonical($_, $self->isbn13, $self->isbn_sep);
         } elsif ($_ eq '') { $_ = undef
-        } else { print "WARNING: Suspect ISSN: $_\n" }
+        } else { print "WARNING: Suspect $field: $_\n" }
            });
 }
 
