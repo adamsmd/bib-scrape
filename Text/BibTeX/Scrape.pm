@@ -285,7 +285,7 @@ sub parse_ios_press {
     my ($mech) = @_;
 
     my $html = Text::MetaBib::parse($mech->content());
-    my $entry = parse_bibtex("\@" . 'article' . " {unknown_key,}");
+    my $entry = parse_bibtex("\@" . ($html->type() || 'misc') . "{unknown_key,}");
     $html->bibtex($entry);
 
     $entry->set('abstract', decode_entities($mech->content() =~ m[data-abstract="([^"]*)"]));
@@ -334,7 +334,7 @@ sub parse_oxford_journals {
     my ($mech) = @_;
 
     my $html = Text::MetaBib::parse($mech->content());
-    my $entry = parse_bibtex("\@article{unknown_key,}");
+    my $entry = parse_bibtex("\@" . ($html->type() || 'misc') . "{unknown_key,}");
     $html->bibtex($entry);
 
     my ($abstract) = ($mech->content() =~ m[<section class="abstract">\s*(.*?)\s*</section>]si);
