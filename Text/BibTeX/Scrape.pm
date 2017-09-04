@@ -187,9 +187,7 @@ sub parse_acm {
                                    sub { (lc $_[0] eq lc $_[1]) ? $_[0] : $_[1] },
                                    { keyGen => sub { lc shift }})) if $entry->exists('booktitle');
 
-    $entry->set('title', $mech->content() =~
-                m[<h1 class="mediumb-text".*?><strong>(.*?)</strong></h1>])
-        if $entry->exists('title');
+    $entry->set('title', $mech->content() =~ m[<h1 class="mediumb-text".*?><strong>(.*?)</strong></h1>]);
 
     return $entry;
 }
@@ -236,7 +234,7 @@ sub parse_computer_society {
     $mech->follow_link(text => 'BibTex');
     my $bib_text = $mech->content();
     $bib_text =~ s[<br/>][\n]g;
-    my $f = parse_bibtex(decode('utf8', $bib_text));
+    my $f = parse_bibtex($bib_text);
     $mech->back();
 
     if ($entry->type() eq 'inproceedings') { # IEEE gets this all wrong
@@ -317,9 +315,6 @@ sub parse_jstor {
 
     $mech->back();
 
-    my ($doi) = $mech->content() =~ m[<div class="doi">(.*?)</div>]s;
-    $entry->set('doi', $doi) if defined $doi;
-
     $html->bibtex($entry);
 
     my ($abs) = $mech->content() =~ m[<div class="abstract1"[^>]*>(.*?)</div>]s;
@@ -343,9 +338,6 @@ sub parse_oxford_journals {
     print_or_online($entry, 'issn',
          [$mech->content() =~ m[Print ISSN (\d\d\d\d-\d\d\d[0-9X])]],
          [$mech->content() =~ m[Online ISSN (\d\d\d\d-\d\d\d[0-9X])]]);
-
-    my ($title) = $mech->content =~ m[<h1 id="article-title-1" itemprop="headline">\s*(.*?)\s</h1>]si;
-    $entry->set('title', $title) if defined $title;
 
     return $entry;
 }
@@ -415,25 +407,17 @@ sub parse_springer {
     my ($mech) = @_;
 # TODO: handle books
     $mech->follow_link(url_regex => qr[format=bibtex]);
-    my $entry_text = $mech->content();
-    $entry_text =~ s[^(\@.*\{)$][$1X,]m; # Fix invalid BibTeX (missing key)
-    my $entry = parse_bibtex(decode('utf8', $entry_text));
-    $mech->back();
+    my $entry = parse_bibtex($mech->content());
     $mech->back();
 
     my ($abstr) = join('', $mech->content() =~ m[>(?:Abstract|Summary)</h2>(.*?)</section]s);
     $entry->set('abstract', $abstr) if defined $abstr;
 
     my $html = Text::MetaBib::parse($mech->content());
-    my ($year, $month, $day) = $mech->content() =~ m["abstract-about-cover-date">(\d\d\d\d)-(\d\d)-(\d\d)</dd>];
-    $entry->set('month', $month) if defined $month;
 
     print_or_online($entry, 'issn',
         [$mech->content() =~ m[setTargeting\("pissn","(\d\d\d\d-\d\d\d[0-9X])"\)]],
         [$mech->content() =~ m[setTargeting\("eissn","(\d\d\d\d-\d\d\d[0-9X])"\)]]);
-
-    my @editors = $mech->content() =~ m[<li itemprop="editor"[^>]*>\s*<a[^>]*>(.*?)</a>]sg;
-    $entry->set('editor', join(' and ', @editors)) if @editors;
 
     print_or_online($entry, 'isbn',
         [$mech->content() =~ m[id="print-isbn">(.*?)</span>]],
@@ -517,7 +501,6 @@ sub parse_wiley {
     # Choose the title either from bibtex or HTML based on whether we thing the BibTeX has the proper math in it.
     $entry->set('title', $mech->content() =~ m[<h1 class="articleTitle">(.*?)</h1>]s)
         unless $entry->get('title') =~ /\$/;
-
 
     return $entry;
 }
