@@ -187,7 +187,7 @@ sub parse_acm {
                                    sub { (lc $_[0] eq lc $_[1]) ? $_[0] : $_[1] },
                                    { keyGen => sub { lc shift }})) if $entry->exists('booktitle');
 
-    $entry->set('title', $mech->content() =~ m[<h1 class="mediumb-text".*?><strong>(.*?)</strong></h1>]);
+    $entry->set('title', $mech->content() =~ m[<h1 class="mediumb-text" style="margin-top:0px; margin-bottom:0px;">(.*?)</h1>]);
 
     return $entry;
 }
