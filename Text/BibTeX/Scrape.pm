@@ -416,31 +416,30 @@ sub parse_springer {
     my $html = Text::MetaBib::parse($mech->content());
 
     print_or_online($entry, 'issn',
-        [$mech->content() =~ m[setTargeting\("pissn","(\d\d\d\d-\d\d\d[0-9X])"\)]],
-        [$mech->content() =~ m[setTargeting\("eissn","(\d\d\d\d-\d\d\d[0-9X])"\)]]);
+        [$mech->content() =~ m[id="print-issn">(.*?)</span>]],
+        [$mech->content() =~ m[id="electronic-issn">(.*?)</span>]]);
 
     print_or_online($entry, 'isbn',
         [$mech->content() =~ m[id="print-isbn">(.*?)</span>]],
         [$mech->content() =~ m[id="electronic-isbn">(.*?)</span>]]);
 
-    my ($link) = $mech->find_link(text => 'About this book');
-    if (defined $link) {
-      $mech->follow_link(text => 'About this book');
-
-      my ($series) = $mech->content() =~ m[<dt>Series Title</dt>\s*<dd>(.*?)</dd>];
-      $entry->set('series', $series) if defined $series;
-
-      my ($volume) = $mech->content() =~ m[<dt>Series Volume</dt>\s*<dd>(.*?)</dd>];
-      $entry->set('volume', $1) if defined $volume;
+    # Ugh, Springer doesn't have a reliable way to get the series, volume,
+    # or issn.  Fortunately, this only happens for LNCS, so we hard code
+    # it.
+    my ($volume) = $mech->content() =~ m[\(LNCS, volume (\d*?)\)];
+    if (defined $volume) {
+        $entry->set('series', 'Lecture Notes in Computer Science');
+        $entry->set('volume', $volume);
+        $entry->set('issn', '0302-9743 (Print) 1611-3349 (Online)');
     }
 
-    $entry->set('keywords', $1) if $mech->content() =~ m[<div class="KeywordGroup" lang="en">(?:<h3 class="Heading">KeyWords</h3>)?(.*?)</div>];
+    $entry->set('keywords', $1) if $mech->content() =~ m[<div class="KeywordGroup" lang="en">(?:<h2 class="Heading">KeyWords</h2>)?(.*?)</div>];
     update($entry, 'keywords', sub {
       s[^<span class="Keyword">\s*(.*?)\s*</span>$][$1];
       s[\s*</span><span class="Keyword">\s*][; ]g;
           });
 
-    $html->bibtex($entry, 'month');
+    $html->bibtex($entry, 'abstract', 'month');
 
     # The publisher field should not include the address
     update($entry, 'publisher', sub { $_ = 'Springer' if $_ eq ('Springer, ' . ($entry->get('address') // '')) });

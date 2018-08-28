@@ -1,6 +1,6 @@
 http://www.springerlink.com/content/5x552812m8150709/abstract/
 Unicode in title
-@inbook{Parigot:1992:10.1007/BFb0013061,
+@inproceedings{Parigot:1992:10.1007/BFb0013061,
   author = {Parigot, Michel},
   editor = {Voronkov, Andrei},
   affiliation = {Universit{\'e} Paris 7},

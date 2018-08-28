@@ -1,6 +1,6 @@
 http://www.springerlink.com/content/m8x0246j74044t6l/
 missing "Kent" of R. Kent Dybvig; empty ISBN; over long affiliation; blank abstract
-@inbook{Waddell:1997:10.1007/BFb0032732,
+@inproceedings{Waddell:1997:10.1007/BFb0032732,
   author = {Waddell, Oscar and Dybvig, R. Kent},
   editor = {Van Hentenryck, Pascal},
   affiliation = {Indiana University Computer Science Department and Indiana University Computer Science Department},
