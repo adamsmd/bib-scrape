@@ -357,15 +357,11 @@ sub parse_science_direct {
     my $html = Text::MetaBib::parse($mech->content());
 
     # Evil Science Direct uses JavaScript to create links
-    my ($pii) = $mech->content() =~ m["sd:article:pii:(s?\d{15}(\d|x))"];
+    my ($pii) = $mech->content() =~ m[<meta name="citation_pii" content="(.*?)" />];
 
-    $mech->get("https://www.sciencedirect.com/sdfe/arp/cite?pii=$pii&format=text%2Fx-bibtex&withabstract=true");
+    $mech->get("https://www.sciencedirect.com/sdfe/arp/cite?pii=$pii&format=text/x-bibtex&withabstract=true");
     my $entry = parse_bibtex($mech->content());
     $mech->back();
-
-    my ($title) = $mech->content() =~ m[<h1 class="article-title" [^>]*>(.*?)</h1>]s;
-    $title =~ s[<a\b[^>]*>(.*?)</a>][]s;
-    $entry->set('title', $title);
 
     my ($keywords) = $mech->content() =~ m[>Keywords</h2>(<div\b[^>]*>.*?</div>)</div>]s;
     if (defined $keywords) {

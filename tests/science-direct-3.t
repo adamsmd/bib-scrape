@@ -9,6 +9,7 @@ Unicode in title
   pages = {767--772},
   month = aug,
   year = {2011},
+  publisher = {Elsevier},
   issn = {0020-0190},
   doi = {10.1016/j.ipl.2011.05.006},
   bib_scrape_url = {http://www.sciencedirect.com/science/article/pii/S0020019011001268},

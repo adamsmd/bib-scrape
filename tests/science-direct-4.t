@@ -9,6 +9,7 @@ Subscript and italic in title and abstract
   pages = {683--686},
   month = jul,
   year = {2011},
+  publisher = {Elsevier},
   issn = {0020-0190},
   doi = {10.1016/j.ipl.2011.04.009},
   bib_scrape_url = {http://www.sciencedirect.com/science/article/pii/S0020019011001153},

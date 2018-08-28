@@ -10,6 +10,7 @@ http://www.sciencedirect.com/science/article/pii/S0304397500000499
   pages = {29--98},
   month = oct,
   year = {2000},
+  publisher = {Elsevier},
   issn = {0304-3975},
   doi = {10.1016/S0304-3975(00)00049-9},
   bib_scrape_url = {http://www.sciencedirect.com/science/article/pii/S0304397500000499},

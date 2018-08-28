@@ -9,6 +9,7 @@ More complex math in abstract
   pages = {754--760},
   month = aug,
   year = {2011},
+  publisher = {Elsevier},
   issn = {0020-0190},
   doi = {10.1016/j.ipl.2011.04.014},
   bib_scrape_url = {http://www.sciencedirect.com/science/article/pii/S0020019011001207},

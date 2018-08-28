@@ -10,6 +10,7 @@ http://www.sciencedirect.com/science?_ob=ArticleURL&_udi=B75H1-5165HPB-2&_user=1
   pages = {3--13},
   month = oct,
   year = {2010},
+  publisher = {Elsevier},
   issn = {1571-0661},
   doi = {10.1016/j.entcs.2010.09.014},
   bib_scrape_url = {http://www.sciencedirect.com/science?_ob=ArticleURL&_udi=B75H1-5165HPB-2&_user=1105409&_coverDate=10%2F31%2F2010&_rdoc=1&_fmt=high&_orig=search&_origin=search&_sort=d&_docanchor=&view=c&_acct=C000051666&_version=1&_urlVersion=0&_userid=1105409&md5=3fa8419b522455368ac3abd6fd9184b2&searchtype=a},

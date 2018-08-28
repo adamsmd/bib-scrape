@@ -9,6 +9,7 @@ Undefined abstract
   pages = {123--143},
   month = feb,
   year = {1979},
+  publisher = {Academic Press},
   issn = {0019-9958},
   doi = {10.1016/S0019-9958(79)90362-0},
   bib_scrape_url = {http://www.sciencedirect.com/science/article/pii/S0019995879903620},

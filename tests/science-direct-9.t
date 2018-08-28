@@ -9,6 +9,7 @@ No keywords
   pages = {197--230},
   month = jun,
   year = {1994},
+  publisher = {Elsevier},
   issn = {0167-6423},
   doi = {10.1016/0167-6423(94)00004-2},
   bib_scrape_url = {http://www.sciencedirect.com/science/article/pii/0167642394000042},

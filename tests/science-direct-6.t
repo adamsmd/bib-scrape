@@ -9,6 +9,7 @@ Complex equation in abstract
   pages = {825--830},
   month = sep,
   year = {2011},
+  publisher = {Elsevier},
   issn = {0020-0190},
   doi = {10.1016/j.ipl.2011.05.015},
   bib_scrape_url = {http://www.sciencedirect.com/science/article/pii/S0020019011001438},

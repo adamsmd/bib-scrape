@@ -9,6 +9,7 @@ Author name is backwards
   pages = {1--20},
   month = sep,
   year = {2000},
+  publisher = {North-Holland},
   issn = {0167-2789},
   doi = {10.1016/S0167-2789(00)00094-4},
   bib_scrape_url = {http://dx.doi.org/10.1016/S0167-2789(00)00094-4},
