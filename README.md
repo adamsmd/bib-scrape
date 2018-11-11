@@ -1,4 +1,4 @@
-`bib-scrape`
+bib-scrape
 ================
 
 This is a BibTeX scraper for collecting BibTeX entries from the
