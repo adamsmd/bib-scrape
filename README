@@ -4,19 +4,21 @@ Author: Michael D. Adams
 This is a BibTeX scraper for collecting BibTeX entries from the
 websites of computer-science academic publishers.  I use it personally
 to make preparing my BibTeX files easier.  Currently it supports
- - ACM <acm.org>,
- - Springer <link.springer.com>,
- - Science Direct <sciencedirect.com>,
- - IEEE Computer Society <computer.org>,
- - IEEE Explore <ieeexplore.ieee.org>,
- - Cambridge Journals <journals.cambridge.org>,
- - Oxford Journals <oxfordjournals.org>,
- - JSTOR <jstor.org>,
- - IOS Press <iospress.metapress.com>, and
- - Wiley <onlinelibrary.wiley.com>.
+
+ - ACM `<acm.org>`,
+ - Springer `<link.springer.com>`,
+ - Science Direct `<sciencedirect.com>`,
+ - IEEE Computer Society `<computer.org>`,
+ - IEEE Explore `<ieeexplore.ieee.org>`,
+ - Cambridge Journals `<journals.cambridge.org>`,
+ - Oxford Journals `<oxfordjournals.org>`,
+ - JSTOR `<jstor.org>`,
+ - IOS Press `<iospress.metapress.com>`, and
+ - Wiley `<onlinelibrary.wiley.com>`.
 
 In addition, this scraper fixes common problems with the BibTeX that
 these services provide.  For example, it fixes:
+
  - the handling of Unicode and other formatting (e.g. subscripts) in titles;
  - the incorrect use of the 'issue' field instead of the 'number' field;
  - the format of the 'doi' and 'pages' fields;
@@ -26,27 +28,28 @@ these services provide.  For example, it fixes:
 Usage
 ================
 The basic usage is
-  ./bib-scrape.pl URL ...
+
+    ./bib-scrape.pl URL ...
 
 Each URL is the page of an article you want to scrape.  Note that if
-you have a DOI, then prefixing 'http://dx.doi.org/' on the DOI will
+you have a DOI, then prefixing 'https://doi.org/' on the DOI will
 form a usable URL.
 
 Examples:
-  ./bib-scrape.pl 'http://portal.acm.org/citation.cfm?id=1614435'
-  ./bib-scrape.pl 'http://www.springerlink.com/content/nhw5736n75028853/'
-  ./bib-scrape.pl 'http://dx.doi.org/10.1007/BF01975011'
 
-For more details on usage and command-line flags run './bib-scrape.pl --help'.
+    ./bib-scrape.pl 'https://portal.acm.org/citation.cfm?id=1614435'
+    ./bib-scrape.pl 'https://www.springerlink.com/content/nhw5736n75028853/'
+    ./bib-scrape.pl 'https://doi.org/10.1007/BF01975011'
+
+For more details on usage and command-line flags run:
+
+    ./bib-scrape.pl --help
 
 Installation
 ================
 This program is not designed to be installed(*).  You just run it directly
 from where you unpacked it.  However, there are Perl modules that it depends
-on.  To install these dependencies run the following commands:
-  $ perl Build.PL
-  $ ./Build installdeps
-(Note that you may have to run the second command as root.)
+on.
 
 IMPORTANT: Be sure to always run the program from the directory where
 you unpacked it.  If you run the program from any other directory, it
@@ -56,6 +59,28 @@ will not be able to find the names.txt and nouns.txt files.
 good method of packaging applications.  Second, I don't know how to
 make the program find names.txt and nouns.txt in such a packaging.  I
 would welcome help in preparing a better packaging solution.
+
+Global/Root Installation
+----------------
+If you want to install the module dependencies globally to `/usr/share/perl5`,
+do the following.
+
+1. Ensure that you have `sudo` permission.
+2. Ensure that `Module::Build` installed by running `sudo cpan Module::Build`.
+3. Generate the `Build` script by running `perl Build.PL`.
+4. Install the dependencies by running `sudo ./Build installdeps`.
+
+Local/Home Installation
+----------------
+If you want to install the module dependencies locally to
+your home directory, do the following.
+
+1. Install and Setup and install [`local::lib`](https://metacpan.org/pod/local::lib).
+   See [The Bootstrapping Technique](https://metacpan.org/pod/local::lib#The-bootstrapping-technique) for instructions.
+2. Ensure that `Module::Build` installed by running `cpan -I Module::Build`.
+   (The `-I` tells `cpan` to use `local::lib`.)
+3. Generate the `Build` script by running `perl Build.PL`.
+4. Install the dependencies by running `./Build installdeps`.
 
 Disclaimer
 ================
@@ -86,7 +111,7 @@ matter of policy, I prefer to scrape from publisher pages instead of
 from aggregators (e.g. BibSonomy, DBLP, etc.) as aggregators are much
 less predictable in the sorts of errors they introduce.
 
-You can find my contact information at http://michaeldadams.org/
+You can find my contact information at https://michaeldadams.org/
 
 Features
 ================
@@ -154,7 +179,7 @@ Limitations
 
 License
 ================
-Copyright (c) 2011-2013, Michael D. Adams <http://michaeldadams.org/>
+Copyright (c) 2011-2013, Michael D. Adams `<https://michaeldadams.org/>`
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -167,4 +192,4 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+along with this program.  If not, see `<https://www.gnu.org/licenses/>`.
