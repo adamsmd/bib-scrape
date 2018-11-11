@@ -336,8 +336,8 @@ sub parse_oxford_journals {
     my $entry = parse_bibtex("\@" . ($html->type() || 'misc') . "{unknown_key,}");
     $html->bibtex($entry);
 
-    my ($abstract) = ($mech->content() =~ m[<section class="abstract">\s*(.*?)\s*</section>]si);
-    $entry->set('abstract', $abstract) if defined $abstract;
+    $entry->set('title', $mech->content() =~ m[<h1 class="wi-article-title article-title-main">(.*?)</h1>]s);
+    $entry->set('abstract', $mech->content() =~ m[<section class="abstract">\s*(.*?)\s*</section>]si);
 
     print_or_online($entry, 'issn',
          [$mech->content() =~ m[Print ISSN (\d\d\d\d-\d\d\d[0-9X])]],

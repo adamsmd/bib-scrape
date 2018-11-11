@@ -322,39 +322,40 @@ sub latex_encode {
 
     # HTML -> LaTeX Codes
     $str = decode_entities($str);
-    #$str =~ s[\_(.)][\\ensuremath{\_{$1}}]isog; # Fix for IOS Press
     $str =~ s[<!--.*?-->][]sg; # Remove HTML comments
     $str =~ s[<a [^>]*onclick="toggleTabs\(.*?\)">.*?</a>][]isg; # Fix for Science Direct
 
     # HTML formatting
     $str =~ s[<([^>]*)\bclass="a-plus-plus"([^>]*)>][<$1$2>]isg; # Remove class annotation
     $str =~ s[<(\w+)\s*>][<$1>]isg; # Removed extra space around simple tags
-    $str =~ s[<a( .*?)?>(.*?)</a>][$2]isog; # Remove <a> links
+    $str =~ s[<a( .*?)?>(.*?)</a>][$2]isg; # Remove <a> links
     $str =~ s[<p(| [^>]*)>(.*?)</p>][$2\n\n]isg; # Replace <p> with "\n\n"
     $str =~ s[<par(| [^>]*)>(.*?)</par>][$2\n\n]isg; # Replace <par> with "\n\n"
     $str =~ s[<span style=["']font-family:monospace\s*["']>(.*?)</span>][\\texttt{$1}]isg; # Replace monospace spans with \texttt
     $str =~ s[<span class=["']monospace\s*["'][^>]*>(.*?)</span>][\\texttt{$1}]isg; # Replace monospace spans with \texttt
     $str =~ s[<span class=["']small-?caps\s*["'][^>]*>(.*?)</span>][\\textsc{$1}]isg; # Replace small caps spans with \textsc
     $str =~ s[<span class=["'][^"']*type-small-caps[^"']*["']>(.*?)</span>][\\textsc{$1}]isg; # Replace small caps spans with \textsc
-    $str =~ s[<span class=["']italic["']>(.*?)</span>][\\emph{$1}]isg; # TODO: "isog"? \\textit?
-    $str =~ s[<span class=["']bold["']>(.*?)</span>][\\textbf{$1}]isg; # TODO: "isog"? \\textit?
-    $str =~ s[<span class=["']sup["']>(.*?)</span>][\\textsuperscript{$1}]isg; # TODO: "isog"? \\textit?
-    $str =~ s[<span class=["']sub["']>(.*?)</span>][\\textsubscript{$1}]isg; # TODO: "isog"? \\textit?
-    $str =~ s[<span class=["']sc["']>(.*?)</span>][\\textsc{$1}]isg; # TODO: "isog"?
+    $str =~ s[<span class=["']italic["']>(.*?)</span>][\\emph{$1}]isg; # TODO: \\textit?
+    $str =~ s[<span class=["']bold["']>(.*?)</span>][\\textbf{$1}]isg; # TODO: \\textit?
+    $str =~ s[<span class=["']sup["']>(.*?)</span>][\\textsuperscript{$1}]isg; # TODO: \\textit?
+    $str =~ s[<span class=["']sub["']>(.*?)</span>][\\textsubscript{$1}]isg; # TODO: \\textit?
+    $str =~ s[<span class=["']sc["']>(.*?)</span>][\\textsc{$1}]isg;
     $str =~ s[<span class=["']EmphasisTypeSmallCaps ["']>(.*?)</span>][\\textsc{$1}]isg;
     $str =~ s[<span( .*?)?>(.*?)</span>][$2]isg; # Remove <span>
     $str =~ s[<span( .*?)?>(.*?)</span>][$2]isg; # Remove <span>
-    $str =~ s[<i>(.*?)</i>][\\textit{$1}]isog; # Replace <i> with \textit
-    $str =~ s[<italic>(.*?)</italic>][\\textit{$1}]isog; # Replace <italic> with \textit
-    $str =~ s[<em\b[^>]*?>(.*?)</em>][\\emph{$1}]isog; # Replace <em> with \emph
-    $str =~ s[<strong>(.*?)</strong>][\\textbf{$1}]isog; # Replace <strong> with \textbf
-    $str =~ s[<b>(.*?)</b>][\\textbf{$1}]isog; # Replace <b> with \textbf
-    $str =~ s[<tt>(.*?)</tt>][\\texttt{$1}]isog; # Replace <tt> with \texttt
-    $str =~ s[<code>(.*?)</code>][\\texttt{$1}]isog; # Replace <code> with \texttt
-#    $str =~ s[<small>(.*?)</small>][{\\small $1}]isog; # Replace <small> with \small
-    $str =~ s[<sup>(.*?)</sup>][\\textsuperscript{$1}]isog; # Super scripts
-    $str =~ s[<supscrpt>(.*?)</supscrpt>][\\textsuperscript{$1}]isog; # Super scripts
-    $str =~ s[<sub>(.*?)</sub>][\\textsubscript{$1}]isog; # Sub scripts
+    $str =~ s[<i( [^>]*?)?></i>][]isg; # Remove empty <i>
+    $str =~ s[<i>(.*?)</i>][\\textit{$1}]isg; # Replace <i> with \textit
+    $str =~ s[<italic>(.*?)</italic>][\\textit{$1}]isg; # Replace <italic> with \textit
+    $str =~ s[<em\b[^>]*?>(.*?)</em>][\\emph{$1}]isg; # Replace <em> with \emph
+    $str =~ s[<strong>(.*?)</strong>][\\textbf{$1}]isg; # Replace <strong> with \textbf
+    $str =~ s[<b>(.*?)</b>][\\textbf{$1}]isg; # Replace <b> with \textbf
+    $str =~ s[<tt>(.*?)</tt>][\\texttt{$1}]isg; # Replace <tt> with \texttt
+    $str =~ s[<code>(.*?)</code>][\\texttt{$1}]isg; # Replace <code> with \texttt
+#    $str =~ s[<small>(.*?)</small>][{\\small $1}]isg; # Replace <small> with \small
+    $str =~ s[<sup></sup>][]isg; # Remove emtpy <sup>
+    $str =~ s[<sup>(.*?)</sup>][\\textsuperscript{$1}]isg; # Super scripts
+    $str =~ s[<supscrpt>(.*?)</supscrpt>][\\textsuperscript{$1}]isg; # Super scripts
+    $str =~ s[<sub>(.*?)</sub>][\\textsubscript{$1}]isg; # Sub scripts
 
     $str =~ s[<img src="http(s)?://www.sciencedirect.com/scidirimg/entities/([0-9a-f]+).gif".*?>][@{[chr(hex $2)]}]isg; # Fix for Science Direct
     $str =~ s[<img src="/content/[A-Z0-9]+/xxlarge(\d+).gif".*?>][@{[chr($1)]}]isg; # Fix for Springer Link
