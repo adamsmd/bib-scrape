@@ -1,5 +1,5 @@
-Title: bib-scrape
-Author: Michael D. Adams
+`bib-scrape`
+================
 
 This is a BibTeX scraper for collecting BibTeX entries from the
 websites of computer-science academic publishers.  I use it personally
