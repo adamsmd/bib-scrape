@@ -398,6 +398,10 @@ sub parse_science_direct {
 
     $html->bibtex($entry);
 
+#    my ($title) = $mech->content =~ m[<h1 class="Head"><span class="title-text">(.*?)</span><a name="baep-article-footnote-id1" href="#aep-article-footnote-id1" class="workspace-trigger label">☆</a></h1>]s;
+    my ($title) = $mech->content =~ m[<h1 class="Head"><span class="title-text">(.*?)</span>(<a [^>]+>.</a>)?</h1>]s;
+    $entry->set('title', $title);
+
     return $entry;
 }
 
