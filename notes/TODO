@@ -72,3 +72,14 @@ onlinelibrary.wiley.com
 \emph vs \textit
 http vs https
 dx.doi.org vs doi.org
+
+usenix
+
+arxiv:
+ - normal
+ - proceedings: https://arxiv.org/help/submit_index
+   - https://arxiv.org/abs/1708.06226
+   - https://arxiv.org/html/1708.06226
+     - https://arxiv.org/abs/1708.06459v1
+     - https://arxiv.org/abs/1708.06460v1
+     - https://arxiv.org/abs/1708.06461v1

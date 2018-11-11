@@ -286,10 +286,14 @@ sub parse_ios_press {
     my $entry = parse_bibtex("\@" . ($html->type() || 'misc') . "{unknown_key,}");
     $html->bibtex($entry);
 
+    $entry->set('title', decode_entities($mech->content() =~ m[data-p13n-title="([^"]*)"]));
     $entry->set('abstract', decode_entities($mech->content() =~ m[data-abstract="([^"]*)"]));
 
+    # Remove extra newlines
+    update($entry, 'title', sub { s[\n][]g });
+
     # Insert missing paragraphs.  This is a heuristic solution.
-    update($entry, 'abstract', sub { s[([.!?])  ][$1\n\n] });
+    update($entry, 'abstract', sub { s[([.!?])  ][$1\n\n]g });
 
     return $entry;
 }
