@@ -53,11 +53,11 @@ on.
 
 IMPORTANT: Be sure to always run the program from the directory where
 you unpacked it.  If you run the program from any other directory, it
-will not be able to find the names.txt and nouns.txt files.
+will not be able to find the names.txt and actions.txt files.
 
 (*) There are two reasons for this.  First, Perl doesn't have a very
 good method of packaging applications.  Second, I don't know how to
-make the program find names.txt and nouns.txt in such a packaging.  I
+make the program find names.txt and actions.txt in such a packaging.  I
 would welcome help in preparing a better packaging solution.
 
 Global/Root Installation

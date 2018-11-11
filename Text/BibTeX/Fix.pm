@@ -21,7 +21,7 @@ use Text::BibTeX::Name;
 use Text::BibTeX::NameFormat;
 use Text::BibTeX::Value;
 
-use vars ('$FIELD'); # Used to communicate with $self->field_action
+use vars ('$FIELD'); # Used to communicate with $self->field_actions
 
 sub scalar_flag {
     my ($obj, $options, $field, $default) = @_;
@@ -53,7 +53,7 @@ use Class::Struct 'Text::BibTeX::Fix::Impl' => {
   debug => '$', final_comma => '$', escape_acronyms => '$',
   isbn => '$', isbn13 => '$', isbn_sep => '$', issn => '$',
   no_encode => '%', no_collapse => '%', omit => '%', omit_empty => '%',
-  field_action => '$',
+  field_actions => '$',
 };
 
 sub Text::BibTeX::Fix::new {
@@ -81,7 +81,7 @@ sub Text::BibTeX::Fix::new {
     scalar_flag($cfg, \%options, 'isbn13', 0);
     scalar_flag($cfg, \%options, 'isbn_sep', '-');
     scalar_flag($cfg, \%options, 'issn', 'both');
-    scalar_flag($cfg, \%options, 'field_action', '');
+    scalar_flag($cfg, \%options, 'field_actions', '');
 
     hash_flag($cfg, \%options, 'no_encode', qw(doi url eprint bib_scrape_url));
     hash_flag($cfg, \%options, 'no_collapse', qw());
@@ -241,7 +241,7 @@ sub Text::BibTeX::Fix::Impl::fix {
         $compartment->deny_only();
         $compartment->share_from('Text::BibTeX::Fix', ['$FIELD']);
         $compartment->share('$_');
-        update($entry, $FIELD, sub { $compartment->reval($self->field_action); });
+        update($entry, $FIELD, sub { $compartment->reval($self->field_actions); });
     }
 
     # Generate an entry key

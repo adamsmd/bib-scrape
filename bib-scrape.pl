@@ -53,7 +53,7 @@ If <file> is the empty string, clears the list.
 
 See the L</NAME FILE> section for details on the format of name files.
 
-=item --action=<file>
+=item --actions=<file>
 
 Add <file> to the list of action files used to canonicalize fields.
 If <file> is the empty string, clears the list.
@@ -232,7 +232,7 @@ my ($DEBUG, $SCRAPE, $FIX) =
 my ($ISBN, $ISBN13, $ISBN_SEP, $ISSN, $COMMA, $ESCAPE_ACRONYMS) =
    ('both',      0,       '-','both',      1,                1);
 my (@NAME_FILE) = ("$FindBin::RealBin/names.txt");
-my (@FIELD_ACTION_FILE) = ("$FindBin::RealBin/action.txt");
+my (@FIELD_ACTION_FILE) = ("$FindBin::RealBin/actions.txt");
 my (@INPUT, @EXTRA_FIELDS, %NO_ENCODE, %NO_COLLAPSE, %OMIT, %OMIT_EMPTY);
 
 GetOptions(
@@ -240,8 +240,8 @@ GetOptions(
     'input=s' => sub { push @INPUT, $_[1] },
     'names=s' => sub { if ($_[1] eq '') { @NAME_FILE=() }
                        else { push @NAME_FILE, $_[1] } },
-    'action=s' => sub { if ($_[1] eq '') { @FIELD_ACTION_FILE=() }
-                        else { push @FIELD_ACTION_FILE, $_[1] } },
+    'actions=s' => sub { if ($_[1] eq '') { @FIELD_ACTION_FILE=() }
+                         else { push @FIELD_ACTION_FILE, $_[1] } },
 
     # Operating modes
     # TODO: make debug be verbose and go to STDERR
@@ -268,7 +268,7 @@ GetOptions(
 
 my $fixer = Text::BibTeX::Fix->new(
     valid_names => [map {read_valid_names($_)} @NAME_FILE],
-    field_action => join('\n', slurp_file(@FIELD_ACTION_FILE)),
+    field_actions => join('\n', slurp_file(@FIELD_ACTION_FILE)),
     debug => $DEBUG,
     known_fields => [@EXTRA_FIELDS],
     isbn => $ISBN,
