@@ -1,7 +1,6 @@
 syntax: glob
 *~
 Build
-Build.PL
 MANIFEST
 META.json
 META.yml
