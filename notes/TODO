@@ -72,6 +72,8 @@ onlinelibrary.wiley.com
 \emph vs \textit
 http vs https
 dx.doi.org vs doi.org
+oxford domain name change
+tests/failing
 
 usenix
 
@@ -89,3 +91,4 @@ Fix:
  - ieee-explore
  - jstor
  - Science direct (misc)
+ - wiley

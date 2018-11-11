@@ -6,10 +6,10 @@ use Carp;
 use Exporter qw(import);
 
 our @EXPORT = qw(unicode2tex);
-our @EXPORT_OK = qw();
+our @EXPORT_OK = qw(%CODES %CCC);
 
-my %CODES;
-my %CCC;
+our %CODES;
+our %CCC;
 
 #sub unicode2tex_old {
 #    my ($str) =  @_;
@@ -1056,6 +1056,7 @@ sub unicode2tex {
     0x203a => '\\guilsinglright',
     0x203b => '\\textreferencemark',
     0x203d => '\\textinterrobang',
+    0x204e => '\\ensuremath{\\ast}',
     0x2057 => '\\ensuremath{^{\\prime\\prime\\prime\\prime}}',
     0x205f => '\\ensuremath{\\mkern4mu}',
     0x2060 => '\\nolinebreak',
@@ -1285,7 +1286,7 @@ sub unicode2tex {
     0x21dc => '\\ensuremath{\\leftsquigarrow}',
     0x21dd => '\\ensuremath{\\rightsquigarrow}',
     0x21e0 => '\\ensuremath{\\dashleftarrow}',
-    0x21e1 => '\\ensuremath{\\dashrightarrow}',
+    0x21e2 => '\\ensuremath{\\dashrightarrow}',
     0x21fd => '\\ensuremath{\\leftarrowtriangle}',
     0x21fe => '\\ensuremath{\\rightarrowtriangle}',
     0x21ff => '\\ensuremath{\\leftrightarrowtriangle}',
@@ -1390,8 +1391,8 @@ sub unicode2tex {
     0x2275 => '\\ensuremath{\\ngtrsim}',
     0x2276 => '\\ensuremath{\\lessgtr}',
     0x2277 => '\\ensuremath{\\gtrless}',
-    0x2278 => '\\ensuremath{\\ngtrless}',
-    0x2279 => '\\ensuremath{\\nlessgtr}',
+    0x2278 => '\\ensuremath{\\nlessgtr}',
+    0x2279 => '\\ensuremath{\\ngtrless}',
     0x227a => '\\ensuremath{\\prec}',
     0x227b => '\\ensuremath{\\succ}',
     0x227c => '\\ensuremath{\\preccurlyeq}',

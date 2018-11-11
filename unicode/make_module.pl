@@ -193,7 +193,7 @@ sub decomp {
         return "TODO";
     } elsif (exists $decomp2{$char}) {
         my $x = decomp($decomp1{$char});
-        if ($x =~ m[^\\textgreek{(.*)}$]) {
+        if ($x =~ m[^\\textgreek\{(.*)\}$]) {
             if ($decomp2{$char} == 0x0300) {
                 return "\\textgreek{`$1}";
             } elsif ($decomp2{$char} == 0x0301) {
@@ -611,9 +611,12 @@ _ _ _ _
 \ensuremath{^{\prime\prime\prime}} \ensuremath{^{\backprime}} \ensuremath{^{\backprime\backprime}} \ensuremath{^{\backprime\backprime\backprime}}
 _ \guilsinglleft \guilsinglright \textreferencemark
 _ \textinterrobang _ _
-));
 
-    set_codes(0x2050, qw(
+_ _ _ _
+_ _ _ _
+_ _ _ _
+_ _ \ensuremath{\ast} _
+
 _ _ _ _
 _ _ _ \ensuremath{^{\prime\prime\prime\prime}}
 _ _ _ _
