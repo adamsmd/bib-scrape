@@ -3,7 +3,7 @@
 ls LICENSE MANIFEST README Build.PL
 ls bib-scrape.pl test.sh
 find Text TeX -name \*.pm
-ls names.txt actions.txt
+ls config/names.cfg config/actions.cfg
 ls sites.txt cannonical.txt
 find tests -name \*.t
 #ls unicode/{README,TODO,UnicodeData.txt,unicode.xml,unicode.xml.old,unimathsymbols.txt}

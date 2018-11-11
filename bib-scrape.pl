@@ -231,8 +231,8 @@ my ($DEBUG, $SCRAPE, $FIX) =
    (      0,      1,    1);
 my ($ISBN, $ISBN13, $ISBN_SEP, $ISSN, $COMMA, $ESCAPE_ACRONYMS) =
    ('both',      0,       '-','both',      1,                1);
-my (@NAME_FILE) = ("$FindBin::RealBin/names.txt");
-my (@FIELD_ACTION_FILE) = ("$FindBin::RealBin/actions.txt");
+my (@NAME_FILE) = ("$FindBin::RealBin/config/names.cfg");
+my (@FIELD_ACTION_FILE) = ("$FindBin::RealBin/config/actions.cfg");
 my (@INPUT, @EXTRA_FIELDS, %NO_ENCODE, %NO_COLLAPSE, %OMIT, %OMIT_EMPTY);
 
 GetOptions(

@@ -53,12 +53,14 @@ on.
 
 IMPORTANT: Be sure to always run the program from the directory where
 you unpacked it.  If you run the program from any other directory, it
-will not be able to find the names.txt and actions.txt files.
+will not be able to find the `config/names.cfg` and `config/actions.cfg
+files.
 
 (*) There are two reasons for this.  First, Perl doesn't have a very
 good method of packaging applications.  Second, I don't know how to
-make the program find names.txt and actions.txt in such a packaging.  I
-would welcome help in preparing a better packaging solution.
+make the program find `config/names.cfg` and `config/actions.cfg` in
+such a packaging.  I would welcome help in preparing a better packaging
+solution.
 
 Global/Root Installation
 ----------------
@@ -162,7 +164,7 @@ Limitations
    publishers is often incomplete or incorrect.  For example, I've
    found 'Blume' misspelled as 'Blu', 'Bruno C.d.S Oliviera' listed as
    'Bruno Oliviera' and 'Simon Peyton Jones' listed as 'Jones, Simon
-   Peyton'.  See the 'names.txt' file for how to fix these.
+   Peyton'.  See the `config/names.cfg` file for how to fix these.
 
  - Many heuristics are involved in scraping and fixing the data.  This in an inherently fuzzy area.
 
