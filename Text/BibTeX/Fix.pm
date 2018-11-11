@@ -332,16 +332,16 @@ sub latex_encode {
     $str =~ s[<a( .*?)?>(.*?)</a>][$2]isog; # Remove <a> links
     $str =~ s[<p(| [^>]*)>(.*?)</p>][$2\n\n]isg; # Replace <p> with "\n\n"
     $str =~ s[<par(| [^>]*)>(.*?)</par>][$2\n\n]isg; # Replace <par> with "\n\n"
-    $str =~ s[<span style="font-family:monospace\s*">(.*?)</span>][\\texttt{$1}]isg; # Replace monospace spans with \texttt
-    $str =~ s[<span class="monospace\s*"[^>]*>(.*?)</span>][\\texttt{$1}]isg; # Replace monospace spans with \texttt
-    $str =~ s[<span class="small-?caps\s*"[^>]*>(.*?)</span>][\\textsc{$1}]isg; # Replace small caps spans with \textsc
-    $str =~ s[<span class="[^"]*type-small-caps[^"]*">(.*?)</span>][\\textsc{$1}]isg; # Replace small caps spans with \textsc
-    $str =~ s[<span class="italic">(.*?)</span>][\\emph{$1}]isg; # TODO: "isog"? \\textit?
-    $str =~ s[<span class="bold">(.*?)</span>][\\textbf{$1}]isg; # TODO: "isog"? \\textit?
-    $str =~ s[<span class="sup">(.*?)</span>][\\textsuperscript{$1}]isg; # TODO: "isog"? \\textit?
-    $str =~ s[<span class="sub">(.*?)</span>][\\textsubscript{$1}]isg; # TODO: "isog"? \\textit?
-    $str =~ s[<span class="sc">(.*?)</span>][\\textsc{$1}]isg; # TODO: "isog"?
-    $str =~ s[<span class="EmphasisTypeSmallCaps ">(.*?)</span>][\\textsc{$1}]isg;
+    $str =~ s[<span style=["']font-family:monospace\s*["']>(.*?)</span>][\\texttt{$1}]isg; # Replace monospace spans with \texttt
+    $str =~ s[<span class=["']monospace\s*["'][^>]*>(.*?)</span>][\\texttt{$1}]isg; # Replace monospace spans with \texttt
+    $str =~ s[<span class=["']small-?caps\s*["'][^>]*>(.*?)</span>][\\textsc{$1}]isg; # Replace small caps spans with \textsc
+    $str =~ s[<span class=["'][^"']*type-small-caps[^"']*["']>(.*?)</span>][\\textsc{$1}]isg; # Replace small caps spans with \textsc
+    $str =~ s[<span class=["']italic["']>(.*?)</span>][\\emph{$1}]isg; # TODO: "isog"? \\textit?
+    $str =~ s[<span class=["']bold["']>(.*?)</span>][\\textbf{$1}]isg; # TODO: "isog"? \\textit?
+    $str =~ s[<span class=["']sup["']>(.*?)</span>][\\textsuperscript{$1}]isg; # TODO: "isog"? \\textit?
+    $str =~ s[<span class=["']sub["']>(.*?)</span>][\\textsubscript{$1}]isg; # TODO: "isog"? \\textit?
+    $str =~ s[<span class=["']sc["']>(.*?)</span>][\\textsc{$1}]isg; # TODO: "isog"?
+    $str =~ s[<span class=["']EmphasisTypeSmallCaps ["']>(.*?)</span>][\\textsc{$1}]isg;
     $str =~ s[<span( .*?)?>(.*?)</span>][$2]isg; # Remove <span>
     $str =~ s[<span( .*?)?>(.*?)</span>][$2]isg; # Remove <span>
     $str =~ s[<i>(.*?)</i>][\\textit{$1}]isog; # Replace <i> with \textit
