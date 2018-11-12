@@ -8,6 +8,7 @@ use Encode;
 use HTML::Entities qw(decode_entities);
 use Text::RIS;
 use Text::MetaBib;
+use URI::Encode qw(uri_encode uri_decode);
 use WWW::Mechanize;
 
 use Text::BibTeX;
@@ -455,55 +456,45 @@ sub parse_wiley {
     domain('wiley.com') || return undef;
 
     my ($mech) = @_;
-    $mech->follow_link(url_regex => qr[/wol1/.*/abstract$]) if $mech->find_link(url_regex => qr[/wol1/.*/abstract$]);
-    $mech->follow_link(text => 'Export Citation for this Article');
+    $mech->follow_link(text => 'Export citation');
     $mech->submit_form(with_fields => {
-        'fileFormat' => 'BIBTEX', 'hasAbstract' => 'CITATION_AND_ABSTRACT'});
-    my $entry = parse_bibtex(decode('utf8', $mech->content()));
+      'format' => 'bibtex', 'direct' => 'other-type'});
+    my $bibtex = $mech->content();
+    $bibtex =~ s[^(@.*)\{.*$][$1\{misc,]m; # Suppress invalid chars in key
+    my $entry = parse_bibtex($bibtex);
     $mech->back(); $mech->back();
 
     my $html = Text::MetaBib::parse($mech->content());
+    $html->bibtex($entry);
 
-    # Ugh! Both the BibTeX and the HTML have problems.  Here we try to
-    # pick out the best from each.  The HTML is usually better except that
-    # it uses <img> takes for some math.
-    my $bibtex_abstr = $entry->get('abstract');
-    my ($html_abstr) = ($mech->content() =~ m[<div id="abstract"><h3>Abstract</h3>(<div class="para">.*?</div>)</div>]);
-    my $math_img = qr[<img [^>]*?>]; # We could use a more complicated regex, but this is good enough
-
-    # Try to find the diff between the BibTeX and HTML
-    $entry->set('abstract', merge(
-                    $entry->get('abstract'),
-                    qr[(\$.*?\$|\\documentclass.*?\\end\{document\})?],
-                    $mech->content() =~ m[<div id="abstract"><h3>Abstract</h3>(<div class="para">.*?</div>)</div>],
-                    qr[(\&[^;]*?;|$math_img|<span[^>]*?>$math_img</span>)?],
-                    sub { my ($bib, $html) = @_;
-                          $html =~ s[([{}])][\\$1]g; # Escape the HTML while we know it is still HTML
-                          if ($html =~ m[$math_img]) {
-                              # Replace images (and special characters surrounding it) with BibTeX.
-                              # (By substituting we keep around things like </em> at the start or <em> at the end
-                              $html =~ s[(\&[^;]*?;)*($math_img|<span[^>]*?>$math_img</span[^>]*?>)(\&[^;]*?;)*][$bib]is;
-                          }
-                          $html;
-                    }, {}));
-
-    # Finally, we clean up the abstract
-    update($entry, 'abstract', sub { s[\\documentclass\{article\} \\usepackage\{mathrsfs\} \\usepackage\{amsmath,amssymb,amsfonts\} \\pagestyle\{empty\} \\begin\{document\} \\begin\{align\*\}(.*?)\\end\{align\*\} \\end\{document\}][\\ensuremath{$1}]isg; });
-    update($entry, 'abstract', sub { s[<div class="para">(.*?)</div>][\n\n$1\n\n]isg });
-    update($entry, 'abstract',
-           sub { s[(Copyright )?(.|&copy;) \d\d\d\d John Wiley (.|&amp;) Sons, (Ltd|Inc)\.\s*][] });
-    update($entry, 'abstract',
-           sub { s[(.|&copy;) \d\d\d\d Wiley Periodicals, Inc\. Random Struct\. Alg\..*, \d\d\d\d][] });
-
-    $html->bibtex($entry, 'title');
+    # Extract abstract from HTML
+    my ($abs) = ($mech->content() =~ m[<section class="article-section article-section__abstract"[^>]*>(.*?)</section>]s);
+    $abs =~ s[<h[23].*?>Abstract</h[23]>][];
+    $abs =~ s[<div class="article-section__content[^"]*">(.*)</div>][$1]s;
+    $abs =~ s[(Copyright )?(.|&copy;) \d\d\d\d John Wiley (.|&amp;) Sons, (Ltd|Inc)\.\s*][];
+    $abs =~ s[(.|&copy;) \d\d\d\d Wiley Periodicals, Inc\. Random Struct\. Alg\..*, \d\d\d\d][];
+    $abs =~ s[\\begin\{align\*\}(.*?)\\end\{align\*\}][\\ensuremath\{$1\}]sg;
+    $entry->set('abstract', $abs);
 
     # To handle multiple month issues we must use HTML
-    my ($month) = ($mech->content() =~ m[<span id="issueDate">((\w|\/)*) \d*</span>]);
-    $entry->set('month', $month) if $month;
+    my ($month_year) = $mech->content() =~ m[<div class="extra-info-wrapper cover-image__details">(.*?)</div>]s;
+    my ($month) = $month_year =~ m[<p>([^<].*?) \d\d\d\d</p>]s;
+    $entry->set('month', $month);
 
-    # Choose the title either from bibtex or HTML based on whether we thing the BibTeX has the proper math in it.
-    $entry->set('title', $mech->content() =~ m[<h1 class="articleTitle">(.*?)</h1>]s)
+    # Choose the title either from bibtex or HTML based on whether we think the BibTeX has the proper math in it.
+    $entry->set('title', $mech->content() =~ m[<h2 class="citation__title">(.*?)</h2>]s)
         unless $entry->get('title') =~ /\$/;
+
+    # Remove math rendering images. (The LaTeX code is usually beside the image.)
+    update($entry, 'title', sub { s[<img .*?>][]sg; });
+    update($entry, 'abstract', sub { s[<img .*?>][]sg; });
+
+    # Fix "blank" spans where they should be monospace
+    update($entry, 'title', sub { s[<span>(?=[^\$])][<span class="monospace">]sg; });
+    update($entry, 'abstract', sub { s[<span>(?=[^\$])][<span class="monospace">]sg; });
+
+    # Omit URL if it just points to the publisher's page
+    $entry->delete('url') if uri_decode($entry->get('url')) eq ('https://onlinelibrary.wiley.com/doi/abs/' . $entry->get('doi'));
 
     return $entry;
 }
