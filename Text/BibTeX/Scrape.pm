@@ -305,6 +305,8 @@ sub parse_ios_press {
 sub parse_jstor {
     domain('jstor.org') || return undef;
 
+    print STDERR "WARNING: JSTOR imposes strict rate limiting.  You may see `Error GETing` errors if you try to get the BibTeX for multiple papers in a row.\n";
+
     my ($mech) = @_;
     my $html = Text::MetaBib::parse($mech->content());
 
@@ -327,8 +329,6 @@ sub parse_jstor {
 
     my ($abs) = $mech->content() =~ m[<div class="abstract1"[^>]*>(.*?)</div>]s;
     $entry->set('abstract', $abs) if defined $abs;
-
-    print STDERR "WARNING: JSTOR imposes strict rate limiting.  You may see `Error GETing` errors if you try to get the BibTeX for multiple papers in a row.\n";
 
     return $entry;
 }
