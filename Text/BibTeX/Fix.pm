@@ -66,7 +66,7 @@ sub Text::BibTeX::Fix::new {
     array_flag($cfg, \%options, 'known_fields', qw(
       author editor affiliation title
       howpublished booktitle journal volume number series jstor_issuetitle
-      type jstor_articletype school institution location
+      type jstor_articletype school institution location conference_date
       chapter pages articleno numpages
       edition day month year issue_date jstor_formatteddate
       organization publisher address
@@ -204,7 +204,8 @@ sub Text::BibTeX::Fix::Impl::fix {
                          |http(s?)://doi.acm.org/
                          |http(s?)://portal.acm.org/citation.cfm
                          |http(s?)://www.jstor.org/stable/
-                         |http(s?)://www.sciencedirect.com/science/article/)]x; } );
+                         |http(s?)://www.sciencedirect.com/science/article/
+                         |http(s?)://onlinelibrary.wiley.com/doi/abs/)]x; } );
     # TODO: via omit if empty
     update($entry, 'note', sub { $_ = undef if $_ eq "" });
     # TODO: add $doi to omit if matches
@@ -244,20 +245,6 @@ sub Text::BibTeX::Fix::Impl::fix {
         update($entry, $FIELD, sub { $compartment->reval($self->field_actions); });
     }
 
-    # Generate an entry key
-    # TODO: Formats: author/editor1.last year title/journal.abbriv
-    # TODO: Remove doi?
-    if (not defined $entry->key()) {
-        my ($name) = ($entry->names('author'), $entry->names('editor'));
-        $name = defined $name ?
-            purify_string(join("", $name->part('last'))) :
-            "anon";
-        my $year = $entry->exists('year') ? ":" . $entry->get('year') : "";
-        my $doi = $entry->exists('doi') ? ":" . $entry->get('doi') : "";
-        #$organization, or key
-        $entry->set_key($name . $year . $doi);
-    }
-
     # Use bibtex month macros
     update($entry, 'month', # Must be after field encoding because we use macros
            sub { s[\.($|-)][$1]g; # Remove dots due to abbriviations
@@ -276,6 +263,20 @@ sub Text::BibTeX::Fix::Impl::fix {
 
     # Year
     check($entry, 'year', "Suspect year", sub { /^\d\d\d\d$/ });
+
+    # Generate an entry key
+    # TODO: Formats: author/editor1.last year title/journal.abbriv
+    # TODO: Remove doi?
+    if (not defined $entry->key()) {
+        my ($name) = ($entry->names('author'), $entry->names('editor'));
+        $name = defined $name ?
+            purify_string(join("", $name->part('last'))) :
+            "anon";
+        my $year = $entry->exists('year') ? ":" . $entry->get('year') : "";
+        my $doi = $entry->exists('doi') ? ":" . $entry->get('doi') : "";
+        #$organization, or key
+        $entry->set_key($name . $year . $doi);
+    }
 
     # Put fields in a standard order.
     for my $field ($entry->fieldlist()) {

@@ -6,6 +6,7 @@ use strict;
 use Algorithm::Diff;
 use Encode;
 use HTML::Entities qw(decode_entities);
+use List::Util qw(pairs);
 use Text::RIS;
 use Text::MetaBib;
 use URI::Encode qw(uri_encode uri_decode);
@@ -260,13 +261,11 @@ sub parse_ieeexplore {
     domain('ieeexplore.ieee.org') || return undef;
 
     my ($mech, $fields) = @_;
-    my ($record) = $mech->content() =~ m[var recordId = "(\d+)";];
+    my ($record) = $mech->content() =~ m["(?:articleId|articleNumber)":"(\d+)"];
 
-    my $html = Text::MetaBib::parse($mech->content());
     # Ick, work around javascript by hard coding the URL
     $mech->get("http://ieeexplore.ieee.org/xpl/downloadCitations?".
                "recordIds=$record&".
-               "fromPage=&".
                "citations-format=citation-abstract&".
                "download-format=download-bibtex");
     my $cont = $mech->content();
@@ -274,7 +273,35 @@ sub parse_ieeexplore {
     my $entry = parse_bibtex($cont);
     $mech->back();
 
-    $html->bibtex($entry);
+    # Extract data from embedded JSON
+    my @affiliations = $mech->content() =~ m[\{.*?"affiliation":"([^"]+)".*?\}]sg;
+    $entry->set('affiliation', join(" and ", @affiliations)) if @affiliations;
+
+    $entry->set('publisher', $mech->content() =~ m["publisher":"([^"]+)"]s);
+
+    $entry->set('location', $1) if $mech->content() =~ m["confLoc":"([^"]+)"]s;
+
+    $entry->set('conference_date', $1) if $mech->content() =~ m["conferenceDate":"([^"]+)"]s;
+
+    my ($isbns) = $mech->content() =~ m["isbn":\[(.+?)\]]sg;
+    if ($isbns) {
+      # TODO: refactor with print_or_online()
+      $isbns =~ s["CD-ROM ISBN"]["Online ISBN"]sg; # TODO: update Fix.pm to support CD-ROM ISBN
+      my @isbns = pairs($isbns =~ m[\{"format":"([^"]+) ISBN","value":"([^"]+)"\}]sg);
+      $entry->set('isbn', @isbns <= 1 ? $isbns[0]->[1] : join(" ", map { "$_->[1] ($_->[0])" } @isbns));
+    }
+
+    my ($issns) = $mech->content() =~ m["issn":\[(.+?)\]]sg;
+    if ($issns) {
+      # TODO: refactor with print_or_online()
+      $issns =~ s["Electronic ISSN"]["Online ISSN"]sg; # TODO: update Fix.pm to support Electronic ISSN
+      my @issns = pairs($issns =~ m[\{"format":"([^"]+) ISSN","value":"([^"]+)"\}]sg);
+      $entry->set('issn', @issns <= 1 ? $issns[0]->[1] : join(" ", map { "$_->[1] ($_->[0])" } @issns));
+    }
+
+    update($entry, 'keywords', sub { s[; *][; ]sg; });
+    update($entry, 'abstract', sub { s[&lt;&lt;ETX&gt;&gt;$][]; });
+
     return $entry
 }
 
