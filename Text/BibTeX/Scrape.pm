@@ -460,7 +460,7 @@ sub parse_wiley {
     $mech->submit_form(with_fields => {
       'format' => 'bibtex', 'direct' => 'other-type'});
     my $bibtex = $mech->content();
-    $bibtex =~ s[^(@.*)\{.*$][$1\{misc,]m; # Suppress invalid chars in key
+    $bibtex =~ s[^(@.*)\{.*$][$1\{unknown_key,]m; # Suppress invalid chars in key
     my $entry = parse_bibtex($bibtex);
     $mech->back(); $mech->back();
 
@@ -492,9 +492,6 @@ sub parse_wiley {
     # Fix "blank" spans where they should be monospace
     update($entry, 'title', sub { s[<span>(?=[^\$])][<span class="monospace">]sg; });
     update($entry, 'abstract', sub { s[<span>(?=[^\$])][<span class="monospace">]sg; });
-
-    # Omit URL if it just points to the publisher's page
-    $entry->delete('url') if uri_decode($entry->get('url')) eq ('https://onlinelibrary.wiley.com/doi/abs/' . $entry->get('doi'));
 
     return $entry;
 }
