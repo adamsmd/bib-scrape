@@ -69,6 +69,10 @@ ieeexplore.ieee.org
 onlinelibrary.wiley.com
  U(t,ab,Au) S(T,Ab) I(T,Ab) E m
 
+tests/ieee-computer-2.t
+-  series = {Signal-Image Technologies and Internet-Based System, International IEEE Conference on},
++  series = {2012 Eighth International Conference on Signal Image Technology and Internet Based Systems},
+
 \emph vs \textit
 http vs https
 dx.doi.org vs doi.org
@@ -92,10 +96,3 @@ Fix:
 
  - cambridge (on campus only?)
  - oxford (on campus only?)
-
-
-
-tests/ieee-computer-2.t
--  series = {Signal-Image Technologies and Internet-Based System, International IEEE Conference on},
-+  series = {2012 Eighth International Conference on Signal Image Technology and Internet Based Systems},
-

@@ -33,7 +33,6 @@ sub scrape {
     $mech->add_handler("request_send",  sub { shift->dump; return }) if $DEBUG;
     $mech->add_handler("response_done", sub { shift->dump; return }) if $DEBUG;
     $mech->agent('Mozilla/5.0');
-    $mech->cookie_jar->set_cookie(0, 'MUD', 'MP', '/', 'springerlink.com', 80, 0, 0, 86400, 0);
     $mech->get($url);
     my $entry = parse($mech);
     $mech = undef;
@@ -264,9 +263,9 @@ sub parse_ieeexplore {
     my ($record) = $mech->content() =~ m["(?:articleId|articleNumber)":"(\d+)"];
 
     # Ick, work around javascript by hard coding the URL
-    $mech->get("http://ieeexplore.ieee.org/xpl/downloadCitations?".
-               "recordIds=$record&".
-               "citations-format=citation-abstract&".
+    $mech->get("http://ieeexplore.ieee.org/xpl/downloadCitations?" .
+               "recordIds=$record&" .
+               "citations-format=citation-abstract&" .
                "download-format=download-bibtex");
     my $cont = $mech->content();
     $cont =~ s/<br>//gi;
@@ -352,6 +351,8 @@ sub parse_jstor {
     my ($abs) = $mech->content() =~ m[<div class="abstract1"[^>]*>(.*?)</div>]s;
     $entry->set('abstract', $abs) if defined $abs;
 
+    print STDERR "WARNING: JSTOR imposes strict rate limiting.  You may see `Error GETing` errors if you try to get the BibTeX for multiple papers in a row.\n";
+
     return $entry;
 }
 
@@ -406,7 +407,7 @@ sub parse_science_direct {
     $abst = "" unless defined $abst;
     $abst =~ s[<h2\b[^>]*>Abstract</h2>][]g;
     $abst =~ s[<div\b[^>]*>(.*)</div>][$1]s;
-    $entry->set('abstract', get_mathml($abst));
+    $entry->set('abstract', $abst);
 
     if ($entry->exists('note') and $entry->get('note') ne '') {
         $entry->set('series', $entry->get('note'));
@@ -426,7 +427,6 @@ sub parse_science_direct {
 
     $html->bibtex($entry);
 
-#    my ($title) = $mech->content =~ m[<h1 class="Head"><span class="title-text">(.*?)</span><a name="baep-article-footnote-id1" href="#aep-article-footnote-id1" class="workspace-trigger label">☆</a></h1>]s;
     my ($title) = $mech->content =~ m[<h1 class="Head"><span class="title-text">(.*?)</span>(<a [^>]+>.</a>)?</h1>]s;
     $entry->set('title', $title);
 
@@ -484,8 +484,7 @@ sub parse_wiley {
 
     my ($mech) = @_;
     $mech->follow_link(text => 'Export citation');
-    $mech->submit_form(with_fields => {
-      'format' => 'bibtex', 'direct' => 'other-type'});
+    $mech->submit_form(with_fields => {'format' => 'bibtex', 'direct' => 'other-type'});
     my $bibtex = $mech->content();
     $bibtex =~ s[^(@.*)\{.*$][$1\{unknown_key,]m; # Suppress invalid chars in key
     my $entry = parse_bibtex($bibtex);

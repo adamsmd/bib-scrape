@@ -150,6 +150,9 @@ Features
 
 Limitations
 ================
+ - JSTOR imposes strict rate limiting.  You may see `Error GETing`
+   errors if you try to get the BibTeX for multiple papers in a row.
+
  - Basically don't trust the "title", "author" and "abstract" fields.
    Other fields will generally be right, but these fields often have
    Latex code that don't get preserved by the publishers. Though
