@@ -1,10 +1,10 @@
 #!/bin/bash
 (
-ls LICENSE MANIFEST README Build.PL
+ls LICENSE MANIFEST README.md Build.PL
 ls bib-scrape.pl test.sh
 find Text TeX -name \*.pm
 ls config/names.cfg config/actions.cfg
-ls sites.txt cannonical.txt
+ls notes/sites.txt notes/cannonical.txt
 find tests -name \*.t
 #ls unicode/{README,TODO,UnicodeData.txt,unicode.xml,unicode.xml.old,unimathsymbols.txt}
 #ls unicode/*.pl

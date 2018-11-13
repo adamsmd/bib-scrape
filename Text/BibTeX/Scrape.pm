@@ -212,6 +212,7 @@ sub parse_computer_society {
     $mech->follow_link(text => 'BibTex');
     my $bib_text = $mech->content();
     $bib_text =~ s[<br/>][\n]g;
+    $bib_text =~ s[\@(.*?)\{,][\@$1\{unknown_key,];
     my $f = parse_bibtex($bib_text);
     $mech->back();
 
@@ -305,7 +306,7 @@ sub parse_ios_press {
 sub parse_jstor {
     domain('jstor.org') || return undef;
 
-    print STDERR "WARNING: JSTOR imposes strict rate limiting.  You may see `Error GETing` errors if you try to get the BibTeX for multiple papers in a row.\n";
+    print STDERR "WARNING: JSTOR imposes strict rate limiting.  You might have `Error GETing` errors if you try to get the BibTeX for multiple papers in a row.\n";
 
     my ($mech) = @_;
     my $html = Text::MetaBib::parse($mech->content());
