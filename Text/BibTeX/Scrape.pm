@@ -28,11 +28,10 @@ my $mech;
 sub scrape {
     my ($url) = @_;
 
-    # TODO: test running without jstor_patch from home
     $mech = WWW::Mechanize->new(autocheck => 1);
     $mech->add_handler("request_send",  sub { shift->dump; return }) if $DEBUG;
     $mech->add_handler("response_done", sub { shift->dump; return }) if $DEBUG;
-    $mech->agent('Mozilla/5.0');
+    $mech->agent('Mozilla/5.0'); # Some sites get unhappy without a user agent
     $mech->get($url);
     my $entry = parse($mech);
     $mech = undef;
@@ -54,6 +53,7 @@ sub parse_bibtex {
 
     my ($id) = $bib_text =~ m[\{(.*?),]s;
     $id =~ s[ ][_]g;
+    $id =~ s[[()]][_]g;
     $id =~ s[[^[:ascii:]]][?]g;
     $bib_text =~ s/\{(.*?),/{$id,/s;
 
@@ -75,29 +75,6 @@ sub update {
         if (defined $_) { $entry->set($field, $_); }
         else { $entry->delete($field); }
     }
-}
-
-sub get_url {
-    my ($url) = @_;
-    my $uri = URI->new_abs($url, $mech->base());
-    $mech->get($uri);
-    my $content = $mech->content();
-    $mech->back();
-    $content =~ s[<!--.*?-->][]sg; # Remove HTML comments
-    $content =~ s[\s*$][]; # remove trailing whitespace
-    $content =~ s[^\s*][]; # remove leading whitespace
-    return $content;
-}
-
-sub get_mathml {
-    my ($str) = @_;
-    $str =~ s[<span\b[^>]*\bclass="mathmlsrc"[^>]*>
-                <(span|a)\b[^>]*\bdata-mathURL="(.*?)"[^>]*>.*?</\1>
-                .*?
-                <!--(ja:math|Loading\sMathjax)-->
-              </span>]
-        [@{[join(" ", split(/[\r\n]+/, get_url(decode_entities($2))))]}]xg;
-    return $str;
 }
 
 sub print_or_online {
@@ -485,9 +462,7 @@ sub parse_wiley {
     my ($mech) = @_;
     $mech->follow_link(text => 'Export citation');
     $mech->submit_form(with_fields => {'format' => 'bibtex', 'direct' => 'other-type'});
-    my $bibtex = $mech->content();
-    $bibtex =~ s[^(@.*)\{.*$][$1\{unknown_key,]m; # Suppress invalid chars in key
-    my $entry = parse_bibtex($bibtex);
+    my $entry = parse_bibtex($mech->content());
     $mech->back(); $mech->back();
 
     my $html = Text::MetaBib::parse($mech->content());
