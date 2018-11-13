@@ -1,4 +1,4 @@
-http://portal.acm.org/citation.cfm?doid=237218.237407
+https://portal.acm.org/citation.cfm?doid=237218.237407
 Page numbers with letters and dashes
 @inproceedings{Baker:1996:10.1145/237218.237407,
   author = {Baker, James E. and Cruz, Isabel F. and Liotta, Giuseppe and Tamassia, Roberto},
@@ -15,6 +15,6 @@ Page numbers with letters and dashes
   isbn = {0-89791-804-5},
   doi = {10.1145/237218.237407},
   acmid = {237407},
-  bib_scrape_url = {http://portal.acm.org/citation.cfm?doid=237218.237407},
+  bib_scrape_url = {https://portal.acm.org/citation.cfm?doid=237218.237407},
 }
 

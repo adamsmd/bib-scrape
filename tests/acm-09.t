@@ -1,4 +1,4 @@
-http://portal.acm.org/citation.cfm?id=567756
+https://portal.acm.org/citation.cfm?id=567756
 No abstract
 @inproceedings{Banning:1979:10.1145/567752.567756,
   author = {Banning, John P.},
@@ -14,6 +14,6 @@ No abstract
   address = {New York, NY, USA},
   doi = {10.1145/567752.567756},
   acmid = {567756},
-  bib_scrape_url = {http://portal.acm.org/citation.cfm?id=567756},
+  bib_scrape_url = {https://portal.acm.org/citation.cfm?id=567756},
 }
 

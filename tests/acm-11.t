@@ -1,4 +1,4 @@
-http://portal.acm.org/citation.cfm?id=984506
+https://portal.acm.org/citation.cfm?id=984506
 Acronym in title
 @article{Hsaio:1982:10.1145/984505.984506,
   author = {Hsaio, David K.},
@@ -16,6 +16,6 @@ Acronym in title
   issn = {0163-5808},
   doi = {10.1145/984505.984506},
   acmid = {984506},
-  bib_scrape_url = {http://portal.acm.org/citation.cfm?id=984506},
+  bib_scrape_url = {https://portal.acm.org/citation.cfm?id=984506},
 }
 

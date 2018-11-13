@@ -1,4 +1,4 @@
-http://portal.acm.org/citation.cfm?id=242324
+https://portal.acm.org/citation.cfm?id=242324
 "es" after issue.  HTML article
 @article{Blakeley:1996:10.1145/242224.242324,
   author = {Blakeley, Jos{\'e}},
@@ -15,6 +15,6 @@ http://portal.acm.org/citation.cfm?id=242324
   issn = {0360-0300},
   doi = {10.1145/242224.242324},
   acmid = {242324},
-  bib_scrape_url = {http://portal.acm.org/citation.cfm?id=242324},
+  bib_scrape_url = {https://portal.acm.org/citation.cfm?id=242324},
 }
 

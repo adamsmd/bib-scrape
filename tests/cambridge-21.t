@@ -1,4 +1,4 @@
-http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=8440149
+https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=8440149
 Book review
 @article{Cebrian:2011:10.1017/S0956796811000177,
   author = {Cebri{\'a}n, Toni},
@@ -12,6 +12,6 @@ Book review
   publisher = {Cambridge University Press},
   issn = {1469-7653 (Print) 0956-7968 (Online)},
   doi = {10.1017/S0956796811000177},
-  bib_scrape_url = {http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=8440149},
+  bib_scrape_url = {https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=8440149},
 }
 

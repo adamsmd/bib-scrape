@@ -1,4 +1,4 @@
-http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=2363692
+https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=2363692
 Unicode in author, "Mc" name
 @article{McBride:1995:10.1017/S0959269500002970,
   author = {McBride, Nicole},
@@ -12,6 +12,6 @@ Unicode in author, "Mc" name
   publisher = {Cambridge University Press},
   issn = {1474-0079 (Print) 0959-2695 (Online)},
   doi = {10.1017/S0959269500002970},
-  bib_scrape_url = {http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=2363692},
+  bib_scrape_url = {https://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=2363692},
 }
 

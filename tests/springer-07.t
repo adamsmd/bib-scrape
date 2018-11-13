@@ -1,4 +1,4 @@
-http://www.springerlink.com/content/xm722115x3032238/
+https://www.springerlink.com/content/xm722115x3032238/
 Multi-paragraph (broken) abstract
 @article{Cousot:1999:10.1023/A:1008649901864,
   author = {Cousot, Patrick and Cousot, Radhia},
@@ -15,7 +15,7 @@ Multi-paragraph (broken) abstract
   language = {English},
   issn = {0928-8910 (Print) 1573-7535 (Online)},
   doi = {10.1023/A:1008649901864},
-  bib_scrape_url = {http://www.springerlink.com/content/xm722115x3032238/},
+  bib_scrape_url = {https://www.springerlink.com/content/xm722115x3032238/},
   keywords = {model-checking; abstract interpretation; static analysis; transition system; universal safety},
   abstract = {Formal methods combining abstract interpretation and model-checking have been considered for automated analysis of software.
 {\par}
