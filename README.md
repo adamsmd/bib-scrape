@@ -1,3 +1,5 @@
+# This software has been replaced by [BibScrape](https://github.com/adamsmd/BibScrape/) and is no longer maintained.  
+
 bib-scrape
 ================
 
